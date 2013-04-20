@@ -7,23 +7,15 @@ classes in its abstract syntax tree.
 """
 from structures import *
 
-import cgi
 class Constant(Expression):
     """ Literal string, number, nil, true or false. """
     abstract = False
     template = '{value}'
     subparts = [('value', str)]
 
-    def __str__(self):
-        href = self.href_template.format(self.id)
-        Node.global_dict[self.id] = self
-        text = cgi.escape(str(self.dictionary['value']))
-        full_text = href + text + '</a>'
-
-        if self.str_wrapper:
-            return self.str_wrapper(full_text)
-        else:
-            return full_text
+    def render(self, wrapper=empty_wrapper):
+        value = self.dictionary['value']
+        return wrapper(self, value)
 
 class Identifier(Constant):
     """ A reference to an identifier. """
@@ -41,30 +33,22 @@ class NameList(StructureList):
 
 class Assignment(Statement):
     abstract = False
-    template = '{left_side} = {right_side}'
+    template = '\n{left_side} = {right_side}'
     subparts = [('left_side', ExpressionList), ('right_side', ExpressionList)]
 
 class LocalVar(Assignment):
     """ Variable declaration with "local" modifier. """
     abstract = False
-    template = 'local ' + Assignment.template
+    template = '\nlocal ' + Assignment.template[1:]
 
-class Table(StructureList, Expression):
+class Table(Block, Expression):
     """
     Table declaration. When printing, line breaks are inserted as necessary.
     """
     abstract = False
-    delimiter = '\n\t'
+    delimiter = ',\n'
     child_type = AbstractStructure
-    template = '{{\n{children}\n\t}}'
-
-    def __str__(self):
-        # Tables with more items use one line per item.
-        try:
-            Block.increaseIndentation()
-            return super(Table, self).__str__()
-        finally:
-            Block.decreaseIdentation()
+    template = '{{\n{children}\n}}'
 
 class FunctionName(StructureList):
     """
@@ -79,25 +63,25 @@ class ParameterList(StructureList):
     """ List of parameter names in a function declaration. """
     abstract = False
     child_type = Identifier
-    template = ' {children} '
+    template = '{children}'
 
 class NamedFunction(Statement):
     """
     Declaration of a named function, in contrast to an anonymous function.
     """
     abstract = False
-    template = 'function {name}({parameters})\n{body}\n\tend'
+    template = '\nfunction {name}({parameters}){body}\nend'
     subparts = [('name', FunctionName), ('parameters', ParameterList), ('body', Block)]
 
 class LocalFunction(NamedFunction):
     """ Specialization of a named function with the local modifier.  """
     abstract = False
-    template = 'local ' + NamedFunction.template
+    template = 'local ' + NamedFunction.template[1:]
 
 class AnonFunction(Expression):
     """ Anonymous function declaration. Can be used as expression value. """
     abstract = False
-    template = 'function ({parameters})\n{body}\n\tend'
+    template = 'function ({parameters}){body}\nend'
     subparts = [('parameters', ParameterList), ('body', Block)]
 
 class FunctionCall(Expression, Statement):
@@ -136,19 +120,25 @@ class ForIn(Statement):
     """ "for item in list do" control structure. """
     abstract = False
     subparts = [('item', NameList), ('iterator', ExpressionList), ('body', Block)] 
-    template = 'for {item} in {iterator} do\n{body}\n\tend'
+    template = '\nfor {item} in {iterator} do{body}\nend'
 
 class While(Statement):
     """ "while condition do" control structure. """
     abstract = False
     subparts = [('condition', Expression), ('body', Block)]
-    template = 'while {condition} do\n{body}\n\tend'
+    template = '\nwhile {condition} do{body}\nend'
 
-class If(AbstractStructure):
+class Else(AbstractStructure):
+    """ The 'else' clause of a conditional. """
+    abstract = False
+    subparts = [('body', Block)]
+    template = '\nelse{body}'
+
+class If(Else):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
     abstract = False
     subparts = [('condition', Expression), ('body', Block)]
-    template = 'if {condition} then\n{body}'
+    template = '\nif {condition} then{body}'
 
 class IfChain(StructureList):
     """
@@ -156,31 +146,20 @@ class IfChain(StructureList):
     """
     abstract = False
     child_type = If
-    delimiter = '\n\telse'
-
-class Else(AbstractStructure):
-    """ The 'else' clause of a conditional. """
-    abstract = False
-    subparts = [('body', Block)]
-    template = 'else\n{body}'
+    delimiter = '\nelse'
 
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
     abstract = False
+    template = '{if_chain}{else}'
     subparts = [('if_chain', IfChain),
                 ('else', Else)]
-
-    def update_template(self):
-        if 'else' in self.dictionary:
-            self.template = '{if_chain}\n\t{else}\n\tend'
-        else:
-            self.template = '{if_chain}\n\tend'
 
 class Return(StructureList, Statement):
     """ A return statement, with zero or more expression returned. """
     abstract = False
     child_type = ExpressionList
-    template = 'return {children}'
+    template = '\nreturn {children}'
 
 class Operator(Constant):
     """ Class for binary and unary operators such as +, and, ^ and not.  """

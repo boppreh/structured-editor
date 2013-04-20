@@ -3,6 +3,7 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ast.structures import Node
+import re
 
 class Editor(object):
     """
@@ -26,31 +27,10 @@ class Editor(object):
         self.selected = self.root
         self.clipboard = None
 
-    def rendered_text(self, main_selection_function, siblings_selection_function):
+    def render(self, wrapper=None):
         """
         Returns the textual representation of the source code tree.
         Takes an extra, optional argument that tells how to format the selected
         node.
         """
-        if self.selected.parent:
-            for child in self.selected.parent:
-                child.str_wrapper = siblings_selection_function
-
-        self.selected.str_wrapper = main_selection_function
-
-        Node.global_dict = {}
-        code = str(self.root)
-
-        self.selected.str_wrapper = None
-
-        if self.selected.parent:
-            for child in self.selected.parent:
-                child.str_wrapper = None
-
-        return code
-
-    def edited_text(self):
-        """
-        Returns the updated source code, with the user's modifications applied.
-        """
-        return str(self.root)
+        return self.root.render(wrapper)

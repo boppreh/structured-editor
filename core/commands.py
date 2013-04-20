@@ -76,7 +76,7 @@ class Copy(Command):
     def _execute(self, editor, selected, parent):
         from PyQt4 import QtGui
         clipboard = QtGui.QApplication.clipboard()
-        clipboard.setText(str(selected))
+        clipboard.setText(selected.render())
 
         editor.clipboard = deepcopy(selected)
         return selected

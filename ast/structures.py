@@ -4,20 +4,17 @@ tree.
 """
 from pyparsing import ParseResults
 
+empty_wrapper = lambda node, text: text
+
 class Node(object):
     abstract = True
-    global_dict = {}
-    count = 0
     template = '<ABSTRACT NODE>'
-    href_template = '<a href="{}" style="color: #000000; text-decoration: none">'
 
     def __init__(self, contents):
         self.parent = None
         self.contents = contents
         self.str_wrapper = None
-
-        Node.count += 1
-        self.id = Node.count
+        self.dictionary = {}
 
         for item in contents:
             try:
@@ -54,26 +51,15 @@ class Node(object):
             else:
                 fn(item)
 
-    def update_template(self):
-        pass
-
-    def format(self, template, dictionary):
-        href = self.href_template.format(self.id)
-        insert_links = lambda t: '</a>' + str(t) + href
-        dictionary = {name: insert_links(value) for name, value in dictionary.items()}
-        return href + template.format(**dictionary) + '</a>'
-
-    def __str__(self):
-        Node.global_dict[self.id] = self
-
-        self.update_template()
-        unindented_text = self.format(self.template, self.dictionary)
-        text = unindented_text.replace('\t', Block.indentation)
-
-        if self.str_wrapper:
-            return self.str_wrapper(text)
-        else:
-            return text
+    def render(self, wrapper=empty_wrapper):
+        """
+        Recursively renders itself and all children, calling 'wrapper' on
+        each step, if available.
+        """
+        text_dictionary = {key: value.render(wrapper)
+                           for key, value in self.dictionary.items()}
+        text = self.template.format(**text_dictionary)
+        return wrapper(self, text)
 
 
 class Dummy(Node):
@@ -140,6 +126,7 @@ class StructureList(Node):
         # original parse results anywhere else.
         if contents.__class__ == ParseResults:
             contents = list(contents)
+
         self.parent = None
         self.selected_index = 0
 
@@ -153,12 +140,6 @@ class StructureList(Node):
 
     def get_expected_class(self, index):
         return self.child_type
-    
-    def update_template(self):
-        str_contents = map(str, self.contents)
-        joined_contents = self.delimiter.join(str_contents)
-        indented_contents = joined_contents.replace('\t', Block.indentation)
-        self.dictionary = {'children': indented_contents}
 
     def remove(self, item):
         item.parent = None
@@ -174,6 +155,12 @@ class StructureList(Node):
         item.parent = self
         return self.contents.insert(index, item)
 
+    def render(self, wrapper=empty_wrapper):
+        rendered_contents = [item.render(wrapper) for item in self.contents]
+        joined_contents = self.delimiter.join(rendered_contents)
+        text = self.template.format(children=joined_contents)
+        return wrapper(self, text)
+
 
 class Statement(AbstractStructure):
     template = 'ABSTRACT STATEMENT'
@@ -187,28 +174,22 @@ class Block(StructureList):
     abstract = False
 
     child_type = Statement
-    delimiter = '\n\t'
-    template = '\t{children}'
 
-    identationNumber = -1
-    indentation = ''
+    def render(self, wrapper=empty_wrapper):
+        str_contents = [item.render(wrapper) for item in self.contents]
 
-    @staticmethod
-    def increaseIndentation():
-        Block.identationNumber += 1
-        Block.indentation = Block.identationNumber * '    '
+        rendered = []
+        for line in str_contents:
+            if line.count('\n') >= 2:
+                rendered.append(line + '\n')
+            else:
+                rendered.append(line)
 
-    @staticmethod
-    def decreaseIdentation():
-        Block.identationNumber -= 1
-        Block.indentation = Block.identationNumber * '    '
+        rendered_text = ''.join(rendered).strip()
+        if self.parent:
+            rendered_text = rendered_text.replace('\n', '\n    ')
 
-    def __str__(self):
-        try:
-            Block.increaseIndentation()
-            return super(Block, self).__str__()
-        finally:
-            Block.decreaseIdentation()
+        return wrapper(self, rendered_text)
 
 
 class Expression(AbstractStructure):

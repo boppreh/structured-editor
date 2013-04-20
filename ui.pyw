@@ -57,17 +57,42 @@ class CodeDisplay(QtWebKit.QWebView):
         self.linkClicked.connect(self.selected)
 
     def selected(self, url):
-        self.selectionHandler(Node.global_dict[int(url.toString())])
+        self.selectionHandler(self.node_dict[int(url.toString())])
 
-    def colorize(self, color):
-        template = '<span style="background-color: {}">{}</span>'
-        return lambda text: template.format(color, text or ' ')
+    def color_tag(self, color):
+        return ('<span style="background-color: {}">'.format(color),
+                '</span>')
+
+    def add_link(self, node, text, color_tag_tuple):
+        open_color, close_color = color_tag_tuple
+        open = '<a href="{id}" style="color: #000000; text-decoration: none">'
+        close = '</a>'
+
+        self.node_count += 1
+        node_id = self.node_count
+        self.node_dict[node_id] = node
+
+        beginning = close + open_color + open.format(id=node_id)
+        ending = close + close_color + open
+
+        return beginning + text.format(id=node_id) + ending
+
+    def wrapper(self, node, text):
+        if node == editor.selected:
+            color = self.color_tag('#95CAFF')
+        elif node.parent == editor.selected.parent:
+            color = self.color_tag('#CECECE')
+        else:
+            color = ('', '')
+
+        return self.add_link(node, text or ' ', color)
 
     def render(self, editor):
         """ Renders editor state in this text. """
-        text = editor.rendered_text(self.colorize('#95CAFF'),
-                                    self.colorize('#CECECE'))
-        self.setHtml('<pre>' + text + '</pre>')
+        self.node_count = 0
+        self.node_dict = {}
+        text = editor.render(self.wrapper)
+        self.setHtml('<pre><a>' + text + '</a></pre>')
 
 
 class SourceCodeInput(QtGui.QDialog):
@@ -262,7 +287,7 @@ class MainEditorWindow(QtGui.QMainWindow):
             return
 
         with open(self.file_selected, 'w') as target_file:
-            target_file.write(self.editor.edited_text())
+            target_file.write(self.editor.render())
 
     def checkUpdates(self, event=None):
         reply = QtGui.QMessageBox.question(self, "Update", "Do you want to download the new version and restart the application?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
