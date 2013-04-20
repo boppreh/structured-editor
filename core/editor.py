@@ -3,7 +3,6 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ast.structures import Node
-import re
 
 class Editor(object):
     """

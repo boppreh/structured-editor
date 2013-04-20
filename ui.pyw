@@ -65,6 +65,7 @@ class CodeDisplay(QtWebKit.QWebView):
 
     def add_link(self, node, text, color_tag_tuple):
         open_color, close_color = color_tag_tuple
+
         open = '<a href="{id}" style="color: #000000; text-decoration: none">'
         close = '</a>'
 
@@ -72,20 +73,28 @@ class CodeDisplay(QtWebKit.QWebView):
         node_id = self.node_count
         self.node_dict[node_id] = node
 
+        # Yep, it starts with a close link tag and ends with an opening link
+        # tag without id. The goal is to eliminate nested link tags, so we
+        # close the parent's whenever we start a new object and reopen
+        # again when we finish. Since we don't know the parent id, leave it as
+        # a template for it to fill.
+        # Also, the color must be between the parent's tag and the child's tag,
+        # to avoid invalid markup like <a><span></a></span>.
         beginning = close + open_color + open.format(id=node_id)
         ending = close + close_color + open
 
+        # Here the parent fills the template left by its children.
         return beginning + text.format(id=node_id) + ending
 
     def wrapper(self, node, text):
         if node == editor.selected:
-            color = self.color_tag('#95CAFF')
+            color_tags = self.color_tag('#95CAFF')
         elif node.parent == editor.selected.parent:
-            color = self.color_tag('#CECECE')
+            color_tags = self.color_tag('#CECECE')
         else:
-            color = ('', '')
+            color_tags = ('', '')
 
-        return self.add_link(node, text or ' ', color)
+        return self.add_link(node, text or ' ', color_tags)
 
     def render(self, editor):
         """ Renders editor state in this text. """
