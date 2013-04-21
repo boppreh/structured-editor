@@ -172,7 +172,6 @@ class Block(StructureList):
     the program root. Also called compound statement.
     """
     abstract = False
-
     child_type = Statement
 
     def render(self, wrapper=empty_wrapper):
@@ -188,6 +187,8 @@ class Block(StructureList):
         rendered_text = ''.join(rendered).strip()
         if self.parent:
             rendered_text = rendered_text.replace('\n', '\n    ')
+        else:
+            rendered_text = rendered_text.replace('\n', '', 1)
 
         return wrapper(self, rendered_text)
 

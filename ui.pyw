@@ -65,6 +65,7 @@ class CodeDisplay(QtWebKit.QWebView):
 
     def add_link(self, node, text, color_tag_tuple):
         open_color, close_color = color_tag_tuple
+        #return open_color + text + close_color
 
         open = '<a href="{id}" style="color: #000000; text-decoration: none">'
         close = '</a>'
@@ -381,6 +382,7 @@ for word in allwords() do
   print(word)
 end
 """
+    test_program = """a = 5"""
 
     app = QtGui.QApplication(sys.argv)
     editor = Editor(parseString(test_program))
