@@ -92,6 +92,14 @@ class FunctionCall(Expression, Statement):
     template = '{name}({parameters})'
     subparts = [('name', Expression), ('parameters', ExpressionList)]
 
+    def render(self, wrapper=empty_wrapper):
+        if isinstance(self.parent, Block):
+            self.template = '\n{name}({parameters})'
+        else:
+            self.template = '{name}({parameters})'
+
+        return super(FunctionCall, self).render(wrapper)
+
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
     abstract = False
