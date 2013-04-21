@@ -8,13 +8,11 @@ empty_wrapper = lambda node, text: text
 
 class Node(object):
     abstract = True
-    template = '<ABSTRACT NODE>'
 
-    def __init__(self, contents):
-        self.parent = None
+    def __init__(self, contents, parent=None, selected_index=0):
         self.contents = contents
-        self.str_wrapper = None
-        self.dictionary = {}
+        self.parent = parent
+        self.selected_index = selected_index 
 
         for item in contents:
             try:
@@ -52,22 +50,15 @@ class Node(object):
                 fn(item)
 
     def render(self, wrapper=empty_wrapper):
-        """
-        Recursively renders itself and all children, calling 'wrapper' on
-        each step, if available.
-        """
-        text_dictionary = {key: value.render(wrapper)
-                           for key, value in self.dictionary.items()}
-        text = self.template.format(**text_dictionary)
-        return wrapper(self, text)
+        raise NotImplementedError()
 
 
 class Dummy(Node):
-    template = '<{value}>'
     def __init__(self, value):
-        Node.__init__(self, [])
-        self.value = value
-        self.dictionary = {'value': value}
+        Node.__init__(self, [value])
+
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(str(self.contents[0]))
 
 
 class StaticNode(Node):
@@ -79,19 +70,14 @@ class StaticNode(Node):
     subparts = []
 
     def __init__(self, toks=None):
-        self.dictionary = {}
-        self.selected_index = 0
-        contents = []
-
         if toks == None:
             toks = [Dummy(name) for name, type in self.subparts]
 
-        types = [type_ for name, type_ in self.subparts]
-        contents = [self.cast_subpart(tok, type_) for tok, type_ in zip(toks, types)]
+        contents = []
+        for tok, subpart in zip(toks, self.subparts):
+            name, type_ = subpart
+            contents.append(self.cast_subpart(tok, type_))
         Node.__init__(self, contents)
-
-        names = [name for name, type_ in self.subparts]
-        self.dictionary = dict(zip(names, self.contents))
 
     def cast_subpart(self, tok, type_):
         if isinstance(tok, type_):
@@ -101,6 +87,19 @@ class StaticNode(Node):
 
     def get_expected_class(self, index):
         return self.subparts[index][1]
+
+    def render(self, wrapper=empty_wrapper):
+        """
+        Recursively renders itself and all children, calling 'wrapper' on
+        each step, if available.
+        """
+        dictionary = {}
+        for content, subpart in zip(self.contents, self.subparts):
+            name, type_ = subpart
+            dictionary[name] = content.render(wrapper)
+
+        text = self.template.format(**dictionary)
+        return wrapper(self, text)
 
 
 class DynamicNode(Node):
@@ -127,14 +126,9 @@ class DynamicNode(Node):
         if contents.__class__ == ParseResults:
             contents = list(contents)
 
-        self.parent = None
-        self.selected_index = 0
-
         for item in contents:
             assert isinstance(item, self.child_type), '{} expected child with type {}, got {} ("{}").'.format(self.__class__, self.child_type, item.__class__, contents)
             assert hasattr(item, 'parent'), 'Expected child with parent attribute, got {} ("{}").'.format(item.__class__, item)
-
-            item.parent = self
 
         Node.__init__(self, contents)
 

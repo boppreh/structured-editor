@@ -10,12 +10,10 @@ from structures import *
 class Constant(Expression):
     """ Literal string, number, nil, true or false. """
     abstract = False
-    template = '{value}'
     subparts = [('value', str)]
 
     def render(self, wrapper=empty_wrapper):
-        value = self.dictionary['value']
-        return wrapper(self, value)
+        return wrapper(self, self.contents[0])
 
 class Identifier(Constant):
     """ A reference to an identifier. """
