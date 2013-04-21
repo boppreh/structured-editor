@@ -1,7 +1,7 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
 from core.editor import Editor
 from ast.lua_parser import parseFile, parseString
-from ast.structures import Node
+from pyparsing import ParseException
 
 from core.commands import *
 
@@ -104,10 +104,10 @@ class CodeDisplay(QtWebKit.QWebView):
         self.setHtml('<pre><a>' + text + '</a></pre>')
 
 
-class SourceCodeInput(QtGui.QDialog):
+class CodeInput(QtGui.QDialog):
     """ Dialog for inputing a program as text. """
     def __init__(self, parent=None):
-        super(SourceCodeInput, self).__init__(parent)
+        super(CodeInput, self).__init__(parent)
 
         self.setWindowTitle("Source code input")
 
@@ -128,6 +128,13 @@ class SourceCodeInput(QtGui.QDialog):
     def getText(self):
         """ Returns the text entered by the user. """
         return str(self.textedit.toPlainText())
+
+    def accept(self):
+        try:
+            self.root = parseString(self.getText())
+            super(CodeInput, self).accept()
+        except ParseException:
+            QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
 
 
 class CommandsWindow(QtGui.QDockWidget):
@@ -236,7 +243,8 @@ class MainEditorWindow(QtGui.QMainWindow):
             menu.addAction(QtGui.QAction(label, self, shortcut=shortcut,
                                          statusTip=statusTip, triggered=handler))
 
-        makeMenuAction("&New...", "Ctrl+N", "Creates a new empty document.", self.new, fileMenu)
+        makeMenuAction("&New", "Ctrl+N", "Creates a new empty document.", self.new, fileMenu)
+        fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O", "Open an existing source code file.", self.open, fileMenu)
         makeMenuAction("&Parse text...", "Ctrl+T", "Open a source code text by typing it in a temporary window.", self.parseText, fileMenu)
         fileMenu.addSeparator()
@@ -272,19 +280,13 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.refresh()
 
     def parseText(self, event=None):
-        input_dialog = SourceCodeInput()
+        input_dialog = CodeInput()
 
         if not input_dialog.exec_():
             # User cancelled the action.
             return
 
-        try:
-            root = parseString(input_dialog.getText())
-        except:
-            QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
-            return
-
-        self.editor = Editor(root)
+        self.editor = Editor(input_dialog.root)
         self.refresh()
 
     def saveAs(self, event=None):

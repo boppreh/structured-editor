@@ -1,6 +1,5 @@
 User Interface
 - Add confirmation to destructive actions
-- Make parsing error in the plain text input window not close the window
 
 Abstract Syntax Tree
 - Make Node immutable
