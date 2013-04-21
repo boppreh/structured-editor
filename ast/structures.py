@@ -70,7 +70,7 @@ class Dummy(Node):
         self.dictionary = {'value': value}
 
 
-class AbstractStructure(Node):
+class StaticNode(Node):
     """
     Structure with fixed number of known parts. Automatically cast children to
     the correct types and supplies an automatic string conversion through a
@@ -103,7 +103,7 @@ class AbstractStructure(Node):
         return self.subparts[index][1]
 
 
-class StructureList(Node):
+class DynamicNode(Node):
     """
     Structure with variable number of parts derived from the same type.
     Exposes the standard list functions len, index and bracket access
@@ -122,7 +122,7 @@ class StructureList(Node):
 
         # ParseResults don't play well with lists, overriding important methods
         # like index and remove with strings. Also, this depends on everyone
-        # that calls StructureList with a parse results content to not store the
+        # that calls DynamicNode with a parse results content to not store the
         # original parse results anywhere else.
         if contents.__class__ == ParseResults:
             contents = list(contents)
@@ -162,11 +162,11 @@ class StructureList(Node):
         return wrapper(self, text)
 
 
-class Statement(AbstractStructure):
+class Statement(StaticNode):
     template = 'ABSTRACT STATEMENT'
 
 
-class Block(StructureList):
+class Block(DynamicNode):
     """
     List of statements contained in a function declaration, control structure or
     the program root. Also called compound statement.
@@ -193,6 +193,6 @@ class Block(StructureList):
         return wrapper(self, rendered_text)
 
 
-class Expression(AbstractStructure):
+class Expression(StaticNode):
     """ Abstract class for expressions that can be used as values. """
     template = 'ABSTRACT EXPRESSION'

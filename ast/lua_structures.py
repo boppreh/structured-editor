@@ -21,12 +21,12 @@ class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
 
-class ExpressionList(StructureList):
+class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
     abstract = False
     child_type = Expression
 
-class NameList(StructureList):
+class NameList(DynamicNode):
     """ Comma separated list of names ("foo, bar, baz"). """
     abstract = False
     child_type = Identifier
@@ -47,10 +47,10 @@ class Table(Block, Expression):
     """
     abstract = False
     delimiter = ',\n'
-    child_type = AbstractStructure
+    child_type = StaticNode
     template = '{{\n{children}\n}}'
 
-class FunctionName(StructureList):
+class FunctionName(DynamicNode):
     """
     Dot separated names, used in function declarations. May end with colon
     and another name ("a.b.c:d")
@@ -59,7 +59,7 @@ class FunctionName(StructureList):
     delimiter = '.'
     child_type = Identifier
 
-class ParameterList(StructureList):
+class ParameterList(DynamicNode):
     """ List of parameter names in a function declaration. """
     abstract = False
     child_type = Identifier
@@ -92,7 +92,7 @@ class FunctionCall(Expression, Statement):
     template = '{name}({parameters})'
     subparts = [('name', Expression), ('parameters', ExpressionList)]
 
-class Variable(StructureList, Expression):
+class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
     abstract = False
     child_type = Expression
@@ -128,7 +128,7 @@ class While(Statement):
     subparts = [('condition', Expression), ('body', Block)]
     template = '\nwhile {condition} do{body}\nend'
 
-class Else(AbstractStructure):
+class Else(StaticNode):
     """ The 'else' clause of a conditional. """
     abstract = False
     subparts = [('body', Block)]
@@ -140,7 +140,7 @@ class If(Else):
     subparts = [('condition', Expression), ('body', Block)]
     template = '\nif {condition} then{body}'
 
-class IfChain(StructureList):
+class IfChain(DynamicNode):
     """
     Structure for the first 'if' and the chain of 'elseif' that follow.
     """
@@ -155,7 +155,7 @@ class FullIf(Statement):
     subparts = [('if_chain', IfChain),
                 ('else', Else)]
 
-class Return(StructureList, Statement):
+class Return(DynamicNode, Statement):
     """ A return statement, with zero or more expression returned. """
     abstract = False
     child_type = ExpressionList

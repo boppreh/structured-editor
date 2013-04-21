@@ -3,7 +3,6 @@ User Interface
 
 Abstract Syntax Tree
 - Make Node immutable
-- Rename StructureList and AbstractStructure
 
 Core
 - Bring basic editor logic back to core, leaving the HTML and Qt stuff to UI
