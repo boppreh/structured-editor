@@ -127,7 +127,7 @@ class DynamicNode(Node):
             contents = list(contents)
 
         for item in contents:
-            assert isinstance(item, self.child_type), '{} expected child with type {}, got {} ("{}").'.format(self.__class__, self.child_type, item.__class__, contents)
+            assert isinstance(item, self.child_type), '{} expected child with type {}, got {} ("{}").'.format(self.__class__, self.child_type, item.__class__, item)
             assert hasattr(item, 'parent'), 'Expected child with parent attribute, got {} ("{}").'.format(item.__class__, item)
 
         Node.__init__(self, contents)
