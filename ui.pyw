@@ -3,46 +3,46 @@ from core.editor import Editor
 from ast.lua_parser import parseFile, parseString
 from pyparsing import ParseException
 
-from core.commands import *
+from core.actions import *
 
 navigation_hotkeys = {
-           QtCore.Qt.Key_Left: SelectParent, 
-           QtCore.Qt.Key_Right: SelectChild, 
-           QtCore.Qt.Key_Up: SelectPrevSibling, 
-           QtCore.Qt.Key_Down: SelectNextSibling, 
+                      QtCore.Qt.Key_Left: SelectParent, 
+                      QtCore.Qt.Key_Right: SelectChild, 
+                      QtCore.Qt.Key_Up: SelectPrevSibling, 
+                      QtCore.Qt.Key_Down: SelectNextSibling, 
 
-           QtCore.Qt.Key_H: SelectParent, 
-           QtCore.Qt.Key_L: SelectChild, 
-           QtCore.Qt.Key_K: SelectPrevSibling, 
-           QtCore.Qt.Key_J: SelectNextSibling, 
-          }
+                      QtCore.Qt.Key_H: SelectParent, 
+                      QtCore.Qt.Key_L: SelectChild, 
+                      QtCore.Qt.Key_K: SelectPrevSibling, 
+                      QtCore.Qt.Key_J: SelectNextSibling, 
+                     }
 
 navigation_commands_with_labels = [
-                        (SelectParent, 'Parent'),
-                        (SelectChild, 'Child'),
-                        (SelectNextSibling, 'Next'),
-                        (SelectPrevSibling, 'Previous'),
-                       ]
+                                   (SelectParent, 'Parent'),
+                                   (SelectChild, 'Child'),
+                                   (SelectNextSibling, 'Next'),
+                                   (SelectPrevSibling, 'Previous'),
+                                  ]
 
 editing_hotkeys = {
-           QtCore.Qt.Key_D: Delete,
+                   QtCore.Qt.Key_D: Delete,
 
-           QtCore.Qt.Key_C: Copy,
-           QtCore.Qt.Key_X: Cut,
-           QtCore.Qt.Key_V: Paste,
+                   QtCore.Qt.Key_C: Copy,
+                   QtCore.Qt.Key_X: Cut,
+                   QtCore.Qt.Key_V: Paste,
 
-           QtCore.Qt.Key_U: MoveUp,
-           QtCore.Qt.Key_M: MoveDown,
-          }
+                   QtCore.Qt.Key_U: MoveUp,
+                   QtCore.Qt.Key_M: MoveDown,
+                  }
 
 editing_commands_with_labels = [
-                        (Delete, 'Delete'),
-                        (Copy, 'Copy'),
-                        (Cut, 'Cut'),
-                        (Paste, 'Paste'),
-                        (MoveUp, 'Move up'),
-                        (MoveDown, 'Move down'),
-                       ]
+                                (Delete, 'Delete'),
+                                (Copy, 'Copy'),
+                                (Cut, 'Cut'),
+                                (Paste, 'Paste'),
+                                (MoveUp, 'Move up'),
+                                (MoveDown, 'Move down'),
+                               ]
 
 class CodeDisplay(QtWebKit.QWebView):
     """
@@ -155,17 +155,17 @@ class CommandsWindow(QtGui.QDockWidget):
         self.show()
         self.reset()
 
-    def makeCommandButton(self, command, label, layout, handler):
+    def makeCommandButton(self, command_class, label, layout, handler):
         button = QtGui.QPushButton(label)
-        button.pressed.connect(lambda: handler(command))
-        self.buttonsByCommand[command.__class__] = button
+        button.pressed.connect(lambda: handler(command_class()))
+        self.buttonsByCommand[command_class] = button
         layout.addWidget(button)
 
     def addCommands(self, commands_with_labels, hotkeys, handler):
         self.buttonsByCommand = {}
 
         for command_class, label in commands_with_labels:
-            self.makeCommandButton(command_class(), label,
+            self.makeCommandButton(command_class, label,
                                    self.verticalLayout, handler)
 
         for key, command_class in hotkeys.items():
@@ -174,14 +174,13 @@ class CommandsWindow(QtGui.QDockWidget):
 
     def refresh(self, editor):
         for command, button in self.buttonsByCommand.items():
-            button.setEnabled(command().is_available(editor))
+            button.setEnabled(editor.is_available(command()))
 
     def reset(self):
         self.parent().addDockWidget(QtCore.Qt.RightDockWidgetArea, self)
         self.setFloating(False)
 
 
-import re
 class InsertionWindow(CommandsWindow):
     def __init__(self, handler, parent):
         super(InsertionWindow, self).__init__('Insertion', parent)
@@ -198,8 +197,7 @@ class InsertionWindow(CommandsWindow):
             if class_.abstract:
                 continue
 
-            label = re.findall("'(.+?)'", str(class_))[0].split('.')[-1]
-            button = QtGui.QPushButton(label)
+            button = QtGui.QPushButton(class_.__name__)
             button.pressed.connect(lambda class_=class_: self.handler(Insert(class_)))
             self.buttonsByCommand[class_] = button
             self.verticalLayout.addWidget(button)
@@ -256,6 +254,7 @@ class MainEditorWindow(QtGui.QMainWindow):
 
         editMenu = self.menubar.addMenu('&Edit')
         makeMenuAction("&Undo", "Ctrl+Z", "Reverts the last change.", self.undo, editMenu)
+        makeMenuAction("&Redo", "Ctrl+Shift+Z", "Executes the last change undone", self.redo, editMenu)
 
         viewMenu = self.menubar.addMenu("&View")
         makeMenuAction("&Navigation window", "Alt+N", "Show the navigation floating window.", self.navigationWindow.show, viewMenu)
@@ -270,6 +269,10 @@ class MainEditorWindow(QtGui.QMainWindow):
 
     def undo(self, event=None):
         self.editor.undo()
+        self.refresh()
+
+    def redo(self, event=None):
+        self.editor.redo()
         self.refresh()
 
     def new(self, event=None):
@@ -345,11 +348,11 @@ class MainEditorWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.closeEvent(self, event)
 
     def selectNode(self, node):
-        self.editor.select(node)
+        self.editor.execute(Select(node))
         self.refresh()
 
     def runCommand(self, command):
-        command.execute(self.editor)
+        editor.execute(command)
         self.refresh()
 
     def refresh(self):
