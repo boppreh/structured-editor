@@ -238,12 +238,12 @@ class MainEditorWindow(QtGui.QMainWindow):
 
     def createMenu(self):
         self.menubar = self.menuBar()
-        fileMenu = self.menubar.addMenu('&File')
 
         def makeMenuAction(label, shortcut, statusTip, handler, menu):
             menu.addAction(QtGui.QAction(label, self, shortcut=shortcut,
                                          statusTip=statusTip, triggered=handler))
 
+        fileMenu = self.menubar.addMenu('&File')
         makeMenuAction("&New", "Ctrl+N", "Creates a new empty document.", self.new, fileMenu)
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O", "Open an existing source code file.", self.open, fileMenu)
@@ -253,6 +253,9 @@ class MainEditorWindow(QtGui.QMainWindow):
         makeMenuAction("&Save as...", "Ctrl+Alt+S", "Save the current source code to a different file.", self.saveAs, fileMenu)
         fileMenu.addSeparator()
         makeMenuAction("&Quit", "Ctrl+Q", "Close the application.", self.close, fileMenu)
+
+        editMenu = self.menubar.addMenu('&Edit')
+        makeMenuAction("&Undo", "Ctrl+Z", "Reverts the last change.", self.undo, editMenu)
 
         viewMenu = self.menubar.addMenu("&View")
         makeMenuAction("&Navigation window", "Alt+N", "Show the navigation floating window.", self.navigationWindow.show, viewMenu)
@@ -265,8 +268,12 @@ class MainEditorWindow(QtGui.QMainWindow):
         #updatesMenu = self.menubar.addMenu("&Updates")
         #makeMenuAction("&Check for updates", "Alt+U", "Tries to download the latests version.", self.checkUpdates, updatesMenu)
 
+    def undo(self, event=None):
+        self.editor.undo()
+        self.refresh()
+
     def new(self, event=None):
-        path_selected = None
+        self.file_selected = None
         self.editor = Editor(parseString(""))
         self.refresh()
 
@@ -338,7 +345,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.closeEvent(self, event)
 
     def selectNode(self, node):
-        self.editor.selected = node
+        self.editor.select(node)
         self.refresh()
 
     def runCommand(self, command):

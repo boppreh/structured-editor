@@ -4,13 +4,19 @@ class Command(object):
         return self._is_available(editor, selected, selected.parent)
 
     def execute(self, editor):
-        selected = editor.selected
+        selected = editor.clone_selected()
         new_selected = self._execute(editor, selected, selected.parent)
         editor.selected = new_selected
         parent = new_selected.parent
         if parent:
             parent.selected_index = parent.index(new_selected)
 
+class SelectNextSibling(Command):
+    def _is_available(self, editor, selected, parent):
+        return parent is not None and parent.selected_index < len(parent) - 1
+
+    def _execute(self, editor, selected, parent):
+        return parent[parent.selected_index + 1]
 
 class SelectNextSibling(Command):
     def _is_available(self, editor, selected, parent):

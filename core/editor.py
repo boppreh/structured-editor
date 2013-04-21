@@ -2,7 +2,7 @@
 Module for editing a program's source code interactively with a structured
 editor.
 """
-from ast.structures import Node
+from copy import deepcopy
 
 class Editor(object):
     """
@@ -22,9 +22,28 @@ class Editor(object):
         that take the current selected node as parameter and return the new
         selected node.
         """
-        self.root = root
-        self.selected = self.root
+        self.selected = root
         self.clipboard = None
+        self.history = [self.selected]
+
+    def select(self, node):
+        self.history.append(node)
+        self.selected = node
+
+    def get_root(self, node):
+        if node.parent:
+            return self.get_root(node.parent)
+        else:
+            return node
+
+    def clone_selected(self):
+        new_selected = deepcopy(self.selected)
+        self.history.append(new_selected)
+        return new_selected
+
+    def undo(self):
+        self.history.pop()
+        self.selected = self.history[-1]
 
     def render(self, wrapper=None):
         """
@@ -32,4 +51,4 @@ class Editor(object):
         Takes an extra, optional argument that tells how to format the selected
         node.
         """
-        return self.root.render(wrapper)
+        return self.get_root(self.selected).render(wrapper)
