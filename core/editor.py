@@ -13,10 +13,18 @@ class Editor(object):
     """
     @staticmethod
     def from_text(text):
+        """
+        Creates a new Editor instance taking the root node from the parsed
+        text.
+        """
         return Editor(lua_parser.parseString(text), None)
 
     @staticmethod
     def from_file(path):
+        """
+        Creates a new Editor instance from the given file. The editor can then
+        'save' and 'save_as' to export the edited code.
+        """
         return Editor(lua_parser.parseFile(path), path)
 
     def __init__(self, root, selected_file=None):
@@ -32,10 +40,19 @@ class Editor(object):
         self.future_history = []
 
     def save(self):
+        """
+        Saves the rendering of the current code tree (from root, not from
+        selected node) to the file that originated this code.
+        """
         with open(self.file_selected, 'w') as target_file:
             target_file.write(self.render())
 
     def save_as(self, new_path):
+        """
+        Saves the rendering of the current code tree (from root, not from
+        selected node) to an arbitrary given path, changing the file path for
+        new saves to this new path.
+        """
         self.file_selected = new_path
         self.save()
 
