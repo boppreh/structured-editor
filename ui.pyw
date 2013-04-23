@@ -205,11 +205,10 @@ class InsertionWindow(CommandsWindow):
 
 
 class MainEditorWindow(QtGui.QMainWindow):
-    def __init__(self, editor, file_selected):
+    def __init__(self, editor):
         super(MainEditorWindow, self).__init__()
 
         self.editor = editor
-        self.file_selected = file_selected
 
         self.editingWindow = CommandsWindow('Editing', self)
         self.editingWindow.addCommands(editing_commands_with_labels,
@@ -276,8 +275,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.refresh()
 
     def new(self, event=None):
-        self.file_selected = None
-        self.editor = Editor(parseString(""))
+        self.editor = Editor.from_text("")
         self.refresh()
 
     def open(self, event=None):
@@ -286,8 +284,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         if not path_selected:
             return
 
-        self.file_selected = path_selected
-        self.editor = Editor(parseFile(self.file_selected))
+        self.editor = Editor.from_file(path_selected)
         self.refresh()
 
     def parseText(self, event=None):
@@ -297,19 +294,15 @@ class MainEditorWindow(QtGui.QMainWindow):
             # User cancelled the action.
             return
 
-        self.editor = Editor(input_dialog.root)
+        self.editor = Editor(input_dialog.root, None)
         self.refresh()
 
     def saveAs(self, event=None):
-        self.file_selected = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
-        self.save()
+        new_path = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
+        self.editor.save_as(new_path)
 
     def save(self, event=None):
-        if not self.file_selected:
-            return
-
-        with open(self.file_selected, 'w') as target_file:
-            target_file.write(self.editor.render())
+        self.editor.save()
 
     def checkUpdates(self, event=None):
         reply = QtGui.QMessageBox.question(self, "Update", "Do you want to download the new version and restart the application?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
@@ -395,7 +388,7 @@ end
     #test_program = """a = 5"""
 
     app = QtGui.QApplication(sys.argv)
-    editor = Editor(parseString(test_program))
-    mainWin = MainEditorWindow(editor, None)
+    editor = Editor.from_text(test_program)
+    mainWin = MainEditorWindow(editor)
     mainWin.show()
     sys.exit(app.exec_())

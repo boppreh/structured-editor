@@ -2,6 +2,8 @@
 Module for editing a program's source code interactively with a structured
 editor.
 """
+from ast import lua_parser
+
 class Editor(object):
     """
     Class for an abstract code editor. Supports execution of arbitrary actions,
@@ -9,16 +11,33 @@ class Editor(object):
     (single selection only for the moment) and rendering the tree with a
     user-specified function running on every node's text.
     """
-    def __init__(self, root):
+    @staticmethod
+    def from_text(text):
+        return Editor(lua_parser.parseString(text), None)
+
+    @staticmethod
+    def from_file(path):
+        return Editor(lua_parser.parseFile(path), path)
+
+    def __init__(self, root, selected_file=None):
         """
         Initializes an editor from an existing root node, selecting the root
         node, with empty clipboard and undo/redo history.
         """
         self.root = root
         self.selected = root
+        self.file_selected = selected_file
         self.clipboard = None
         self.past_history = []
         self.future_history = []
+
+    def save(self):
+        with open(self.file_selected, 'w') as target_file:
+            target_file.write(self.render())
+
+    def save_as(self, new_path):
+        self.file_selected = new_path
+        self.save()
 
     def _update_selected(self, new_selected):
         """
@@ -49,7 +68,7 @@ class Editor(object):
         """
         Checks if a given action can be executed with the current editor state.
         """
-        return action.is_available(self, self.selected, self.selected.parent)
+        return action.is_available(self)
 
     def redo(self):
         """
