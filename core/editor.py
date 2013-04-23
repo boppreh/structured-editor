@@ -92,7 +92,7 @@ class Editor(object):
         Re-executes the last undone action. This is not considered an action by
         itself.
         """
-        self.past_history.append(self.future_history.pop(0))
+        self.past_history.append(self.future_history.pop())
         self._update_selected(self.past_history[-1].execute(self))
 
     def undo(self):
@@ -100,8 +100,8 @@ class Editor(object):
         Rollbacks the last action done. This is not considered an action by
         itself.
         """
-        self.future_history.insert(0, self.past_history.pop())
-        self._update_selected(self.future_history[0].rollback(self))
+        self.future_history.append(self.past_history.pop())
+        self._update_selected(self.future_history[-1].rollback(self))
 
     def render(self, wrapper=None):
         """
