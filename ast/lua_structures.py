@@ -137,7 +137,7 @@ class Else(StaticNode):
     """ The 'else' clause of a conditional. """
     abstract = False
     subparts = [('body', Block)]
-    template = '\nelse{body}'
+    template = '\nelse{body}end'
 
 class If(Else):
     """ The condition/body pair of an 'if'/'elseif' control structure. """

@@ -5,7 +5,12 @@ from lua_structures import *
 from structures import *
 
 class TestSpecificParsing(unittest.TestCase):
+    """ Tests with specific syntactic structures in mind.  """
     def compare(self, string1, string2, ignored=''):
+        """
+        Asserts that 'string1' is equal to 'string2' when ignoring the chars in
+        'ignored'.
+        """
         for char in ignored:
             string1 = string1.replace(char, '')
             string2 = string2.replace(char, '')
@@ -13,6 +18,10 @@ class TestSpecificParsing(unittest.TestCase):
         self.assertEqual(string1, string2)
 
     def do_simple_test(self, test_string, ignored=None):
+        """
+        Tests if the given test string can be parsed and rendered back
+        correctly, ignoring the chars in 'ignored' from the rendering.
+        """
         if ignored is None:
             ignored = '\n ()'
         root = parseString(test_string)
@@ -55,8 +64,35 @@ class TestSpecificParsing(unittest.TestCase):
     def test_dot_method_access(self):
         self.do_simple_test('i = a.n()', '\n ')
 
-    def test_dot_method_access(self):
+    def test_multiple_dot_method_access(self):
+        self.do_simple_test('i = a.n.l()', '\n ')
+
+    def test_colon_method_access(self):
         self.do_simple_test('i = a:n()', '\n ')
+
+    def test_dot_colon_method_access(self):
+        self.do_simple_test('i = a.a:n()', '\n ')
+
+    def test_chained_method(self):
+        self.do_simple_test('i = a.a:n()()', '\n ')
+
+    def test_while(self):
+        self.do_simple_test('while s do end', '\n ')
+
+    def test_forin(self):
+        self.do_simple_test('for n in l do end', '\n ')
+
+    def test_simple_if(self):
+        self.do_simple_test('if c then end', '\n ')
+
+    def test_elseif(self):
+        self.do_simple_test('if c then elseif c then end', '\n ')
+
+    def test_else(self):
+        self.do_simple_test('if c then else end', '\n ')
+
+    def test_if_elseif_else(self):
+        self.do_simple_test('if c then elseif c then else end', '\n ')
 
 if __name__ == '__main__':
     unittest.main()
