@@ -18,7 +18,8 @@ class Node(object):
             try:
                 item.parent = self
             except AttributeError:
-                print "Can't set parent on " + item
+                pass
+                #print "Can't set parent on " + item
 
     def __getitem__(self, i):
         return self.contents[i]

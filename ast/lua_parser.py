@@ -26,7 +26,7 @@ number.setParseAction(Constant)
 nil_.setParseAction(Constant)
 true_.setParseAction(Constant)
 false_.setParseAction(Constant)
-ellipsis.setParseAction(Constant)
+ellipsis.setParseAction(Identifier)
 
 # Main structures' classes.
 block = Forward().setParseAction(Block)
@@ -37,7 +37,7 @@ localvar = Forward().setParseAction(LocalVar)
 namedfunc = Forward().setParseAction(NamedFunction)
 localfunc = Forward().setParseAction(LocalFunction)
 function = Forward().setParseAction(AnonFunction)
-parlist = Forward().setParseAction(ParameterList)
+parlist = Forward().setParseAction(NameList)
 functioncall = Forward().setParseAction(FunctionCall)
 var = Forward().setParseAction(Variable)
 listAccess = Forward().setParseAction(ListAccess)
@@ -70,7 +70,7 @@ fieldsep = Forward()
 semicolon = Optional(Suppress(';'))
 dot = Suppress(Literal('.'))
 comma = Suppress(Literal(','))
-colon = Literal(':')
+colon = Suppress(Literal(':'))
 open_parens = Suppress(Literal('('))
 close_parens = Suppress(Literal(')'))
 open_brackets = Suppress(Literal('['))
@@ -105,14 +105,14 @@ or_ = Keyword('or')
 block << (ZeroOrMore(stat + semicolon) + Optional(retstat + semicolon))
 retstat << (return_ + Optional(explist) | break_)
 funcname << (delimitedList(name, dot) + Optional(colon + name))
-namelist << Group(delimitedList(name))
+namelist << delimitedList(name)
 explist << delimitedList(exp)
 var << ((name | open_parens + exp + close_parens + varSuffix) +
         ZeroOrMore(varSuffix))
 prefixexp << (varOrExp + ZeroOrMore(nameAndArgs))
 functioncall << (varOrExp + OneOrMore(nameAndArgs))
 varOrExp << (var | open_parens + exp + close_parens)
-nameAndArgs << (Optional(colon + name) + args)
+nameAndArgs << (Group(Optional(colon + name)) + args)
 listAccess << (open_brackets + exp + close_brackets)
 varSuffix << (ZeroOrMore(nameAndArgs) +
               (listAccess | dot + name))
@@ -128,11 +128,11 @@ field << (fieldAssignment | exp)
 fieldsep << (comma | semicolon)
 
 assignment << (Group(delimitedList(var)) + equals + explist)
-localvar << (local_ + namelist + Optional(equals + explist))
+localvar << (local_ + Group(namelist) + Optional(equals + explist))
 
 namedfunc << (function_ + Group(funcname) + funcbody)
 
-forin << (for_ + namelist + in_ + explist + do_ + block + end_)
+forin << (for_ + Group(namelist) + in_ + explist + do_ + block + end_)
 whilestat<< (while_ + exp + do_ + block + end_)
 ifstat << (Group(mainif + ZeroOrMore(elsifstat)) +
            Optional(elsestat) + end_ )
@@ -156,8 +156,8 @@ stat << (whilestat |
          functioncall)
 
 # This part makes uses of a pyparsing functionality of automatically generating
-# an operator grammar, with correct precedences. "enablepackrat" enables an
-# important optimization for this type of grammar.
+# an operator grammar, with correct precedences.
+# "enablepackrat" enables an important optimization for this type of grammar.
 exp.enablePackrat()
 exp << operatorPrecedence(nil_ |
                           false_ |
@@ -169,12 +169,12 @@ exp << operatorPrecedence(nil_ |
                           prefixexp |
                           tableconstructor,
                           [
-                              ('^', 2, opAssoc.LEFT, BinOp),
-                              ((not_ | '#' | '-'), 1, opAssoc.RIGHT, UnoOp),
-                              (oneOf('* / %'), 2, opAssoc.LEFT, BinOp),
-                              (oneOf('+ - ..'), 2, opAssoc.LEFT, BinOp),
-                              (oneOf('< > <= >= ~= =='), 2, opAssoc.LEFT, BinOp),
-                              ((or_ | and_), 2, opAssoc.LEFT, BinOp),
+                           ('^', 2, opAssoc.LEFT, BinOp),
+                           ((not_ | '#' | '-'), 1, opAssoc.RIGHT, UnoOp),
+                           (oneOf('* / %'), 2, opAssoc.LEFT, BinOp),
+                           (oneOf('+ - ..'), 2, opAssoc.LEFT, BinOp),
+                           (oneOf('< > <= >= ~= =='), 2, opAssoc.LEFT, BinOp),
+                           ((or_ | and_), 2, opAssoc.LEFT, BinOp),
                           ])
 
 

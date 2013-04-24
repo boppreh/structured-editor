@@ -57,19 +57,13 @@ class FunctionName(DynamicNode):
     delimiter = '.'
     child_type = Identifier
 
-class ParameterList(DynamicNode):
-    """ List of parameter names in a function declaration. """
-    abstract = False
-    child_type = Identifier
-    template = '{children}'
-
 class NamedFunction(Statement):
     """
     Declaration of a named function, in contrast to an anonymous function.
     """
     abstract = False
     template = '\nfunction {name}({parameters}){body}\nend'
-    subparts = [('name', FunctionName), ('parameters', ParameterList), ('body', Block)]
+    subparts = [('name', FunctionName), ('parameters', NameList), ('body', Block)]
 
 class LocalFunction(NamedFunction):
     """ Specialization of a named function with the local modifier.  """
@@ -80,23 +74,28 @@ class AnonFunction(Expression):
     """ Anonymous function declaration. Can be used as expression value. """
     abstract = False
     template = 'function ({parameters}){body}\nend'
-    subparts = [('parameters', ParameterList), ('body', Block)]
+    subparts = [('parameters', NameList), ('body', Block)]
+
+class ColonName(StaticNode):
+    abstract = False
+    subparts = [('name', Identifier)]
+    template = ':{name}'
+
+    def render(self, wrapper=empty_wrapper):
+        if len(self):
+            return super(ColonName, self).render(wrapper)
+        else:
+            return ''
 
 class FunctionCall(Expression, Statement):
     """
     A function call, possibly with method call syntax ("a:b(params)").
     """
     abstract = False
-    template = '{name}({parameters})'
-    subparts = [('name', Expression), ('parameters', ExpressionList)]
-
-    def render(self, wrapper=empty_wrapper):
-        if isinstance(self.parent, Block):
-            self.template = '\n{name}({parameters})'
-        else:
-            self.template = '{name}({parameters})'
-
-        return super(FunctionCall, self).render(wrapper)
+    template = ' {name}{colon_name}({parameters})'
+    subparts = [('name', Expression),
+                ('colon_name', ColonName),
+                ('parameters', ExpressionList)]
 
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
@@ -176,10 +175,13 @@ class BinOp(Expression):
     the operator itself.
     """
     abstract = False
-    subparts = [('left_side', ExpressionList),
+    subparts = [('left_side', Expression),
                 ('operator', Operator),
-                ('right_side', ExpressionList)]
+                ('right_side', Expression)]
     template = '{left_side} {operator} {right_side}'
+
+    def __init__(self, toks):
+        super(BinOp, self).__init__(toks[0])
 
 class UnoOp(Expression):
     """
@@ -188,8 +190,11 @@ class UnoOp(Expression):
     """
     abstract = False
     subparts = [('operator', Operator),
-                ('right_side', ExpressionList)]
-    template = '{operator} {right_side}'
+                ('right_side', Expression)]
+    template = '{operator}{right_side}'
+
+    def __init__(self, toks):
+        super(UnoOp, self).__init__(toks[0])
 
 
 if __name__ == '__main__':
