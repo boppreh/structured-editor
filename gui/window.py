@@ -1,10 +1,6 @@
 from PyQt4 import QtCore, QtGui
 
-from pyparsing import ParseException
-
-from ast.lua_parser import parseFile, parseString
 from tabbed_editor import TabbedEditor
-from core.editor import Editor
 from core.actions import *
 
 navigation_hotkeys = {
@@ -40,39 +36,6 @@ editing_commands_with_labels = [
                                 (MoveUp, 'Move up'),
                                 (MoveDown, 'Move down'),
                                ]
-
-class CodeInput(QtGui.QDialog):
-    """ Dialog for inputing a program as text. """
-    def __init__(self, parent=None):
-        super(CodeInput, self).__init__(parent)
-
-        self.setWindowTitle("Source code input")
-
-        self.textedit = QtGui.QPlainTextEdit(self)
-
-        buttons = QtGui.QDialogButtonBox()
-        buttons.setOrientation(QtCore.Qt.Horizontal)
-        buttons.setStandardButtons(QtGui.QDialogButtonBox.Cancel |
-                                   QtGui.QDialogButtonBox.Ok)
-
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-
-        layout = QtGui.QGridLayout(self)
-        layout.addWidget(self.textedit, 0, 0, 1, 1)
-        layout.addWidget(buttons, 1, 0, 1, 1)
-
-    def getText(self):
-        """ Returns the text entered by the user. """
-        return str(self.textedit.toPlainText())
-
-    def accept(self):
-        try:
-            self.root = parseString(self.getText())
-            super(CodeInput, self).accept()
-        except ParseException:
-            QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
-
 
 class CommandsWindow(QtGui.QDockWidget):
     def __init__(self, title, parent):
@@ -189,7 +152,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         makeMenuAction("&Open...", "Ctrl+O",
                        "Open an existing source code file.",
                        fileMenu, self.tabbedEditor.open)
-        makeMenuAction("&Parse text...", "Ctrl+T",
+        makeMenuAction("&Parse text...", "",
                        "Open a source code text by typing it in a temporary "
                        "window.",
                        fileMenu, self.tabbedEditor.parse)
