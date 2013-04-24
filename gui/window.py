@@ -91,12 +91,12 @@ class InsertionWindow(CommandsWindow):
             button.setParent(None)
         self.buttonsByCommand = {}
 
-        node = editor.selected_node
+        node = editor.selected_node()
         if not node:
             return
 
         index = node.selected_index
-        for class_ in editor.selected_node.get_available_classes(index):
+        for class_ in editor.selected_node().get_available_classes(index):
             if class_.abstract:
                 continue
 
@@ -104,7 +104,7 @@ class InsertionWindow(CommandsWindow):
             button.pressed.connect(lambda class_=class_: self.handler(Insert(class_)))
             self.buttonsByCommand[class_] = button
             self.verticalLayout.addWidget(button)
-            button.setEnabled(hasattr(editor.selected_node, 'append'))
+            button.setEnabled(hasattr(editor.selected_node(), 'append'))
 
 
 class MainEditorWindow(QtGui.QMainWindow):
@@ -237,8 +237,6 @@ class MainEditorWindow(QtGui.QMainWindow):
 
     def refresh(self):
         self.tabbedEditor.refresh()
-        selected_class = str(self.tabbedEditor.selected_node.__class__).split('.')[-1][:-2]
-        self.statusBar().showMessage(selected_class)
 
         self.navigationWindow.refresh(self.tabbedEditor)
         self.editingWindow.refresh(self.tabbedEditor)

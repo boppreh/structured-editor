@@ -42,11 +42,57 @@ class CodeInput(QtGui.QDialog):
 
 
 class CustomTabBar(QtGui.QTabBar):   
+    def __init__(self, *args, **kargs):
+        super(CustomTabBar, self).__init__(*args, **kargs)
+
+        self.previous_index = -1
+
+        self.currentChanged.connect(self._update_tab)
+
+    def close_tab(self, tab=None):
+        if tab is None:
+            tab = self.currentIndex()
+
+        if tab != -1:
+            self.removeTab(tab)
+            self._update_tab()
+
+    def _update_tab(self, new_tab=None):
+        self.hide_close_button(self.previous_index)
+        self.show_close_button(self.currentIndex())
+
+        self.previous_index = self.currentIndex()
+
     def mouseReleaseEvent(self, event):               
         if event.button() == QtCore.Qt.MiddleButton:
-            self.parent().removeTab(self.tabAt(event.pos()))
+            self.close_tab(self.tabAt(event.pos()))
 
         super(CustomTabBar, self).mouseReleaseEvent(event)
+
+    def _make_close_button(self):
+        style = QtGui.qApp.style() 
+        icon = style.standardIcon(style.SP_DockWidgetCloseButton) 
+        closeButton = QtGui.QPushButton(icon, '') 
+        closeButton.clicked.connect(self.close_tab)
+        closeButton.resize(12, 12)
+        #closeButton.setShortcut('Ctrl+W')
+        closeButton.setFlat(True)
+        return closeButton
+
+    def add_close_button(self, tab):
+        self.setTabButton(tab, QtGui.QTabBar.RightSide,
+                          self._make_close_button())
+
+    def _get_close_button(self, tab):
+        return self.tabButton(tab, QtGui.QTabBar.RightSide)
+
+    def hide_close_button(self, tab):
+        if self._get_close_button(tab):
+            self._get_close_button(tab).hide()
+
+    def show_close_button(self, tab):
+        if self._get_close_button(tab):
+            self._get_close_button(tab).show()
 
 
 class TabbedEditor(QtGui.QTabWidget):
@@ -55,122 +101,87 @@ class TabbedEditor(QtGui.QTabWidget):
         self.setMovable(True)
         self.setTabBar(CustomTabBar())
 
-        self.editor = None
-        self.selected_node = None
-
-        self.previous_index = -1
-
-        self.untitledTabsCount = 0
+        self.untitled_tab_count = 0
 
         self.refreshHandler = refreshHandler
 
-        self.currentChanged.connect(self._updateTab)
-        self.tabCloseRequested.connect(self._closeSpecificTab)
-
         QtGui.QShortcut('Ctrl+T', self, self.new)
-        QtGui.QShortcut('Ctrl+W', self, self.close)
+        QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
 
-    def _closeSpecificTab(self, event):
-        print event, dir(event)
+    def _next_label(self):
+        self.untitled_tab_count += 1
+        return 'Untitled Document ' + str(self.untitled_tab_count)
 
-    def _make_close_button(self):
-        style = QtGui.qApp.style() 
-        icon = style.standardIcon(style.SP_DockWidgetCloseButton) 
-        closeButton = QtGui.QPushButton(icon, '') 
-        closeButton.clicked.connect(self.close)
-        closeButton.resize(12, 12)
-        #closeButton.setShortcut('Ctrl+W')
-        closeButton.setFlat(True)
-        return closeButton
+    def editor(self):
+        if self.currentWidget():
+            return self.currentWidget().editor
+        else:
+            return None
 
-    def close(self, event=None):
-        if self.currentIndex() != -1:
-            self.removeTab(self.currentIndex())
+    def selected_node(self):
+        if self.editor():
+            return self.editor().selected
+        else:
+            return None
 
-    def _nextLabel(self):
-        self.untitledTabsCount += 1
-        return 'Untitled Document ' + str(self.untitledTabsCount)
-
-    def _addEditor(self, editor, label=None):
-        label = label or self._nextLabel()
+    def _add_editor(self, editor, label=None):
+        label = label or self._next_label()
 
         display = CodeDisplay(editor, self.refreshHandler, None)
         display.refresh()
 
-        tab = self.addTab(display, label)
-        self.tabBar().setTabButton(tab,
-                                   QtGui.QTabBar.RightSide,
-                                   self._make_close_button())
+        self.addTab(display, label)
+        tab = self.count() - 1
+        self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
-
         return tab
 
-    def get_tab_button(self, tab_index):
-        return self.tabBar().tabButton(tab_index, QtGui.QTabBar.RightSide)
+    def new(self, event=None):
+        tab = self._add_editor(Editor.from_text(''))
+        self.setCurrentIndex(tab)
+        self.refreshHandler()
 
-    def _updateTab(self, event=None):
-        if self.currentWidget() is None:
-            self.editor = None
-            self.selected_node = None
-            self.previous_index = -1
-            return
+    def open(self, event=None):
+        path = str(QtGui.QFileDialog.getOpenFileName(self, filter='*.lua'))
+        if path:
+            self._add_editor(Editor.from_file(path), os.path.basename(path))
+            self.refreshHandler()
 
-        self.editor = self.currentWidget().editor
-        self.selected_node = self.editor.selected
+    def save_as(self, event=None):
+        new_path = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
+        if new_path:
+            self.editor().save_as(new_path)
+            self.refreshHandler()
 
-        if self.get_tab_button(self.currentIndex()):
-            self.get_tab_button(self.currentIndex()).show()
+    def save(self, event=None):
+        self.editor().save()
+        self.refreshHandler()
 
-        if self.previous_index != -1 and self.get_tab_button(self.previous_index):
-            self.get_tab_button(self.previous_index).hide()
+    def undo(self, event=None):
+        self.editor().undo()
+        self.refreshHandler()
 
-        self.previous_index = self.currentIndex()
+    def redo(self, event=None):
+        self.editor().redo()
+        self.refreshHandler()
+
+    def parse(self, event=None):
+        input_dialog = CodeInput()
+        if input_dialog.exec_():
+            self._add_editor(input_dialog.editor(), None)
+            self.refreshHandler()
+
+    def execute(self, command):
+        return self.editor().execute(command)
+
+    def is_available(self, command):
+        if self.editor():
+            return self.editor().is_available(command)
+        else:
+            return False
 
     def refresh(self, event=None):
         if self.currentWidget() is None:
             return
 
         self.currentWidget().refresh()
-
-    def new(self, event=None):
-        self.setCurrentIndex(self._addEditor(Editor.from_text('')))
-        self.refreshHandler()
-
-    def open(self, event=None):
-        path = str(QtGui.QFileDialog.getOpenFileName(self, filter='*.lua'))
-        if path:
-            self._addEditor(Editor.from_file(path), os.path.basename(path))
-            self.refreshHandler()
-
-    def save_as(self, event=None):
-        new_path = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
-        if new_path:
-            self.editor.save_as(new_path)
-            self.refreshHandler()
-
-    def save(self, event=None):
-        self.editor.save()
-        self.refreshHandler()
-
-    def undo(self, event=None):
-        self.editor.undo()
-        self.refreshHandler()
-
-    def redo(self, event=None):
-        self.editor.redo()
-        self.refreshHandler()
-
-    def parse(self, event=None):
-        input_dialog = CodeInput()
-        if input_dialog.exec_():
-            self._addEditor(input_dialog.editor, None)
-            self.refreshHandler()
-
-    def execute(self, command):
-        return self.editor.execute(command)
-
-    def is_available(self, command):
-        if self.editor:
-            return self.editor.is_available(command)
-        else:
-            return False

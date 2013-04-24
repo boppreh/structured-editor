@@ -32,6 +32,6 @@ end
 
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
-mainWin.tabbedEditor._addEditor(Editor.from_text(test_program))
+mainWin.tabbedEditor._add_editor(Editor.from_text(test_program))
 mainWin.show()
 sys.exit(app.exec_())
