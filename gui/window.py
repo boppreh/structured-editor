@@ -92,7 +92,7 @@ class InsertionWindow(CommandsWindow):
         self.buttonsByCommand = {}
 
         node = editor.selected_node()
-        if not node:
+        if node is None:
             return
 
         index = node.selected_index

@@ -104,6 +104,7 @@ class TabbedEditor(QtGui.QTabWidget):
         self.untitled_tab_count = 0
 
         self.refreshHandler = refreshHandler
+        self.currentChanged.connect(self.refreshHandler)
 
         QtGui.QShortcut('Ctrl+T', self, self.new)
         QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
@@ -131,31 +132,28 @@ class TabbedEditor(QtGui.QTabWidget):
         display.refresh()
 
         self.addTab(display, label)
+        # Return value of addTab is not reliable when some tabs have been
+        # closed, so we calculate it on our own, assuming all tabs are open on
+        # on the right end.
         tab = self.count() - 1
         self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
-        return tab
 
     def new(self, event=None):
-        tab = self._add_editor(Editor.from_text(''))
-        self.setCurrentIndex(tab)
-        self.refreshHandler()
+        self._add_editor(Editor.from_text(''))
 
     def open(self, event=None):
         path = str(QtGui.QFileDialog.getOpenFileName(self, filter='*.lua'))
         if path:
             self._add_editor(Editor.from_file(path), os.path.basename(path))
-            self.refreshHandler()
 
     def save_as(self, event=None):
         new_path = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
         if new_path:
             self.editor().save_as(new_path)
-            self.refreshHandler()
 
     def save(self, event=None):
         self.editor().save()
-        self.refreshHandler()
 
     def undo(self, event=None):
         self.editor().undo()
@@ -169,7 +167,6 @@ class TabbedEditor(QtGui.QTabWidget):
         input_dialog = CodeInput()
         if input_dialog.exec_():
             self._add_editor(input_dialog.editor(), None)
-            self.refreshHandler()
 
     def execute(self, command):
         return self.editor().execute(command)
