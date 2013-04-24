@@ -4,10 +4,10 @@ from tabbed_editor import TabbedEditor
 from core.actions import *
 
 navigation_hotkeys = {
-                      "Left": SelectParent, 
-                      "Right": SelectChild, 
-                      "Up": SelectPrevSibling, 
-                      "Down": SelectNextSibling, 
+                      "Left": SelectParent,
+                      "Right": SelectChild,
+                      "Up": SelectPrevSibling,
+                      "Down": SelectNextSibling,
                      }
 
 navigation_commands_with_labels = [
