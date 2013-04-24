@@ -3,6 +3,7 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ast import lua_parser
+from ast.structures import empty_wrapper
 
 class Editor(object):
     """
@@ -38,6 +39,7 @@ class Editor(object):
         self.clipboard = None
         self.past_history = []
         self.future_history = []
+        self.changed = False
 
     def save(self):
         """
@@ -80,6 +82,7 @@ class Editor(object):
         self._update_selected(action.execute(self))
         self.past_history.append(action)
         self.future_history = []
+        self.changed = True
 
     def is_available(self, action):
         """
@@ -103,7 +106,7 @@ class Editor(object):
         self.future_history.append(self.past_history.pop())
         self._update_selected(self.future_history[-1].rollback(self))
 
-    def render(self, wrapper=None):
+    def render(self, wrapper=empty_wrapper):
         """
         Returns the textual representation of the entire tree (not just the
         selected node).

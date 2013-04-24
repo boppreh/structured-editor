@@ -54,10 +54,11 @@ class CustomTabBar(QtGui.QTabBar):
     close button on the current tab, support for closing tabs with the middle
     mouse button and reordering tabs.
     """
-    def __init__(self, *args, **kargs):
+    def __init__(self, close_handler, *args, **kargs):
         super(CustomTabBar, self).__init__(*args, **kargs)
         self.setMovable(True)
 
+        self.close_handler = close_handler
         self.previous_index = -1
 
         self.currentChanged.connect(self._update_tab)
@@ -67,7 +68,7 @@ class CustomTabBar(QtGui.QTabBar):
         if tab is None:
             tab = self.currentIndex()
 
-        if tab != -1:
+        if tab != -1 and self.close_handler(tab):
             self.removeTab(tab)
             self._update_tab()
 
@@ -120,15 +121,48 @@ class TabbedEditor(QtGui.QTabWidget):
     """
     def __init__(self, refreshHandler, parent):
         super(TabbedEditor, self).__init__(parent=parent)
-        self.setTabBar(CustomTabBar())
+        self.setTabBar(CustomTabBar(self._check_saved_changes))
 
         self.untitled_tab_count = 0
 
         self.refreshHandler = refreshHandler
         self.currentChanged.connect(self.refreshHandler)
+        self.tabBar().tabCloseRequested.connect(self._check_saved_changes)
 
         QtGui.QShortcut('Ctrl+T', self, self.new)
         QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
+
+    def _check_saved_changes(self, tab):
+        editor = self.widget(tab).editor
+        if not editor.changed:
+            return
+
+        label = self.tabText(tab)
+        buttons = (QtGui.QMessageBox.Save |
+                   QtGui.QMessageBox.Discard |
+                   QtGui.QMessageBox.Cancel)
+        message = 'Do you want to save changes to {}?'.format(label)
+        result = QtGui.QMessageBox.warning(self, 'Close confirmation', message,
+                                           buttons=buttons)
+
+        if result == QtGui.QMessageBox.Save:
+            if editor.file_selected:
+                editor.save()
+                return True
+            else:
+                path = str(QtGui.QFileDialog.getSaveFileName(self,
+                                                             'Save as',
+                                                             label,
+                                                             filter="*.lua"))
+                if path:
+                    editor.save_as(path)
+                    return True
+                else:
+                    return False
+        elif result == QtGui.QMessageBox.Discard:
+            return True
+        elif result == QtGui.QMessageBox.Cancel:
+            return False
 
     def _next_label(self):
         self.untitled_tab_count += 1
@@ -187,11 +221,14 @@ class TabbedEditor(QtGui.QTabWidget):
         if path:
             self._add_editor(Editor.from_file(path), os.path.basename(path))
 
-    def save_as(self, event=None):
+    def save_as(self, editor=None, name=''):
         """
         Saves the current editor contents into a file selected by the user.
         """
-        new_path = str(QtGui.QFileDialog.getSaveFileName(self, filter="*.lua"))
+        if editor is None:
+            editor = self.editor()
+
+        new_path = str(QtGui.QFileDialog.getSaveFileName(self, dir=name, filter="*.lua"))
         if new_path:
             self.editor().save_as(new_path)
 
