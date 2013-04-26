@@ -1,4 +1,5 @@
 import unittest
+from pyparsing import ParseException
 
 from lua_parser import *
 from lua_structures import *
@@ -93,6 +94,37 @@ class TestSpecificParsing(unittest.TestCase):
 
     def test_if_elseif_else(self):
         self.do_simple_test('if c then elseif c then else end', '\n ')
+
+    def test_implicit_call(self):
+        self.do_simple_test('my_function\'string parameter\'', '\n ')
+
+    def test_empty_repeat(self):
+        self.do_simple_test('repeat until ', '\n ')
+
+    def test_repeat(self):
+        self.do_simple_test('repeat print() until ', '\n ')
+
+    def test_bound_for(self):
+        self.do_simple_test('for i = 1, 10 do end', '\n ')
+
+    def test_empty_table_construction(self):
+        self.do_simple_test('a = {}', '\n ')
+
+    def test_complex_table_construction(self):
+        self.do_simple_test('a = {a=5+2; ["b"]=6, c}', '\n ')
+
+    def test_statement_after_return(self):
+        with self.assertRaises(ParseException):
+            parseString('if c then print(); return 5; print(); end')
+
+    def test_functioncall_without_prefixep(self):
+        with self.assertRaises(ParseException):
+            parseString('1:n()')
+
+    def test_funcname_with_expression(self):
+        with self.assertRaises(ParseException):
+            parseString('function a[2].f() end')
+
 
 if __name__ == '__main__':
     unittest.main()

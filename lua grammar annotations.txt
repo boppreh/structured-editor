@@ -6,7 +6,7 @@ Constructions lacking:
 Checks that need to be made:
 - statements after return are sytnax error
 - funcname can only have names
-functioncall must start with prefixexp
+- functioncall must start with prefixexp
 
 New constructions required:
 - var: name, bracket access, dot access
