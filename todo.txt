@@ -1,11 +1,9 @@
 User Interface
-- Add confirmation to destructive actions
 - Give a little subtle pattern to the code display background
 
 Abstract Syntax Tree
 
 Core
-- Bring basic editor logic back to core, leaving the HTML and Qt stuff to UI
 - Fix moveup/movedown error on ends
 
 General
