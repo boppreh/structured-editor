@@ -1,4 +1,5 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
+from time import time
 from core.actions import Select
 
 class CodeDisplay(QtWebKit.QWebView):
@@ -15,9 +16,31 @@ class CodeDisplay(QtWebKit.QWebView):
         self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
         self.linkClicked.connect(self.selection_handler)
 
+        self.lastClickTime = time()
+        self.lastClickNode = None
+
     def selection_handler(self, url):
-        node = self.node_dict[int(url.toString())]
-        self.editor.execute(Select(node))
+        node_clicked = self.node_dict[int(url.toString())]
+        node_selected = node_clicked
+
+        time_elapsed = time() - self.lastClickTime 
+        print time_elapsed
+
+        # Figures out if the user is quickly clicking the same node,
+        # trying to get to the parent.
+        if node_clicked == self.lastClickNode and time_elapsed < 1.5:
+            node_parent = self.editor.selected.parent
+            if node_parent:
+                node_selected = node_parent
+            else:
+                # If we circle back and select the most specific node, it
+                # becomes confusing for the user that misclicks.
+                node_selected = self.editor.selected
+
+        self.lastClickNode = node_clicked
+        self.lastClickTime = time()
+
+        self.editor.execute(Select(node_selected))
         self.refreshHandler()
 
     def _color_tag(self, color):
