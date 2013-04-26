@@ -99,7 +99,7 @@ class TestSpecificParsing(unittest.TestCase):
         self.do_simple_test('my_function\'string parameter\'', '\n ')
 
     def test_empty_repeat(self):
-        self.do_simple_test('repeat until ', '\n ')
+        self.do_simple_test('repeat until c', '\n ')
 
     def test_repeat(self):
         self.do_simple_test('repeat print() until ', '\n ')
@@ -124,6 +124,11 @@ class TestSpecificParsing(unittest.TestCase):
     def test_funcname_with_expression(self):
         with self.assertRaises(ParseException):
             parseString('function a[2].f() end')
+
+    def test_operators(self):
+        operators = 'or and < > <= >= ~= == .. + - * / % ^'.split()
+        self.do_simple_test('1' + '1'.join(operators) + '1', '() ')
+        self.do_simple_test('not 1 + #1 + -1', '() ')
 
 
 if __name__ == '__main__':
