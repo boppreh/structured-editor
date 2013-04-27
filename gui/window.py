@@ -241,3 +241,6 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.navigationWindow.refresh(self.tabbedEditor)
         self.editingWindow.refresh(self.tabbedEditor)
         self.insertionWindow.refresh(self.tabbedEditor)
+
+        title = '{} - Structured Editor'.format(self.tabbedEditor.label())
+        self.setWindowTitle(title)

@@ -173,6 +173,9 @@ class TabbedEditor(QtGui.QTabWidget):
         self.untitled_tab_count += 1
         return 'Untitled Document ' + str(self.untitled_tab_count)
 
+    def label(self):
+        return self.tabText(self.currentIndex())
+
     def editor(self):
         """
         Returns the current Editor instance or None if there are not tabs.

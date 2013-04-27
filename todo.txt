@@ -1,6 +1,5 @@
 User Interface
 - Give a little subtle pattern to the code display background
-- Show file name in title
 - Multiple clicks on same node to select parents, watching for click timing
 
 Abstract Syntax Tree
