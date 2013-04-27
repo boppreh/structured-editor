@@ -1,6 +1,5 @@
 User Interface
 - Give a little subtle pattern to the code display background
-- Hide tabs when there's only one file open
 - Show file name in title
 - Multiple clicks on same node to select parents, watching for click timing
 

@@ -78,6 +78,11 @@ class CustomTabBar(QtGui.QTabBar):
 
         self.previous_index = self.currentIndex()
 
+        if self.count() > 1:
+            self.show()
+        else:
+            self.hide()
+
     def mouseReleaseEvent(self, event):
         if event.button() == QtCore.Qt.MiddleButton:
             self.close_tab(self.tabAt(event.pos()))
@@ -135,7 +140,7 @@ class TabbedEditor(QtGui.QTabWidget):
     def _check_saved_changes(self, tab):
         editor = self.widget(tab).editor
         if not editor.changed:
-            return
+            return True
 
         label = self.tabText(tab)
         buttons = (QtGui.QMessageBox.Save |
