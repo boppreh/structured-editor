@@ -8,7 +8,6 @@ Core
 - Fix moveup/movedown error on ends
 
 General
-- Finish auto-udpate feature
 - Store errors remotely
 
 Extras

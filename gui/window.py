@@ -1,5 +1,7 @@
 from PyQt4 import QtCore, QtGui
 
+from update import update_and_restart, can_update
+
 from tabbed_editor import TabbedEditor
 from core.actions import *
 
@@ -141,8 +143,10 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.menubar = self.menuBar()
 
         def makeMenuAction(label, shortcut, statusTip, menu, handler):
-            menu.addAction(QtGui.QAction(label, self, shortcut=shortcut,
-                                         statusTip=statusTip, triggered=handler))
+            action = QtGui.QAction(label, self, shortcut=shortcut,
+                                   statusTip=statusTip, triggered=handler)
+            menu.addAction(action)
+            return action
 
         fileMenu = self.menubar.addMenu('&File')
         makeMenuAction("&New", "Ctrl+N",
@@ -192,20 +196,40 @@ class MainEditorWindow(QtGui.QMainWindow):
                        "Reset the window and commands bar size and state back to the original settings.",
                        viewMenu, self.resetWindow)
 
-        #updatesMenu = self.menubar.addMenu("&Updates")
-        #makeMenuAction("&Check for updates", "Alt+U", "Tries to download the latests version.", self.checkUpdates, updatesMenu)
+        updatesMenu = self.menubar.addMenu("&Updates")
 
-    def checkUpdates(self, event=None):
+        if can_update('http://www.inf.ufsc.br/~lucasboppre/Editor.exe'):
+            makeMenuAction("&Download latest version", "Alt+D",
+                           "Tries to download the latest version from a remote server.",
+                           updatesMenu, self.update)
+        else:
+            makeMenuAction("No updates available.", "",
+                           "", updatesMenu, lambda: None).setEnabled(False)
+
+    def update(self):
         reply = QtGui.QMessageBox.question(self, "Update", "Do you want to download the new version and restart the application?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.No:
             return
 
-        import urllib, os
-        urllib.urlretrieve ("http://www.inf.ufsc.br/~lucasboppre/Editor.exe", "Editor_new.exe")
-        os.remove('Editor.exe')
-        os.rename('Editor_new.exe', 'Editor.exe')
-        os.execv('Editor.exe', [''])
+        class Updater(QtCore.QThread):
+            def run(self):
+                update_and_restart('http://www.inf.ufsc.br/~lucasboppre/Editor.exe')
+
+        progressDialog = QtGui.QProgressDialog("Downloading latest version...",
+                                               "", 0, 0, self)
+        progressDialog.setCancelButton(None)
+        progressBar = QtGui.QProgressBar(progressDialog)
+        progressBar.setMinimum(0)
+        progressBar.setMaximum(0)
+        progressDialog.setBar(progressBar)
+        progressDialog.show()
+        updater = Updater()
+        updater.finished.connect(progressDialog.close)
+        updater.finished.connect(QtGui.QApplication.quit)
+        updater.start()
+        # Saving reference to avoid garbage collection.
+        self.updater = updater
 
     def resetWindow(self, event=None):
         self.navigationWindow.reset()
