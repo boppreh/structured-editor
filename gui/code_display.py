@@ -24,7 +24,6 @@ class CodeDisplay(QtWebKit.QWebView):
         node_selected = node_clicked
 
         time_elapsed = time() - self.lastClickTime 
-        print time_elapsed
 
         # Figures out if the user is quickly clicking the same node,
         # trying to get to the parent.

@@ -95,8 +95,11 @@ class TestSpecificParsing(unittest.TestCase):
     def test_if_elseif_else(self):
         self.do_simple_test('if c then elseif c then else end', '\n ')
 
-    def test_implicit_call(self):
+    def test_implicit_string_call(self):
         self.do_simple_test('my_function\'string parameter\'', '\n ')
+
+    def test_implicit_table_call(self):
+        self.do_simple_test('my_function{}', '\n ')
 
     def test_empty_repeat(self):
         self.do_simple_test('repeat until c', '\n ')
@@ -111,7 +114,7 @@ class TestSpecificParsing(unittest.TestCase):
         self.do_simple_test('a = {}', '\n ')
 
     def test_complex_table_construction(self):
-        self.do_simple_test('a = {a=5+2; ["b"]=6, c}', '\n ')
+        self.do_simple_test('t = {a=5+2; ["b"]=6, c}', '\n ')
 
     def test_statement_after_return(self):
         with self.assertRaises(ParseException):
