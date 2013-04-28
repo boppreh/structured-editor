@@ -31,13 +31,13 @@ class NameList(DynamicNode):
 
 class Assignment(Statement):
     abstract = False
-    template = '\n{left_side} = {right_side}'
+    template = '{left_side} = {right_side}'
     subparts = [('left_side', ExpressionList), ('right_side', ExpressionList)]
 
 class LocalVar(Assignment):
     """ Variable declaration with "local" modifier. """
     abstract = False
-    template = '\nlocal ' + Assignment.template[1:]
+    template = 'local ' + Assignment.template
 
 class Table(Block, Expression):
     """
@@ -62,7 +62,7 @@ class NamedFunction(Statement):
     Declaration of a named function, in contrast to an anonymous function.
     """
     abstract = False
-    template = '\nfunction {name}({parameters}){body}\nend'
+    template = 'function {name}({parameters}){body}\nend'
     subparts = [('name', FunctionName), ('parameters', NameList), ('body', Block)]
 
 class LocalFunction(NamedFunction):
@@ -92,7 +92,7 @@ class FunctionCall(Expression, Statement):
     A function call, possibly with method call syntax ("a:b(params)").
     """
     abstract = False
-    template = ' {name}{colon_name}({parameters})'
+    template = '{name}{colon_name}({parameters})'
     subparts = [('name', Expression),
                 ('colon_name', ColonName),
                 ('parameters', ExpressionList)]
@@ -125,25 +125,25 @@ class ForIn(Statement):
     """ "for item in list do" control structure. """
     abstract = False
     subparts = [('item', NameList), ('iterator', ExpressionList), ('body', Block)] 
-    template = '\nfor {item} in {iterator} do{body}\nend'
+    template = 'for {item} in {iterator} do{body}\nend'
 
 class While(Statement):
     """ "while condition do" control structure. """
     abstract = False
     subparts = [('condition', Expression), ('body', Block)]
-    template = '\nwhile {condition} do{body}\nend'
+    template = 'while {condition} do{body}\nend'
 
 class Else(StaticNode):
     """ The 'else' clause of a conditional. """
     abstract = False
     subparts = [('body', Block)]
-    template = '\nelse{body}end'
+    template = 'else{body}\nend'
 
 class If(Else):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
     abstract = False
     subparts = [('condition', Expression), ('body', Block)]
-    template = '\nif {condition} then{body}'
+    template = 'if {condition} then{body}'
 
 class IfChain(DynamicNode):
     """
@@ -151,12 +151,12 @@ class IfChain(DynamicNode):
     """
     abstract = False
     child_type = If
-    delimiter = '\nelse'
+    delimiter = 'else'
 
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
     abstract = False
-    template = '{if_chain}{else}'
+    template = '{if_chain}\n{else}'
     subparts = [('if_chain', IfChain),
                 ('else', Else)]
 
@@ -164,7 +164,7 @@ class Return(DynamicNode, Statement):
     """ A return statement, with zero or more expression returned. """
     abstract = False
     child_type = ExpressionList
-    template = '\nreturn {children}'
+    template = 'return {children}'
 
 class Operator(Constant):
     """ Class for binary and unary operators such as +, and, ^ and not.  """

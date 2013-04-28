@@ -8,8 +8,11 @@ DETACHED_PROCESS = 0x8
 executable = argv[0]
 
 def can_update(remote_url):
-    return (not executable.endswith('.py')
-            and urlopen(remote_url).code < 400)
+    try:
+        return (not executable.endswith('.py')
+                and urlopen(remote_url).code < 400)
+    except:
+        return False
 
 def update_and_restart(remote_url, auto_exit=False):
     assert can_update(remote_url)

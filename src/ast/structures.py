@@ -170,16 +170,21 @@ class Block(DynamicNode):
     child_type = Statement
 
     def render(self, wrapper=empty_wrapper):
-        str_contents = [item.render(wrapper) for item in self.contents]
+        str_contents = []
+        for item in self.contents:
+            old_template = item.template
 
-        rendered = []
-        for line in str_contents:
-            if line.count('\n') >= 2:
-                rendered.append(line + '\n')
-            else:
-                rendered.append(line)
+            if '\n' in item.template and item != self.contents[-1]:
+                item.template += '\n'
 
-        rendered_text = ''.join(rendered).strip()
+            # The linebreak must be added *before* the item, because it'll be
+            # replaced with indentation later and the indentation should still
+            # belong to the original item, not to its parent block.
+            item.template = '\n' + item.template
+            str_contents.append(item.render(wrapper))
+            item.template = old_template
+
+        rendered_text = ''.join(str_contents).strip()
         if self.parent:
             rendered_text = rendered_text.replace('\n', '\n    ')
         else:

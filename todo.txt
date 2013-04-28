@@ -1,16 +1,17 @@
 User Interface
 - Give a little subtle pattern to the code display background
-- Multiple clicks on same node to select parents, watching for click timing
+- Syntax highlight
 
 Abstract Syntax Tree
+- Fix block and linebreak relationship
 
 Core
-- Fix moveup/movedown error on ends
+-
 
 General
-- Store errors remotely
+-
 
 Extras
 - Collaborative editing (tree in server, Editor in client)
 - Multiple cursors (could use the collaborative editing system)
-- Implement cursor based editing
+- Cursor based editing
