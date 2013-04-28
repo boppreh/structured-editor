@@ -87,9 +87,9 @@ class CodeDisplay(QtWebKit.QWebView):
         self.node_dict = {}
         text = self.editor.render(self._wrapper)
 
-        background_pattern = 'p6.png'
+        background_pattern = 'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxBLsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII='
         template = """<html>
-<body style="background: url({}), top left repeat;">
+<body style="background: url('data:image/png;base64,{}'), top left repeat;">
 <pre><a>{}</a></pre>
 </body>
 </html>"""

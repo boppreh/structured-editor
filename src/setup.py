@@ -23,6 +23,8 @@ setup(windows=[{"script": "main.pyw",
      )
 
 import shutil, os
+if os.path.exists('../dist/Editor.exe'):
+    os.remove('../dist/Editor.exe')
 os.rename('dist/Editor.exe', '../dist/Editor.exe')
 shutil.rmtree('dist', ignore_errors=True)
 shutil.rmtree('build', ignore_errors=True)
