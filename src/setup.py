@@ -23,6 +23,6 @@ setup(windows=[{"script": "main.pyw",
      )
 
 import shutil, os
-os.rename('dist/Editor.exe', 'Editor.exe')
+os.rename('dist/Editor.exe', '../dist/Editor.exe')
 shutil.rmtree('dist', ignore_errors=True)
 shutil.rmtree('build', ignore_errors=True)
