@@ -111,7 +111,10 @@ class Editor(object):
         Returns the textual representation of the entire tree (not just the
         selected node).
 
-        'wrapper' should be a function that takes a node's reference and its
-        basic rendering and returns the complete rendering of that node.
+        'wrapper': lambda node: node.template
+
+        'wrapper' should be a function to change the node template before
+        rendering. It takes the node as parameter and returns the new template.
+        The default wrapper just returns the node.template unchanged.
         """
         return self.root.render(wrapper)

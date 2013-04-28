@@ -11,9 +11,10 @@ class Constant(Expression):
     """ Literal string, number, nil, true or false. """
     abstract = False
     subparts = [('value', str)]
+    template = '{value}'
 
     def render(self, wrapper=empty_wrapper):
-        return wrapper(self, self.contents[0])
+        return wrapper(self).format(value=self.contents[0])
 
 class Identifier(Constant):
     """ A reference to an identifier. """

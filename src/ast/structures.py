@@ -4,12 +4,16 @@ tree.
 """
 from pyparsing import ParseResults
 
-empty_wrapper = lambda node, text: text
+empty_wrapper = lambda node: node.template
 
 class Node(object):
     abstract = True
+    count = 0
 
     def __init__(self, contents, parent=None, selected_index=0):
+        self.node_id = Node.count
+        Node.count += 1
+
         self.contents = contents
         self.parent = parent
         self.selected_index = selected_index 
@@ -69,6 +73,7 @@ class StaticNode(Node):
     class attribute 'template'.
     """
     subparts = []
+    template = '<Abstract Static Node>'
 
     def __init__(self, toks=None):
         if toks == None:
@@ -94,14 +99,13 @@ class StaticNode(Node):
         Recursively renders itself and all children, calling 'wrapper' on
         each step, if available.
         """
+
         dictionary = {}
         for content, subpart in zip(self.contents, self.subparts):
             name, type_ = subpart
             dictionary[name] = content.render(wrapper)
 
-        text = self.template.format(**dictionary)
-        return wrapper(self, text)
-
+        return wrapper(self).format(**dictionary)
 
 class DynamicNode(Node):
     """
@@ -153,8 +157,7 @@ class DynamicNode(Node):
     def render(self, wrapper=empty_wrapper):
         rendered_contents = [item.render(wrapper) for item in self.contents]
         joined_contents = self.delimiter.join(rendered_contents)
-        text = self.template.format(children=joined_contents)
-        return wrapper(self, text)
+        return wrapper(self).format(children=joined_contents)
 
 
 class Statement(StaticNode):
@@ -168,6 +171,7 @@ class Block(DynamicNode):
     """
     abstract = False
     child_type = Statement
+    template = '{children}'
 
     def render(self, wrapper=empty_wrapper):
         str_contents = []
@@ -190,7 +194,7 @@ class Block(DynamicNode):
         else:
             rendered_text = rendered_text.replace('\n', '', 1)
 
-        return wrapper(self, rendered_text)
+        return wrapper(self).format(children=rendered_text)
 
 
 class Expression(StaticNode):

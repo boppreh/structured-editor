@@ -21,7 +21,8 @@ class CodeDisplay(QtWebKit.QWebView):
         self.lastClickNode = None
 
     def selection_handler(self, url):
-        node_clicked = self.node_dict[int(basename(str(url.toString())))]
+        node_id = int(basename(str(url.toString())))
+        node_clicked = self.node_dict[node_id]
         node_selected = node_clicked
 
         time_elapsed = time() - self.lastClickTime 
@@ -47,31 +48,33 @@ class CodeDisplay(QtWebKit.QWebView):
         return ('<span style="background-color: {}">'.format(color),
                 '</span>')
 
-    def _add_link(self, node, text, color_tag_tuple):
+    def _add_link(self, node, color_tag_tuple):
         open_color, close_color = color_tag_tuple
         #return open_color + text + close_color
 
-        open = '<a href="{id}" style="color: #222222; text-decoration: none">'
+        open = '<a href="{node_id}" style="color: #222222; text-decoration: none">'
         close = '</a>'
 
-        self.node_count += 1
-        node_id = self.node_count
-        self.node_dict[node_id] = node
+        self.node_dict[node.node_id] = node
 
-        # Yep, it starts with a close link tag and ends with an opening link
-        # tag without id. The goal is to eliminate nested link tags, so we
-        # close the parent's whenever we start a new object and reopen
-        # again when we finish. Since we don't know the parent id, leave it as
-        # a template for it to fill.
-        # Also, the color must be between the parent's tag and the child's tag,
-        # to avoid invalid markup like <a><span></a></span>.
-        beginning = close + open_color + open.format(id=node_id)
-        ending = close + close_color + open
+        if node.parent:
+            # Yep, it starts with a close link tag and ends with an opening link
+            # tag. The goal is to eliminate nested link tags, so we close the
+            # parent's whenever we start a new object and reopen again when we
+            # finish.
+            # Also, the color must be between the parent's tag and the child's
+            # tag, to avoid invalid markup like <a><span></a></span>.
+            beginning = close + open_color + open.format(node_id=node.node_id)
+            ending = close + close_color + open.format(node_id=node.parent.node_id)
+        else:
+            # If there's no parent, no reason to perform the close/open/close
+            # dance.
+            beginning = open_color + open.format(node_id=node.node_id)
+            ending = close + close_color
 
-        # Here the parent fills the template left by its children.
-        return beginning + text.format(id=node_id) + ending
+        return beginning + (node.template or ' ') + ending
 
-    def _wrapper(self, node, text):
+    def _render_wrapper(self, node):
         if node == self.editor.selected:
             color_tags = self._color_tag('#95CAFF')
         elif node.parent == self.editor.selected.parent:
@@ -79,18 +82,20 @@ class CodeDisplay(QtWebKit.QWebView):
         else:
             color_tags = ('', '')
 
-        return self._add_link(node, text or ' ', color_tags)
+        return self._add_link(node, color_tags)
 
     def refresh(self):
         """ Renders editor state in this text. """
-        self.node_count = 0
         self.node_dict = {}
-        text = self.editor.render(self._wrapper)
+        text = self.editor.render(self._render_wrapper)
 
-        background_pattern = 'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxBLsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII='
+        background_pattern = ('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAA'
+                              'ASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxB'
+                              'LsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l'
+                              '3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII=')
         template = """<html>
 <body style="background: url('data:image/png;base64,{}'), top left repeat;">
-<pre><a>{}</a></pre>
+<pre>{}</pre>
 </body>
 </html>"""
         url = QtCore.QUrl.fromLocalFile(QtCore.QDir.current().absoluteFilePath('dummy.html'))
