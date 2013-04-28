@@ -51,7 +51,7 @@ class CodeDisplay(QtWebKit.QWebView):
         open_color, close_color = color_tag_tuple
         #return open_color + text + close_color
 
-        open = '<a href="{id}" style="color: #000000; text-decoration: none">'
+        open = '<a href="{id}" style="color: #222222; text-decoration: none">'
         close = '</a>'
 
         self.node_count += 1
