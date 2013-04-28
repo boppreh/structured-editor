@@ -1,6 +1,7 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
 from time import time
 from core.actions import Select
+from os.path import basename
 
 class CodeDisplay(QtWebKit.QWebView):
     """
@@ -20,7 +21,7 @@ class CodeDisplay(QtWebKit.QWebView):
         self.lastClickNode = None
 
     def selection_handler(self, url):
-        node_clicked = self.node_dict[int(url.toString())]
+        node_clicked = self.node_dict[int(basename(str(url.toString())))]
         node_selected = node_clicked
 
         time_elapsed = time() - self.lastClickTime 
@@ -85,6 +86,12 @@ class CodeDisplay(QtWebKit.QWebView):
         self.node_count = 0
         self.node_dict = {}
         text = self.editor.render(self._wrapper)
-        self.setHtml('<pre><a>' + text + '</a></pre>')
 
-
+        background_pattern = 'p6.png'
+        template = """<html>
+<body style="background: url({}), top left repeat;">
+<pre><a>{}</a></pre>
+</body>
+</html>"""
+        url = QtCore.QUrl.fromLocalFile(QtCore.QDir.current().absoluteFilePath('dummy.html'))
+        self.setHtml(template.format(background_pattern, text), url)

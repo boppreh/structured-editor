@@ -1,9 +1,8 @@
 User Interface
-- Give a little subtle pattern to the code display background
 - Syntax highlight
 
 Abstract Syntax Tree
-- Fix block and linebreak relationship
+-
 
 Core
 -
