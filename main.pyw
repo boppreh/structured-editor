@@ -32,6 +32,7 @@ end
 
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
+#mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
 mainWin.tabbedEditor._add_editor(Editor.from_text(test_program))
 mainWin.show()
 sys.exit(app.exec_())
