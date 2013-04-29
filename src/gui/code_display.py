@@ -9,27 +9,30 @@ from ast.lua_structures import *
 
 color_scheme = {
                 #Identifier: 'none',
-                String: 'hsl(128, 100%, 20%)',
-                FunctionCall: 'hsl(251, 100%, 20%); font-weight: bold',
+                String: 'color: hsl(128, 100%, 20%)',
+                Constant: 'color: hsl(251, 100%, 20%)',
+                FunctionCall: 'color: hsl(251, 100%, 20%); font-weight: bold',
 
-                While: 'hsl(300, 100%, 20%); font-weight: bold',
-                ForIn: 'hsl(300, 100%, 20%); font-weight: bold',
-                If: 'hsl(300, 100%, 20%); font-weight: bold',
-                Else: 'hsl(300, 100%, 20%); font-weight: bold',
-                FullIf: 'hsl(300, 100%, 20%); font-weight: bold',
+                While: 'color: hsl(300, 100%, 20%); font-weight: bold',
+                ForIn: 'color: hsl(300, 100%, 20%); font-weight: bold',
+                If: 'color: hsl(300, 100%, 20%); font-weight: bold',
+                Else: 'color: hsl(300, 100%, 20%); font-weight: bold',
+                FullIf: 'color: hsl(300, 100%, 20%); font-weight: bold',
 
-                Return: 'hsl(174, 100%, 20%); font-weight: bold',
-                LocalVar: 'hsl(130, 100%, 20%); font-weight: bold',
+                Return: 'color: hsl(174, 100%, 20%); font-weight: bold',
+                LocalVar: 'color: hsl(130, 100%, 20%); font-weight: bold',
 
-                AnonFunction: 'hsl(255, 100%, 20%); font-weight: bold',
-                NamedFunction: 'hsl(255, 100%, 20%); font-weight: bold',
+                AnonFunction: 'color: hsl(240, 100%, 20%); font-weight: bold',
+                NamedFunction: 'color: hsl(255, 100%, 20%); font-weight: bold',
                }
 
-color_scheme_dict = defaultdict(lambda: '#333333', color_scheme)
+color_scheme_dict = defaultdict(lambda: 'color: #333333', color_scheme)
 
 def node_color(node):
-    #return 'color: hsl({}, 100%, 20%);'.format(id(type(node)) % 360)
-    return 'color: {};'.format(color_scheme_dict[type(node)])
+    """
+    Returns the CSS to color the node according to its node type.
+    """
+    return color_scheme_dict[type(node)]
 
 class CodeDisplay(QtWebKit.QWebView):
     """
