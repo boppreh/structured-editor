@@ -89,8 +89,7 @@ class CodeDisplay(QtWebKit.QWebView):
                               '3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII=')
         template = """<html>
 <body style="background: url('data:image/png;base64,{}'), top left repeat;">
-<pre>{}</pre>
+<pre style="font-family: 'Consolas', monospace; font-size: 16px;">{}</pre>
 </body>
 </html>"""
-        url = QtCore.QUrl.fromLocalFile(QtCore.QDir.current().absoluteFilePath('dummy.html'))
-        self.setHtml(template.format(background_pattern, text), url)
+        self.setHtml(template.format(background_pattern, text))
