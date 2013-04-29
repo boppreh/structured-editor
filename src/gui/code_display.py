@@ -44,45 +44,39 @@ class CodeDisplay(QtWebKit.QWebView):
         self.editor.execute(Select(node_selected))
         self.refreshHandler()
 
-    def _color_tag(self, color):
-        return ('<span style="background-color: {}">'.format(color),
-                '</span>')
+    def _span_tags(self, node):
+        open_tag_template = '<span style="background-color: {};">'
 
-    def _add_link(self, node, color_tag_tuple):
-        open_color, close_color = color_tag_tuple
-        #return open_color + text + close_color
+        if node == self.editor.selected:
+            return open_tag_template.format('#95CAFF'), '</span>'
+        elif node.parent == self.editor.selected.parent:
+            return open_tag_template.format('#CECECE'), '</span>'
+        else:
+            return '', ''
 
-        open = '<a href="{node_id}" style="color: #222222; text-decoration: none">'
-        close = '</a>'
+    def _link_tags(self, node):
+        template = '<a href="{id}" style="{color}; text-decoration: none">'
+        color = 'color: hsl({}, 100%, 20%)'.format(id(type(node)) % 255)
+        return template.format(id=node.node_id, color=color), '</a>'
 
+    def _linked_template(self, node):
         self.node_dict[node.node_id] = node
 
         if node.parent:
-            # Yep, it starts with a close link tag and ends with an opening link
-            # tag. The goal is to eliminate nested link tags, so we close the
-            # parent's whenever we start a new object and reopen again when we
-            # finish.
-            # Also, the color must be between the parent's tag and the child's
-            # tag, to avoid invalid markup like <a><span></a></span>.
-            beginning = close + open_color + open.format(node_id=node.node_id)
-            ending = close + close_color + open.format(node_id=node.parent.node_id)
+            # Close parent's href tag to avoid nested links.
+            suffix, prefix = self._link_tags(node.parent)
         else:
-            # If there's no parent, no reason to perform the close/open/close
-            # dance.
-            beginning = open_color + open.format(node_id=node.node_id)
-            ending = close + close_color
+            suffix, prefix = '', ''
 
-        return beginning + (node.template or ' ') + ending
+        open_a, close_a = self._link_tags(node)
+        open_span, close_span = self._span_tags(node)
+
+        return (prefix + open_span + open_a +
+                (node.template or ' ') +
+                close_a + close_span + suffix)
 
     def _render_wrapper(self, node):
-        if node == self.editor.selected:
-            color_tags = self._color_tag('#95CAFF')
-        elif node.parent == self.editor.selected.parent:
-            color_tags = self._color_tag('#CECECE')
-        else:
-            color_tags = ('', '')
-
-        return self._add_link(node, color_tags)
+        return self._linked_template(node)
 
     def refresh(self):
         """ Renders editor state in this text. """
