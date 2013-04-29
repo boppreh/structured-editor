@@ -3,6 +3,34 @@ from time import time
 from core.actions import Select
 from os.path import basename
 
+from collections import defaultdict
+from ast.structures import *
+from ast.lua_structures import *
+
+color_scheme = {
+                #Identifier: 'none',
+                String: 'hsl(128, 100%, 20%)',
+                FunctionCall: 'hsl(251, 100%, 20%); font-weight: bold',
+
+                While: 'hsl(300, 100%, 20%); font-weight: bold',
+                ForIn: 'hsl(300, 100%, 20%); font-weight: bold',
+                If: 'hsl(300, 100%, 20%); font-weight: bold',
+                Else: 'hsl(300, 100%, 20%); font-weight: bold',
+                FullIf: 'hsl(300, 100%, 20%); font-weight: bold',
+
+                Return: 'hsl(174, 100%, 20%); font-weight: bold',
+                LocalVar: 'hsl(130, 100%, 20%); font-weight: bold',
+
+                AnonFunction: 'hsl(255, 100%, 20%); font-weight: bold',
+                NamedFunction: 'hsl(255, 100%, 20%); font-weight: bold',
+               }
+
+color_scheme_dict = defaultdict(lambda: '#333333', color_scheme)
+
+def node_color(node):
+    #return 'color: hsl({}, 100%, 20%);'.format(id(type(node)) % 360)
+    return 'color: {};'.format(color_scheme_dict[type(node)])
+
 class CodeDisplay(QtWebKit.QWebView):
     """
     Class for displaying source code from an editor with selection_handler nodes 
@@ -56,8 +84,7 @@ class CodeDisplay(QtWebKit.QWebView):
 
     def _link_tags(self, node):
         template = '<a href="{id}" style="{color}; text-decoration: none">'
-        color = 'color: hsl({}, 100%, 20%)'.format(id(type(node)) % 255)
-        return template.format(id=node.node_id, color=color), '</a>'
+        return template.format(id=node.node_id, color=node_color(node)), '</a>'
 
     def _linked_template(self, node):
         self.node_dict[node.node_id] = node
@@ -89,7 +116,7 @@ class CodeDisplay(QtWebKit.QWebView):
                               '3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII=')
         template = """<html>
 <body style="background: url('data:image/png;base64,{}'), top left repeat;">
-<pre style="font-family: 'Consolas', monospace; font-size: 16px;">{}</pre>
+<pre style="font-family: 'Bitstream Vera Sans Mono', 'Consolas', monospace; font-size: 14px;">{}</pre>
 </body>
 </html>"""
         self.setHtml(template.format(background_pattern, text))

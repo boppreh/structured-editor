@@ -20,6 +20,10 @@ class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
 
+class String(Constant):
+    """ Literal string. """
+    abstract = False
+
 class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
     abstract = False
