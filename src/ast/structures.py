@@ -3,6 +3,7 @@ Contains the high level abstract structures and lists for a parsed syntax
 tree.
 """
 from pyparsing import ParseResults
+from copy import deepcopy
 
 empty_wrapper = lambda node: node.template
 
@@ -24,6 +25,9 @@ class Node(object):
             except AttributeError:
                 pass
                 #print "Can't set parent on " + item
+
+    def __deepcopy__(self, memo):
+        return type(self)([deepcopy(item, memo) for item in self.contents])
 
     def __getitem__(self, i):
         return self.contents[i]
