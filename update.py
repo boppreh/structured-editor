@@ -9,7 +9,7 @@ executable = argv[0]
 
 def can_update(remote_url):
     try:
-        return (not executable.endswith('.py')
+        return (not sys.argv[0].endswith('python.exe')
                 and urlopen(remote_url).code < 400)
     except:
         return False
