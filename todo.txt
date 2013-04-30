@@ -13,4 +13,23 @@ General
 Extras
 - Collaborative editing (tree in server, Editor in client)
 - Multiple cursors (could use the collaborative editing system)
-- Cursor based editing
+
+
+
+Grammar Annotations
+
+-Constructions lacking:
+- repeat until
+- for Name = exp, exp[, exp] do
+- parens around functioncall are optional if parameter is String or tableconstructor
+
+Checks that need to be made:
+- statements after return are sytnax error
+- funcname can only have names
+- functioncall must start with prefixexp
+
+New constructions required:
+- var: name, bracket access, dot access
+- prefixexp: things that can be bracket or dot accessed (var, functioncall, exp inside parens)
+- parlist: list of names, possibly ending with '...'
+- field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp Cursor based editing

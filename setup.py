@@ -1,13 +1,17 @@
 # Run as "python setup.py py2exe"
 from distutils.core import setup
 from sys import argv
+import os
 import py2exe
 
 if __name__ == '__main__' and len(argv) < 2:
     argv.append('py2exe')
 
+if os.path.exists('Editor.exe'):
+    os.remove('Editor.exe')
+
 setup(windows=[{"script": "main.pyw",
-                "icon_resources": [(1, "editor.ico")],
+                "icon_resources": [(1, "editor.ico"), (2, "editor.ico")],
                 "dest_base": "Editor",
                }],
       name="Structured Editor",
@@ -22,9 +26,7 @@ setup(windows=[{"script": "main.pyw",
      zipfile = None,
      )
 
-import shutil, os
-if os.path.exists('../dist/Editor.exe'):
-    os.remove('../dist/Editor.exe')
-os.rename('dist/Editor.exe', '../dist/Editor.exe')
+import shutil
+os.rename('dist/Editor.exe', 'Editor.exe')
 shutil.rmtree('dist', ignore_errors=True)
 shutil.rmtree('build', ignore_errors=True)
