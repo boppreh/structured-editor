@@ -25,7 +25,7 @@ class CodeDisplay(QtWebKit.QWebView):
         self.lastClickNode = None
 
         self.config = RawConfigParser()
-        self.config.read('color_scheme.ini')
+        self.config.read('theme.ini')
         self.config.read('display_templates.ini')
 
     def node_style(self, node):
@@ -107,12 +107,15 @@ class CodeDisplay(QtWebKit.QWebView):
     def refresh(self):
         """ Renders editor state in this text. """
         self.node_dict = {}
-        text = self.editor.render(self._render_wrapper)
 
         template = """<html>
 <body style="{}">
-<pre style="font-family: 'Consolas', 'Bitstream Vera Sans Mono', monospace; font-size: 14px;">{}</pre>
+<pre style="{}">{}</pre>
 </body>
 </html>"""
+
         background = self.config.get('Styles', 'background')
-        self.setHtml(template.format(background, text))
+        font = self.config.get('Styles', 'font')
+        text = self.editor.render(self._render_wrapper)
+
+        self.setHtml(template.format(background, font, text))
