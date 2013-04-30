@@ -34,11 +34,9 @@ class CodeDisplay(QtWebKit.QWebView):
         """
         class_name = type(node).__name__.lower()
         try:
-            return self.config.get('Styles', class_name)
+            return self.config.get('Structures', class_name)
         except NoOptionError:
-            return self.config.get('Styles', 'default')
-        except:
-            return 'color: #222222;'
+            return self.config.get('Structures', 'default')
 
     def selection_handler(self, url):
         node_id = int(basename(str(url.toString())))
@@ -68,10 +66,10 @@ class CodeDisplay(QtWebKit.QWebView):
         open_tag_template = '<span style="{}">'
 
         if node == self.editor.selected:
-            style = self.config.get('Styles', 'selectednodebackground')
+            style = self.config.get('Selection', 'background')
             return open_tag_template.format(style), '</span>'
         elif node.parent == self.editor.selected.parent:
-            style = self.config.get('Styles', 'siblingsbackground')
+            style = self.config.get('Selection', 'siblingsbackground')
             return open_tag_template.format(style), '</span>'
         else:
             return '', ''
@@ -114,8 +112,8 @@ class CodeDisplay(QtWebKit.QWebView):
 </body>
 </html>"""
 
-        background = self.config.get('Styles', 'background')
-        font = self.config.get('Styles', 'font')
+        background = self.config.get('Global', 'background')
+        font = self.config.get('Global', 'font')
         text = self.editor.render(self._render_wrapper)
 
         self.setHtml(template.format(background, font, text))
