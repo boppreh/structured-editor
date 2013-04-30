@@ -25,8 +25,8 @@ class CodeDisplay(QtWebKit.QWebView):
         self.lastClickNode = None
 
         self.config = RawConfigParser()
-        self.config.read('styles.ini')
-        self.config.read('display.ini')
+        self.config.read('color_scheme.ini')
+        self.config.read('display_templates.ini')
 
     def node_style(self, node):
         """
@@ -34,9 +34,9 @@ class CodeDisplay(QtWebKit.QWebView):
         """
         class_name = type(node).__name__.lower()
         try:
-            return self.config.get('Text Style', class_name)
+            return self.config.get('Styles', class_name)
         except NoOptionError:
-            return self.config.get('Text Style', 'default')
+            return self.config.get('Styles', 'default')
         except:
             return 'color: #222222;'
 
