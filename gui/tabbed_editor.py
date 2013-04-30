@@ -10,7 +10,7 @@ import os
 
 from pyparsing import ParseException
 
-from code_display import CodeDisplay
+from display import Display
 from core.editor import Editor
 
 
@@ -203,7 +203,7 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         label = label or self._next_label()
 
-        display = CodeDisplay(editor, self.refreshHandler, None)
+        display = Display(editor, self.refreshHandler, None)
         display.refresh()
 
         self.addTab(display, label)
@@ -236,7 +236,7 @@ class TabbedEditor(QtGui.QTabWidget):
         if editor is None:
             editor = self.editor()
 
-        new_path = str(QtGui.QFileDialog.getSaveFileName(self, dir=name, filter="*.lua"))
+        new_path = str(QtGui.QFileDialog.getSaveFileName(self, directory=name, filter="*.lua"))
         if new_path:
             self.editor().save_as(new_path)
 
@@ -288,7 +288,7 @@ class TabbedEditor(QtGui.QTabWidget):
 
     def refresh(self, event=None):
         """
-        Refreshes the CodeDisplay instance inside the current tab.
+        Refreshes the Display instance inside the current tab.
         """
         if self.currentWidget() is None:
             return

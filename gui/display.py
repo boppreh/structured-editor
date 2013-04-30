@@ -1,5 +1,5 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
-from ConfigParser import RawConfigParser, NoOptionError
+from ConfigParser import RawConfigParser
 from time import time
 from core.actions import Select
 from os.path import basename
@@ -7,13 +7,13 @@ from os.path import basename
 from ast.structures import *
 from ast.lua_structures import *
 
-class CodeDisplay(QtWebKit.QWebView):
+class Display(QtWebKit.QWebView):
     """
     Class for displaying source code from an editor with selection_handler nodes 
     highlighted. Text is rendered as HTML.
     """
     def __init__(self, editor, refreshHandler, parent=None):
-        super(CodeDisplay, self).__init__(parent)
+        super(Display, self).__init__(parent)
 
         self.editor = editor
         self.refreshHandler = refreshHandler
@@ -35,7 +35,7 @@ class CodeDisplay(QtWebKit.QWebView):
         class_name = type(node).__name__.lower()
         try:
             return self.config.get('Structures', class_name)
-        except NoOptionError:
+        except:
             return self.config.get('Structures', 'default')
 
     def selection_handler(self, url):

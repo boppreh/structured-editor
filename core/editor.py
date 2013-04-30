@@ -2,6 +2,8 @@
 Module for editing a program's source code interactively with a structured
 editor.
 """
+from ConfigParser import RawConfigParser
+
 from ast import lua_parser
 from ast.structures import empty_wrapper
 
@@ -41,13 +43,25 @@ class Editor(object):
         self.future_history = []
         self.changed = False
 
+        self.config = RawConfigParser()
+        self.config.read('file_templates.ini')
+
+    def _file_wrapper(self, node):
+        class_name = type(node).__name__.lower()
+        try:
+            print self.config.get('Templates', class_name)
+            return self.config.get('Templates', class_name)
+        except:
+            print 'Default:', node.template
+            return node.template
+
     def save(self):
         """
         Saves the rendering of the current code tree (from root, not from
         selected node) to the file that originated this code.
         """
         with open(self.file_selected, 'w') as target_file:
-            target_file.write(self.render())
+            target_file.write(self.render(self._file_wrapper))
 
     def save_as(self, new_path):
         """
