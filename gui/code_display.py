@@ -65,12 +65,14 @@ class CodeDisplay(QtWebKit.QWebView):
         self.refreshHandler()
 
     def _span_tags(self, node):
-        open_tag_template = '<span style="background-color: {};">'
+        open_tag_template = '<span style="{}">'
 
         if node == self.editor.selected:
-            return open_tag_template.format('#95CAFF'), '</span>'
+            style = self.config.get('Styles', 'selectednodebackground')
+            return open_tag_template.format(style), '</span>'
         elif node.parent == self.editor.selected.parent:
-            return open_tag_template.format('#CECECE'), '</span>'
+            style = self.config.get('Styles', 'siblingsbackground')
+            return open_tag_template.format(style), '</span>'
         else:
             return '', ''
 
@@ -107,13 +109,10 @@ class CodeDisplay(QtWebKit.QWebView):
         self.node_dict = {}
         text = self.editor.render(self._render_wrapper)
 
-        background_pattern = ('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAA'
-                              'ASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxB'
-                              'LsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l'
-                              '3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII=')
         template = """<html>
-<body style="background: url('data:image/png;base64,{}'), top left repeat;">
+<body style="{}">
 <pre style="font-family: 'Consolas', 'Bitstream Vera Sans Mono', monospace; font-size: 14px;">{}</pre>
 </body>
 </html>"""
-        self.setHtml(template.format(background_pattern, text))
+        background = self.config.get('Styles', 'background')
+        self.setHtml(template.format(background, text))
