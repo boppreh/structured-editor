@@ -1,5 +1,5 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
-from ConfigParser import RawConfigParser
+from ConfigParser import RawConfigParser, NoOptionError
 from time import time
 from core.actions import Select
 from os.path import basename
@@ -26,6 +26,7 @@ class CodeDisplay(QtWebKit.QWebView):
 
         self.config = RawConfigParser()
         self.config.read('styles.ini')
+        self.config.read('display.ini')
 
     def node_style(self, node):
         """
@@ -34,8 +35,10 @@ class CodeDisplay(QtWebKit.QWebView):
         class_name = type(node).__name__.lower()
         try:
             return self.config.get('Text Style', class_name)
-        except:
+        except NoOptionError:
             return self.config.get('Text Style', 'default')
+        except:
+            return 'color: #222222;'
 
     def selection_handler(self, url):
         node_id = int(basename(str(url.toString())))
@@ -87,8 +90,13 @@ class CodeDisplay(QtWebKit.QWebView):
         open_a, close_a = self._link_tags(node)
         open_span, close_span = self._span_tags(node)
 
+        try:
+            template = self.config.get('Templates', type(node).__name__)
+        except:
+            template = node.template
+
         return (prefix + open_span + open_a +
-                node.template +
+                template +
                 close_a + close_span + suffix)
 
     def _render_wrapper(self, node):
