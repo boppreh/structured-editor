@@ -4,7 +4,6 @@ editor.
 """
 from ConfigParser import RawConfigParser
 
-from ast import lua_parser
 from ast.structures import empty_wrapper
 
 class Editor(object):
@@ -14,22 +13,6 @@ class Editor(object):
     (single selection only for the moment) and rendering the tree with a
     user-specified function running on every node's text.
     """
-    @staticmethod
-    def from_text(text):
-        """
-        Creates a new Editor instance taking the root node from the parsed
-        text.
-        """
-        return Editor(lua_parser.parseString(text), None)
-
-    @staticmethod
-    def from_file(path):
-        """
-        Creates a new Editor instance from the given file. The editor can then
-        'save' and 'save_as' to export the edited code.
-        """
-        return Editor(lua_parser.parseFile(path), path)
-
     def __init__(self, root, selected_file=None):
         """
         Initializes an editor from an existing root node, selecting the root
@@ -38,6 +21,7 @@ class Editor(object):
         self.root = root
         self.selected = root
         self.file_selected = selected_file
+
         self.clipboard = None
         self.past_history = []
         self.future_history = []
@@ -60,6 +44,8 @@ class Editor(object):
         Saves the rendering of the current code tree (from root, not from
         selected node) to the file that originated this code.
         """
+        assert self.file_selected is not None
+
         with open(self.file_selected, 'w') as target_file:
             target_file.write(self.render(self._file_wrapper))
 
@@ -95,6 +81,7 @@ class Editor(object):
         """
         self._update_selected(action.execute(self))
         self.past_history.append(action)
+
         self.future_history = []
         self.changed = True
 

@@ -1,7 +1,9 @@
 from PyQt4 import QtGui
+import sys
+
 from core.editor import Editor
 from gui.window import MainEditorWindow
-import sys
+from ast.lua_parser import parseString
 
 test_program = """
 function allwords ()
@@ -33,6 +35,6 @@ end
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 #mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
-mainWin.tabbedEditor._add_editor(Editor.from_text(test_program))
+mainWin.tabbedEditor.create_editor(parseString(test_program), None)
 mainWin.show()
 sys.exit(app.exec_())

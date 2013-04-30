@@ -93,20 +93,24 @@ class InsertionWindow(CommandsWindow):
             button.setParent(None)
         self.buttonsByCommand = {}
 
-        node = editor.selected_node()
+        node = editor.selected
         if node is None:
             return
 
         index = node.selected_index
-        for class_ in editor.selected_node().get_available_classes(index):
-            if class_.abstract:
+        for class_ in editor.selected.get_available_classes(index):
+            if not hasattr(class_, 'abstract') or class_.abstract:
                 continue
 
             button = QtGui.QPushButton(class_.__name__)
-            button.pressed.connect(lambda class_=class_: self.handler(Insert(class_)))
+
+            def insert():
+                self.handler(Insert(class_))
+            button.pressed.connect(insert)
+
             self.buttonsByCommand[class_] = button
             self.verticalLayout.addWidget(button)
-            button.setEnabled(hasattr(editor.selected_node(), 'append'))
+            button.setEnabled(hasattr(editor.selected, 'append'))
 
 
 class MainEditorWindow(QtGui.QMainWindow):
@@ -136,8 +140,6 @@ class MainEditorWindow(QtGui.QMainWindow):
 
         self.settings = QtCore.QSettings("TCC", "Editor Estruturado")
         self.restoreSettings()
-
-        self.refresh()
 
     def createMenu(self):
         self.menubar = self.menuBar()
@@ -257,14 +259,15 @@ class MainEditorWindow(QtGui.QMainWindow):
 
     def runCommand(self, command):
         self.tabbedEditor.execute(command)
-        self.refresh()
 
     def refresh(self):
-        self.tabbedEditor.refresh()
+        if not self.tabbedEditor.editor():
+            return
 
-        self.navigationWindow.refresh(self.tabbedEditor)
-        self.editingWindow.refresh(self.tabbedEditor)
-        self.insertionWindow.refresh(self.tabbedEditor)
+        self.navigationWindow.refresh(self.tabbedEditor.editor())
+        self.editingWindow.refresh(self.tabbedEditor.editor())
+        self.insertionWindow.refresh(self.tabbedEditor.editor())
 
-        title = '{} - Structured Editor'.format(self.tabbedEditor.label())
+        title_template = '{} - Structured Editor'
+        title = title_template.format(self.tabbedEditor.editor().name)
         self.setWindowTitle(title)

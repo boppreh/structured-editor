@@ -10,9 +10,9 @@ import os
 
 from pyparsing import ParseException
 
-from display import Display
+from html_editor import HtmlEditor
 from core.editor import Editor
-
+from ast.lua_parser import parseString, parseFile
 
 class CodeInput(QtGui.QDialog):
     """
@@ -54,21 +54,22 @@ class CustomTabBar(QtGui.QTabBar):
     close button on the current tab, support for closing tabs with the middle
     mouse button and reordering tabs.
     """
-    def __init__(self, close_handler, *args, **kargs):
+    def __init__(self, can_close, *args, **kargs):
         super(CustomTabBar, self).__init__(*args, **kargs)
         self.setMovable(True)
 
-        self.close_handler = close_handler
+        self.can_close = can_close
         self.previous_index = -1
 
         self.currentChanged.connect(self._update_tab)
+        self.tabCloseRequested.connect(self.can_close)
 
     def close_tab(self, tab=None):
         """ Closes the tab at index "tab", if there is one. """
         if tab is None:
             tab = self.currentIndex()
 
-        if tab != -1 and self.close_handler(tab):
+        if tab != -1 and self.can_close(tab):
             self.removeTab(tab)
             self._update_tab()
 
@@ -118,96 +119,39 @@ class CustomTabBar(QtGui.QTabBar):
 
 
 class TabbedEditor(QtGui.QTabWidget):
-    """
-    Class for managing multiple editors with tabs. The current Editor instance
-    can be accessed from the method editor(), and its selected node at
-    selected_node() (note that "selected" is a function from the QTabWidget
-    superclass).
-    """
-    def __init__(self, refreshHandler, parent):
+    def __init__(self, refresh_handler=None, parent=None):
         super(TabbedEditor, self).__init__(parent=parent)
-        self.setTabBar(CustomTabBar(self._check_saved_changes))
+        self.setTabBar(CustomTabBar(self._can_close))
 
         self.untitled_tab_count = 0
 
-        self.refreshHandler = refreshHandler
-        self.currentChanged.connect(self.refreshHandler)
-        self.tabBar().tabCloseRequested.connect(self._check_saved_changes)
+        self.refresh_handler = refresh_handler
+        self.currentChanged.connect(self.refresh_handler)
 
         QtGui.QShortcut('Ctrl+T', self, self.new)
         QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
 
-    def _check_saved_changes(self, tab):
-        editor = self.widget(tab).editor
-        if not editor.changed:
-            return True
+    def _can_close(self, tab):
+        return self.count() > 1 and self.widget(tab).can_close()
 
-        label = self.tabText(tab)
-        buttons = (QtGui.QMessageBox.Save |
-                   QtGui.QMessageBox.Discard |
-                   QtGui.QMessageBox.Cancel)
-        message = 'Do you want to save changes to {}?'.format(label)
-        result = QtGui.QMessageBox.warning(self, 'Close confirmation', message,
-                                           buttons=buttons)
+    def editor(self): return self.widget(self.currentIndex())
 
-        if result == QtGui.QMessageBox.Save:
-            if editor.file_selected:
-                editor.save()
-                return True
-            else:
-                path = str(QtGui.QFileDialog.getSaveFileName(self,
-                                                             'Save as',
-                                                             label,
-                                                             filter="*.lua"))
-                if path:
-                    editor.save_as(path)
-                    return True
-                else:
-                    return False
-        elif result == QtGui.QMessageBox.Discard:
-            return True
-        elif result == QtGui.QMessageBox.Cancel:
-            return False
+    def save(self): self.editor.save()
+    def save_as(self): self.editor().save_as()
+    def undo(self): self.editor().undo()
+    def redo(self): self.editor().redo()
+    def execute(self, command): self.editor().execute(command)
 
-    def _next_label(self):
-        self.untitled_tab_count += 1
-        return 'Untitled Document ' + str(self.untitled_tab_count)
-
-    def label(self):
-        return self.tabText(self.currentIndex())
-
-    def editor(self):
-        """
-        Returns the current Editor instance or None if there are not tabs.
-        """
-        if self.currentWidget():
-            return self.currentWidget().editor
-        else:
-            return None
-
-    def selected_node(self):
-        """
-        Returns the selected node from the current editor or None if there are
-        no tabs.
-        """
-        if self.editor():
-            return self.editor().selected
-        else:
-            return None
-
-    def _add_editor(self, editor, label=None):
+    def create_editor(self, root, selected_file):
         """
         Creates a new tab to contain a given editor and automatically switches
-        focus to it. If the label is not provided, an Untitled Document X one
-        will be provided.
+        tab to it.
         """
-        label = label or self._next_label()
+        editor = HtmlEditor(root, selected_file, self.refresh_handler,
+                            parent=self)
 
-        display = Display(editor, self.refreshHandler, None)
-        display.refresh()
-
-        self.addTab(display, label)
-        # Return value of addTab is not reliable when some tabs have been
+        self.addTab(editor, editor.name)
+        # The return value of addTab is not reliable when some tabs have been
         # closed, so we calculate it on our own, assuming all tabs are open on
         # on the right end.
         tab = self.count() - 1
@@ -218,7 +162,7 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         Creates a new tab with an empty editor.
         """
-        self._add_editor(Editor.from_text(''))
+        self.create_editor(parseString(''), None)
 
     def open(self, event=None):
         """
@@ -227,39 +171,7 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         path = str(QtGui.QFileDialog.getOpenFileName(self, filter='*.lua'))
         if path:
-            self._add_editor(Editor.from_file(path), os.path.basename(path))
-
-    def save_as(self, editor=None, name=''):
-        """
-        Saves the current editor contents into a file selected by the user.
-        """
-        if editor is None:
-            editor = self.editor()
-
-        new_path = str(QtGui.QFileDialog.getSaveFileName(self, directory=name, filter="*.lua"))
-        if new_path:
-            self.editor().save_as(new_path)
-
-    def save(self, event=None):
-        """
-        Saves the current editor contents into the file that it was loaded
-        from.
-        """
-        self.editor().save()
-
-    def undo(self, event=None):
-        """
-        Undoes the last operation in the current editor.
-        """
-        self.editor().undo()
-        self.refreshHandler()
-
-    def redo(self, event=None):
-        """
-        Redoes the last operation in the current editor.
-        """
-        self.editor().redo()
-        self.refreshHandler()
+            self.create_editor(parseFile(path), path)
 
     def parse(self, event=None):
         """
@@ -268,29 +180,4 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         input_dialog = CodeInput()
         if input_dialog.exec_():
-            self._add_editor(input_dialog.editor(), None)
-
-    def execute(self, command):
-        """
-        Executes the given command on the current editor.
-        """
-        return self.editor().execute(command)
-
-    def is_available(self, command):
-        """
-        Returns True if the given command can be executed on the current
-        editor.
-        """
-        if self.editor():
-            return self.editor().is_available(command)
-        else:
-            return False
-
-    def refresh(self, event=None):
-        """
-        Refreshes the Display instance inside the current tab.
-        """
-        if self.currentWidget() is None:
-            return
-
-        self.currentWidget().refresh()
+            self.create_editor(input_dialog.root, None)
