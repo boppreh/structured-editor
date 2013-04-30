@@ -1,38 +1,11 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
+from ConfigParser import RawConfigParser
 from time import time
 from core.actions import Select
 from os.path import basename
 
-from collections import defaultdict
 from ast.structures import *
 from ast.lua_structures import *
-
-color_scheme = {
-                #Identifier: 'none',
-                String: 'color: hsl(128, 100%, 20%)',
-                Constant: 'color: hsl(251, 100%, 20%)',
-                FunctionCall: 'color: hsl(251, 100%, 20%); font-weight: bold',
-
-                While: 'color: hsl(300, 100%, 20%); font-weight: bold',
-                ForIn: 'color: hsl(300, 100%, 20%); font-weight: bold',
-                If: 'color: hsl(300, 100%, 20%); font-weight: bold',
-                Else: 'color: hsl(300, 100%, 20%); font-weight: bold',
-                FullIf: 'color: hsl(300, 100%, 20%); font-weight: bold',
-
-                Return: 'color: hsl(174, 100%, 20%); font-weight: bold',
-                LocalVar: 'color: hsl(130, 100%, 20%); font-weight: bold',
-
-                AnonFunction: 'color: hsl(240, 100%, 20%); font-weight: bold',
-                NamedFunction: 'color: hsl(255, 100%, 20%); font-weight: bold',
-               }
-
-color_scheme_dict = defaultdict(lambda: 'color: #333333', color_scheme)
-
-def node_color(node):
-    """
-    Returns the CSS to color the node according to its node type.
-    """
-    return color_scheme_dict[type(node)]
 
 class CodeDisplay(QtWebKit.QWebView):
     """
@@ -50,6 +23,19 @@ class CodeDisplay(QtWebKit.QWebView):
 
         self.lastClickTime = time()
         self.lastClickNode = None
+
+        self.config = RawConfigParser()
+        self.config.read('styles.ini')
+
+    def node_style(self, node):
+        """
+        Returns the CSS to color the node according to its node type.
+        """
+        class_name = type(node).__name__.lower()
+        try:
+            return self.config.get('Text Style', class_name)
+        except:
+            return self.config.get('Text Style', 'default')
 
     def selection_handler(self, url):
         node_id = int(basename(str(url.toString())))
@@ -86,8 +72,8 @@ class CodeDisplay(QtWebKit.QWebView):
             return '', ''
 
     def _link_tags(self, node):
-        template = '<a href="{id}" style="{color}; text-decoration: none">'
-        return template.format(id=node.node_id, color=node_color(node)), '</a>'
+        template = '<a href="{}" style="text-decoration: none; {}">'
+        return template.format(node.node_id, self.node_style(node)), '</a>'
 
     def _linked_template(self, node):
         self.node_dict[node.node_id] = node
@@ -102,7 +88,7 @@ class CodeDisplay(QtWebKit.QWebView):
         open_span, close_span = self._span_tags(node)
 
         return (prefix + open_span + open_a +
-                (node.template or ' ') +
+                node.template +
                 close_a + close_span + suffix)
 
     def _render_wrapper(self, node):
@@ -119,7 +105,7 @@ class CodeDisplay(QtWebKit.QWebView):
                               '3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII=')
         template = """<html>
 <body style="background: url('data:image/png;base64,{}'), top left repeat;">
-<pre style="font-family: 'Bitstream Vera Sans Mono', 'Consolas', monospace; font-size: 14px;">{}</pre>
+<pre style="font-family: 'Consolas', 'Bitstream Vera Sans Mono', monospace; font-size: 14px;">{}</pre>
 </body>
 </html>"""
         self.setHtml(template.format(background_pattern, text))
