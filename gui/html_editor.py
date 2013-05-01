@@ -1,4 +1,6 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt4.QtGui import QMessageBox
+from PyQt4.QtGui import QFileDialog
 from ConfigParser import RawConfigParser
 from time import time
 from os.path import basename
@@ -38,15 +40,11 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
             return self._confirm_unsaved_changes()
 
     def _confirm_unsaved_changes(self):
-        buttons = (QtGui.QMessageBox.Save |
-                   QtGui.QMessageBox.Discard |
-                   QtGui.QMessageBox.Cancel)
-
         message_template = 'Do you want to save changes to {}?'
         message = message_template.format(self.name)
-
-        result = QtGui.QMessageBox.warning(self, 'Close confirmation',
-                                           message, buttons=buttons)
+        buttons = QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+        result = QMessageBox.warning(self, 'Close confirmation',
+                                     message, buttons=buttons)
 
         if result == QtGui.QMessageBox.Save:
             return self.save()
@@ -55,17 +53,16 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         elif result == QtGui.QMessageBox.Cancel:
             return False
 
-    def save_as(self):
+    def save_as(self, path=None):
         """
         Saves the current editor contents into a file selected by the user.
         """
-        new_path = str(QtGui.QFileDialog.getSaveFileName(self, 'Save as',
-                                                         self.name,
-                                                         #directory='',
-                                                         filter="*.lua"))
+        if path is None:
+            path = str(QFileDialog.getSaveFileName(self, 'Save as', self.name,
+                                                   filter="*.lua"))
 
-        if new_path:
-            super(GraphicalEditor, self).save_as(new_path)
+        if path:
+            Editor.save_as(self, path)
             return True
         else:
             return False
@@ -76,7 +73,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         into a file selected by the user.
         """
         try:
-            super(GraphicalEditor, self).save()
+            Editor.save(self)
         except:
             self.save_as()
 
@@ -208,7 +205,7 @@ class HtmlEditor(GraphicalEditor):
 
         background = self.config.get('Global', 'background')
         font = self.config.get('Global', 'font')
-        text = Editor.render(self, self._linked_template)
+        text = self.render_tree(self._linked_template)
 
         self.setHtml(template.format(background, font, text))
 

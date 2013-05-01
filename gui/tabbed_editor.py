@@ -136,7 +136,7 @@ class TabbedEditor(QtGui.QTabWidget):
 
     def editor(self): return self.widget(self.currentIndex())
 
-    def save(self): self.editor.save()
+    def save(self): self.editor().save()
     def save_as(self): self.editor().save_as()
     def undo(self): self.editor().undo()
     def redo(self): self.editor().redo()

@@ -33,10 +33,8 @@ class Editor(object):
     def _file_wrapper(self, node):
         class_name = type(node).__name__.lower()
         try:
-            print self.config.get('Templates', class_name)
             return self.config.get('Templates', class_name)
         except:
-            print 'Default:', node.template
             return node.template
 
     def save(self):
@@ -47,7 +45,7 @@ class Editor(object):
         assert self.file_selected is not None
 
         with open(self.file_selected, 'w') as target_file:
-            target_file.write(self.render(self._file_wrapper))
+            target_file.write(self.render_tree(self._file_wrapper))
 
     def save_as(self, new_path):
         """
@@ -107,7 +105,7 @@ class Editor(object):
         self.future_history.append(self.past_history.pop())
         self._update_selected(self.future_history[-1].rollback(self))
 
-    def render(self, wrapper=empty_wrapper):
+    def render_tree(self, wrapper=empty_wrapper):
         """
         Returns the textual representation of the entire tree (not just the
         selected node).
