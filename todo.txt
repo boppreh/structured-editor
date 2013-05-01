@@ -1,5 +1,5 @@
 User Interface
-- Syntax highlight
+- 
 
 Abstract Syntax Tree
 -
@@ -8,7 +8,8 @@ Core
 -
 
 General
--
+- Validate file_templates file (shouldn't save with syntax errors)
+- Search
 
 Extras
 - Collaborative editing (tree in server, Editor in client)
