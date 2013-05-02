@@ -142,6 +142,10 @@ class TabbedEditor(QtGui.QTabWidget):
     def redo(self): self.editor().redo()
     def execute(self, command): self.editor().execute(command)
 
+    def can_save(self): return self.editor().selected_file is not None
+    def can_undo(self): return len(self.editor().past_history) >= 1
+    def can_redo(self): return len(self.editor().future_history) >= 1
+
     def create_editor(self, root, selected_file):
         """
         Creates a new tab to contain a given editor and automatically switches

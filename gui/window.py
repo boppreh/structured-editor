@@ -163,10 +163,10 @@ class MainEditorWindow(QtGui.QMainWindow):
                        "window.",
                        fileMenu, self.tabbedEditor.parse)
         fileMenu.addSeparator()
-        makeMenuAction("&Save", "Ctrl+S",
-                       "Save the current source code back to the file it came "
-                       "from.",
-                       fileMenu, self.tabbedEditor.save)
+        self.save_menu = makeMenuAction("&Save", "Ctrl+S",
+                                        "Save the current source code back to the file it came "
+                                        "from.",
+                                        fileMenu, self.tabbedEditor.save)
         makeMenuAction("&Save as...", "Ctrl+Alt+S",
                        "Save the current source code to a different file.",
                        fileMenu, self.tabbedEditor.save_as)
@@ -176,12 +176,12 @@ class MainEditorWindow(QtGui.QMainWindow):
                        fileMenu, self.close)
 
         editMenu = self.menubar.addMenu('&Edit')
-        makeMenuAction("&Undo", "Ctrl+Z",
-                       "Reverts the last change.",
-                       editMenu, self.tabbedEditor.undo)
-        makeMenuAction("&Redo", "Ctrl+Shift+Z",
-                       "Executes the last change undone",
-                       editMenu, self.tabbedEditor.redo)
+        self.undo_menu = makeMenuAction("&Undo", "Ctrl+Z",
+                                        "Reverts the last change.",
+                                        editMenu, self.tabbedEditor.undo)
+        self.redo_menu = makeMenuAction("&Redo", "Ctrl+Shift+Z",
+                                        "Executes the last change undone",
+                                        editMenu, self.tabbedEditor.redo)
 
         viewMenu = self.menubar.addMenu("&View")
         makeMenuAction("&Navigation window", "Alt+N",
@@ -271,3 +271,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         title_template = '{} - Structured Editor'
         title = title_template.format(self.tabbedEditor.editor().name)
         self.setWindowTitle(title)
+
+        self.save_menu.setEnabled(self.tabbedEditor.can_save())
+        self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
+        self.redo_menu.setEnabled(self.tabbedEditor.can_redo())

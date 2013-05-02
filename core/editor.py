@@ -20,7 +20,7 @@ class Editor(object):
         """
         self.root = root
         self.selected = root
-        self.file_selected = selected_file
+        self.selected_file = selected_file
 
         self.clipboard = None
         self.past_history = []
@@ -42,9 +42,9 @@ class Editor(object):
         Saves the rendering of the current code tree (from root, not from
         selected node) to the file that originated this code.
         """
-        assert self.file_selected is not None
+        assert self.selected_file is not None
 
-        with open(self.file_selected, 'w') as target_file:
+        with open(self.selected_file, 'w') as target_file:
             target_file.write(self.render_tree(self._file_wrapper))
 
     def save_as(self, new_path):
@@ -53,7 +53,7 @@ class Editor(object):
         selected node) to an arbitrary given path, changing the file path for
         new saves to this new path.
         """
-        self.file_selected = new_path
+        self.selected_file = new_path
         self.save()
 
     def _update_selected(self, new_selected):

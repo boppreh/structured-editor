@@ -23,11 +23,11 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         QtWebKit.QWebView.__init__(self, parent)
         Editor.__init__(self, root, selected_file)
 
-        if selected_file is None:
+        if self.selected_file is None:
             GraphicalEditor.untitled_count += 1
             self.name = self.untitled_name_template.format(self.untitled_count)
         else:
-            self.name = basename(selected_file)
+            self.name = basename(self.selected_file)
 
     def can_close(self):
         """
@@ -187,8 +187,8 @@ class HtmlEditor(GraphicalEditor):
                 template +
                 close_a + close_span + parent_open)
 
-    def execute(self, command):
-        super(HtmlEditor, self).execute(command)
+    def _update_selected(self, new_selected):
+        super(HtmlEditor, self)._update_selected(new_selected)
         self.refresh()
 
     def refresh(self):
