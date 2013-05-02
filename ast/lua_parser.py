@@ -30,6 +30,7 @@ ellipsis.setParseAction(Identifier)
 
 # Main structures' classes.
 block = Forward().setParseAction(Block)
+doblock = Forward().setParseAction(DoBlock)
 assignment = Forward().setParseAction(Assignment)
 tableconstructor = Forward().setParseAction(Table)
 fieldAssignment = Forward().setParseAction(Assignment)
@@ -37,11 +38,12 @@ localvar = Forward().setParseAction(LocalVar)
 namedfunc = Forward().setParseAction(NamedFunction)
 localfunc = Forward().setParseAction(LocalFunction)
 function = Forward().setParseAction(AnonFunction)
-parlist = Forward().setParseAction(NameList)
+parlist = Forward().setParseAction(ParameterList)
 functioncall = Forward().setParseAction(FunctionCall)
 var = Forward().setParseAction(Variable)
 listAccess = Forward().setParseAction(ListAccess)
 prefixexp = Forward().setParseAction(make_prefixexp)
+for_ = Forward().setParseAction(For)
 forin = Forward().setParseAction(ForIn)
 whilestat = Forward().setParseAction(While)
 ifstat = Forward().setParseAction(FullIf)
@@ -50,12 +52,13 @@ elsifstat = Forward().setParseAction(If)
 elsestat = Forward().setParseAction(Else)
 retstat = Forward().setParseAction(Return)
 explist = Forward().setParseAction(ExpressionList)
+repeatuntil = Forward().setParseAction(RepeatUntil)
+funcname = Forward().setParseAction(FunctionName)
+namelist = Forward().setParseAction(NameList)
 
 # Intermediary structures.
 exp = Forward()
 stat = Forward()
-funcname = Forward()
-namelist = Forward()
 varOrExp = Forward()
 nameAndArgs = Forward()
 varSuffix = Forward()
@@ -86,13 +89,13 @@ break_ = Keyword('break')
 end_ = Suppress(Keyword('end'))
 while_ = Suppress(Keyword('while'))
 do_ = Suppress(Keyword('do'))
-repeat_ = Keyword('repeat')
+repeat_ = Suppress(Keyword('repeat'))
 until_ = Suppress(Keyword('until'))
 if_ = Suppress(Keyword('if'))
 elseif_ = Suppress(Keyword('elseif'))
 then_ = Suppress(Keyword('then'))
 else_ = Suppress(Keyword('else'))
-for_ = Suppress(Keyword('for'))
+forkeyword = Suppress(Keyword('for'))
 local_ = Suppress(Keyword('local'))
 in_ = Suppress(Keyword('in'))
 
@@ -117,38 +120,41 @@ listAccess << (open_brackets + exp + close_brackets)
 varSuffix << (ZeroOrMore(nameAndArgs) +
               (listAccess | dot + name))
 args << (open_parens + (explist | Group(empty)) + close_parens |
-         tableconstructor | string)
+         Group(tableconstructor) | Group(string))
 function << (function_ + funcbody)
 funcbody << (open_parens + parlist + close_parens + block + end_)
-parlist << Optional(namelist + Optional(comma + ellipsis) | ellipsis)
-tableconstructor << (open_curly + Optional(fieldlist) + close_curly)
-fieldlist << (delimitedList(Group(field), fieldsep) + Optional(fieldsep))
-fieldAssignment << ((open_brackets + exp + close_brackets | name) + equals + exp)
+parlist << Optional(delimitedList(name) + Optional(comma + ellipsis) | ellipsis)
+tableconstructor << (open_curly + (fieldlist | empty) + close_curly)
+fieldlist << (delimitedList(field, fieldsep) + Optional(fieldsep))
+fieldAssignment << (Group(open_brackets + exp + close_brackets | name) + equals + Group(exp))
 field << (fieldAssignment | exp)
 fieldsep << (comma | semicolon)
 
 assignment << (Group(delimitedList(var)) + equals + explist)
-localvar << (local_ + Group(namelist) + Optional(equals + explist))
+localvar << (local_ + namelist + Optional(equals + explist))
 
-namedfunc << (function_ + Group(funcname) + funcbody)
+namedfunc << (function_ + funcname + funcbody)
 
-forin << (for_ + Group(namelist) + in_ + explist + do_ + block + end_)
+for_ << (forkeyword + name + equals + Group(exp + comma + exp + Optional(comma + exp)) + do_ + block + end_)
+forin << (forkeyword + namelist + in_ + explist + do_ + block + end_)
 whilestat<< (while_ + exp + do_ + block + end_)
 ifstat << (Group(mainif + ZeroOrMore(elsifstat)) +
            Optional(elsestat) + end_ )
 mainif << (if_ + exp + then_ + block)
 elsifstat << (elseif_ + exp + then_ + block)
 elsestat << (else_ + block)
+repeatuntil << (repeat_ + block + until_ + exp)
 
 localfunc << (local_ + function_ + name + funcbody)
 
+doblock << (do_ + block + end_)
+
 stat << (whilestat |
-         repeat_ + block + until_ + exp |
+         repeatuntil |
          ifstat |
-         for_ + name + equals + exp + comma + exp +
-             Optional(comma + exp) + do_ + block + end_ |
+         for_ |
          forin |
-         do_ + block + end_ |
+         doblock |
          localfunc |
          localvar |
          assignment |
@@ -159,23 +165,16 @@ stat << (whilestat |
 # an operator grammar, with correct precedences.
 # "enablepackrat" enables an important optimization for this type of grammar.
 exp.enablePackrat()
-exp << operatorPrecedence(nil_ |
-                          false_ |
-                          true_ |
-                          '...' |
-                          number |
-                          string |
-                          function |
-                          prefixexp |
-                          tableconstructor,
-                          [
-                           ('^', 2, opAssoc.LEFT, BinOp),
-                           ((not_ | '#' | '-'), 1, opAssoc.RIGHT, UnoOp),
-                           (oneOf('* / %'), 2, opAssoc.LEFT, BinOp),
-                           (oneOf('+ - ..'), 2, opAssoc.LEFT, BinOp),
-                           (oneOf('< > <= >= ~= =='), 2, opAssoc.LEFT, BinOp),
-                           ((or_ | and_), 2, opAssoc.LEFT, BinOp),
-                          ])
+operators = [
+    (Literal('^').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+    ((not_ | '#' | '-').setParseAction(Operator), 1, opAssoc.RIGHT, UnoOp),
+    (oneOf('* / %').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+    (oneOf('+ - ..').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+    (oneOf('< > <= >= ~= ==').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+    ((or_ | and_).setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+]
+exp << operatorPrecedence(nil_ | false_ | true_ | '...' | number | string |
+                          function | prefixexp | tableconstructor, operators)
 
 
 import re
@@ -193,8 +192,9 @@ def parseFile(filename):
     return parseString(open(filename).read())
 
 if __name__ == '__main__':
+    #print parseString('local function a(a) print() end')
+    print parseFile('../lua_test_files/full.lua')
     #print(parseString(str(parseFile('tests/1.lua'))))
-    #print parseFile('tests/1.lua')
     #from editor import Editor
     #print assignment.parseString('a = 5')
-    print assignment.parseString('asdf, fdsa = 5, (1 + 2)')[0]
+    #print assignment.parseString('asdf, fdsa = 5, (1 + 2)')[0]

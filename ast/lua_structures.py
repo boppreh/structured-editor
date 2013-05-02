@@ -7,6 +7,10 @@ classes in its abstract syntax tree.
 """
 from structures import *
 
+class DoBlock(Statement):
+    template = 'do\n{block}\nend'
+    subparts = [('block', Block)]
+
 class Constant(Expression):
     """ Literal string, number, nil, true or false. """
     abstract = False
@@ -29,7 +33,7 @@ class ExpressionList(DynamicNode):
     abstract = False
     child_type = Expression
 
-class NameList(DynamicNode):
+class NameList(DynamicNode, Expression):
     """ Comma separated list of names ("foo, bar, baz"). """
     abstract = False
     child_type = Identifier
@@ -42,16 +46,24 @@ class Assignment(Statement):
 class LocalVar(Assignment):
     """ Variable declaration with "local" modifier. """
     abstract = False
-    template = 'local ' + Assignment.template
+    subparts = [('names', NameList), ('values', ExpressionList)]
+    template = 'local {names} = {values}'
 
-class Table(Block, Expression):
+    def render(self, wrapper=empty_wrapper):
+        if len(self) == 1:
+            self.template = LocalVar.template.replace('= {values}', '')
+        else:
+            self.template = LocalVar.template
+        return super(LocalVar, self).render(wrapper)
+
+class Table(DynamicNode, Expression):
     """
     Table declaration. When printing, line breaks are inserted as necessary.
     """
     abstract = False
-    delimiter = ',\n'
+    delimiter = ', '
     child_type = StaticNode
-    template = '{{\n{children}\n}}'
+    template = '{{{children}}}'
 
 class FunctionName(DynamicNode):
     """
@@ -62,18 +74,22 @@ class FunctionName(DynamicNode):
     delimiter = '.'
     child_type = Identifier
 
+class ParameterList(NameList):
+    pass
+
 class NamedFunction(Statement):
     """
     Declaration of a named function, in contrast to an anonymous function.
     """
     abstract = False
     template = 'function {name}({parameters}){body}\nend'
-    subparts = [('name', FunctionName), ('parameters', NameList), ('body', Block)]
+    subparts = [('name', FunctionName), ('parameters', ParameterList), ('body', Block)]
 
-class LocalFunction(NamedFunction):
+class LocalFunction(Statement):
     """ Specialization of a named function with the local modifier.  """
     abstract = False
-    template = 'local ' + NamedFunction.template[1:]
+    template = 'local ' + NamedFunction.template
+    subparts = [('name', Identifier), ('parameters', ParameterList), ('body', Block)]
 
 class AnonFunction(Expression):
     """ Anonymous function declaration. Can be used as expression value. """
@@ -132,6 +148,17 @@ class ForIn(Statement):
     subparts = [('item', NameList), ('iterator', ExpressionList), ('body', Block)] 
     template = 'for {item} in {iterator} do{body}\nend'
 
+class For(Statement):
+    abstract = False
+    subparts = [('item', Identifier), ('range', ExpressionList), ('body', Block)]
+    template = 'for {item} = {range} do{body}\nend'
+
+class RepeatUntil(Statement):
+    """ "for item in list do" control structure. """
+    abstract = False
+    subparts = [('body', Block), ('condition', Expression)] 
+    template = 'repeat{body}\nuntil {condition}'
+
 class While(Statement):
     """ "while condition do" control structure. """
     abstract = False
@@ -142,7 +169,7 @@ class Else(StaticNode):
     """ The 'else' clause of a conditional. """
     abstract = False
     subparts = [('body', Block)]
-    template = 'else{body}\nend'
+    template = 'else{body}'
 
 class If(Else):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
@@ -161,9 +188,16 @@ class IfChain(DynamicNode):
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
     abstract = False
-    template = '{if_chain}\n{else}'
+    template = '{if_chain}\n{else}\nend'
     subparts = [('if_chain', IfChain),
                 ('else', Else)]
+
+    def render(self, wrapper=empty_wrapper):
+        if len(self) == 1:
+            self.template = FullIf.template.replace('{else}', '')
+        else:
+            self.template = FullIf.template
+        return super(FullIf, self).render(wrapper)
 
 class Return(DynamicNode, Statement):
     """ A return statement, with zero or more expression returned. """

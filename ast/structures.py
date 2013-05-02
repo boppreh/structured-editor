@@ -43,6 +43,14 @@ class Node(object):
     def index(self, item):
         return self.contents.index(item)
 
+    def cast_subpart(self, tok, type_):
+        if isinstance(tok, type_):
+            return tok
+        elif tok.__class__ == ParseResults:
+            return type_(tok)
+        else:
+            assert False,  "{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, tok)
+
     def get_available_classes(self, index):
         main_class = self.get_expected_class(index)
         return main_class.__subclasses__() + [main_class]
@@ -60,6 +68,9 @@ class Node(object):
 
     def render(self, wrapper=empty_wrapper):
         raise NotImplementedError()
+
+    def __str__(self):
+        return self.render()
 
 
 class Dummy(Node):
@@ -89,12 +100,6 @@ class StaticNode(Node):
             contents.append(self.cast_subpart(tok, type_))
         Node.__init__(self, contents)
 
-    def cast_subpart(self, tok, type_):
-        if isinstance(tok, type_):
-            return tok
-        else:
-            return type_(tok)
-
     def get_expected_class(self, index):
         return self.subparts[index][1]
 
@@ -103,7 +108,6 @@ class StaticNode(Node):
         Recursively renders itself and all children, calling 'wrapper' on
         each step, if available.
         """
-
         dictionary = {}
         for content, subpart in zip(self.contents, self.subparts):
             name, type_ = subpart
@@ -125,6 +129,7 @@ class DynamicNode(Node):
     template = '{children}'
 
     def __init__(self, contents=None):
+        print self.__class__.__name__, contents
         if not contents:
             contents = []
 
@@ -135,10 +140,7 @@ class DynamicNode(Node):
         if contents.__class__ == ParseResults:
             contents = list(contents)
 
-        for item in contents:
-            assert isinstance(item, self.child_type), '{} expected child with type {}, got {} ("{}").'.format(self.__class__, self.child_type, item.__class__, item)
-            assert hasattr(item, 'parent'), 'Expected child with parent attribute, got {} ("{}").'.format(item.__class__, item)
-
+        contents = [self.cast_subpart(i, self.child_type) for i in contents]
         Node.__init__(self, contents)
 
     def get_expected_class(self, index):
