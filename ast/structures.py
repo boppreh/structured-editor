@@ -129,7 +129,6 @@ class DynamicNode(Node):
     template = '{children}'
 
     def __init__(self, contents=None):
-        print self.__class__.__name__, contents
         if not contents:
             contents = []
 
