@@ -87,11 +87,19 @@ class InsertionWindow(CommandsWindow):
         super(InsertionWindow, self).__init__('Insertion', parent)
         self.handler = handler
         self.buttonsByCommand = {}
+        self.buttons = []
+
+        for i in range(1, 11):
+            def shorcut_handler(i=i):
+                if i < len(self.buttons):
+                    self.buttons[i].animateClick()
+            QtGui.QShortcut(str(i), self, shorcut_handler)
 
     def refresh(self, editor):
         for button in self.buttonsByCommand.values():
             button.setParent(None)
         self.buttonsByCommand = {}
+        self.buttons = []
 
         try:
             parent = editor.selected.parent
@@ -100,13 +108,14 @@ class InsertionWindow(CommandsWindow):
             return
 
         index = parent.selected_index
-        for class_ in parent.get_available_classes(index):
+        for i, class_ in enumerate(parent.get_available_classes(index)):
             if not hasattr(class_, 'abstract') or class_.abstract:
                 continue
 
             button = QtGui.QPushButton(class_.__name__)
             button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
             self.buttonsByCommand[class_] = button
+            self.buttons.append(button)
             self.verticalLayout.addWidget(button)
             #button.setEnabled(hasattr(editor.selected, 'append'))
 
