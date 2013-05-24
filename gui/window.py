@@ -282,6 +282,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         title_template = '{} - Structured Editor'
         title = title_template.format(self.tabbedEditor.editor().name)
         self.setWindowTitle(title)
+        selected = self.tabbedEditor.editor().selected
+        self.statusBar().showMessage(type(selected).__name__)
 
         self.save_menu.setEnabled(self.tabbedEditor.can_save())
         self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
