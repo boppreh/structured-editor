@@ -1,7 +1,6 @@
 from PyQt4 import QtGui
 import sys
 
-from core.editor import Editor
 from gui.window import MainEditorWindow
 from ast.lua_parser import parseString
 
