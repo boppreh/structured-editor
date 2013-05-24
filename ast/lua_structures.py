@@ -7,6 +7,12 @@ classes in its abstract syntax tree.
 """
 from structures import *
 
+class Expression(StaticNode):
+    """ Abstract class for expressions that can be used as values. """
+    template = 'ABSTRACT EXPRESSION'
+    @staticmethod
+    def default(): return Identifier.default()
+
 class DoBlock(Statement):
     template = 'do\n{block}\nend'
     subparts = [('block', Block)]
@@ -23,6 +29,8 @@ class Constant(Expression):
 class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
+    @staticmethod
+    def default(): return Identifier(['value'])
 
 class String(Constant):
     """ Literal string. """

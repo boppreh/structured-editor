@@ -186,8 +186,3 @@ class Block(DynamicNode):
             rendered_text = rendered_text.replace('\n', '', 1)
 
         return wrapper(self).format(children=rendered_text)
-
-
-class Expression(StaticNode):
-    """ Abstract class for expressions that can be used as values. """
-    template = 'ABSTRACT EXPRESSION'
