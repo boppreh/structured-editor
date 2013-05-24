@@ -96,16 +96,16 @@ class TestSpecificParsing(unittest.TestCase):
         self.do_simple_test('if c then elseif c then else end', '\n ')
 
     def test_implicit_string_call(self):
-        self.do_simple_test('my_function\'string parameter\'', '\n ')
+        self.do_simple_test('my_function\'string parameter\'', '()\n ')
 
     def test_implicit_table_call(self):
-        self.do_simple_test('my_function{}', '\n ')
+        self.do_simple_test('my_function{}', '()\n ')
 
     def test_empty_repeat(self):
         self.do_simple_test('repeat until c', '\n ')
 
     def test_repeat(self):
-        self.do_simple_test('repeat print() until ', '\n ')
+        self.do_simple_test('repeat print() until c', '\n ')
 
     def test_bound_for(self):
         self.do_simple_test('for i = 1, 10 do end', '\n ')
@@ -130,7 +130,7 @@ class TestSpecificParsing(unittest.TestCase):
 
     def test_operators(self):
         operators = 'or and < > <= >= ~= == .. + - * / % ^'.split()
-        self.do_simple_test('1' + '1'.join(operators) + '1', '() ')
+        self.do_simple_test('return 1 ' + ' 1 '.join(operators) + ' 1', '() ')
         self.do_simple_test('not 1 + #1 + -1', '() ')
 
 

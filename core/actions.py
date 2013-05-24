@@ -124,9 +124,15 @@ class Copy(Action):
         return True 
 
     def _execute(self, editor, selected, parent):
-        from PyQt4 import QtGui
+        from PyQt4 import QtGui, QtCore
         clipboard = QtGui.QApplication.clipboard()
-        clipboard.setText(selected.render())
+        mime = QtCore.QMimeData()
+        mime.setText(selected.render())
+        try:
+            mime.setHtml(editor.page().currentFrame().toHtml())
+        except AttributeError:
+            print 'Could not copy HTML.'
+        clipboard.setMimeData(mime)
 
         editor.clipboard = deepcopy(selected)
         return selected
