@@ -91,9 +91,9 @@ class InsertionWindow(CommandsWindow):
 
         for i in range(1, 11):
             def shorcut_handler(i=i):
-                if i < len(self.buttons):
-                    self.buttons[i].animateClick()
-            QtGui.QShortcut(str(i), self, shorcut_handler)
+                if i <= len(self.buttons):
+                    self.buttons[i-1].animateClick()
+            QtGui.QShortcut(str(i % 10), self, shorcut_handler)
 
     def refresh(self, editor):
         for button in self.buttonsByCommand.values():
