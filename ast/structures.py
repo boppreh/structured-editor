@@ -11,6 +11,9 @@ class Node(object):
     abstract = True
     count = 0
 
+    @classmethod
+    def default(cls): return cls()
+
     def __init__(self, contents, parent=None, selected_index=0):
         self.node_id = Node.count
         Node.count += 1
@@ -84,7 +87,7 @@ class StaticNode(Node):
 
     def __init__(self, toks=None):
         if toks == None:
-            toks = [type_() for name, type_ in self.subparts]
+            toks = [type_.default() for name, type_ in self.subparts]
 
         contents = []
         for tok, subpart in zip(toks, self.subparts):
