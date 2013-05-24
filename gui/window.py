@@ -253,6 +253,10 @@ class MainEditorWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         self.settings.setValue('geometry', self.saveGeometry())
         self.settings.setValue('state', self.saveState())
+        for i in range(self.tabbedEditor.count()):
+            if not self.tabbedEditor.widget(i).can_close():
+                event.ignore()
+                return
         QtGui.QMainWindow.closeEvent(self, event)
 
     def runCommand(self, command):

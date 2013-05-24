@@ -54,24 +54,15 @@ class CustomTabBar(QtGui.QTabBar):
     close button on the current tab, support for closing tabs with the middle
     mouse button and reordering tabs.
     """
-    def __init__(self, can_close, *args, **kargs):
+    def __init__(self, close_tab, *args, **kargs):
         super(CustomTabBar, self).__init__(*args, **kargs)
         self.setMovable(True)
 
-        self.can_close = can_close
+        self.close_tab = close_tab
         self.previous_index = -1
 
         self.currentChanged.connect(self._update_tab)
-        self.tabCloseRequested.connect(self.can_close)
-
-    def close_tab(self, tab=None):
-        """ Closes the tab at index "tab", if there is one. """
-        if tab is None:
-            tab = self.currentIndex()
-
-        if tab != -1 and self.can_close(tab):
-            self.removeTab(tab)
-            self._update_tab()
+        self.tabCloseRequested.connect(self.close_tab)
 
     def _update_tab(self, new_tab=None):
         self.hide_close_button(self.previous_index)
@@ -121,7 +112,7 @@ class CustomTabBar(QtGui.QTabBar):
 class TabbedEditor(QtGui.QTabWidget):
     def __init__(self, refresh_handler=None, parent=None):
         super(TabbedEditor, self).__init__(parent=parent)
-        self.setTabBar(CustomTabBar(self._can_close))
+        self.setTabBar(CustomTabBar(self.close_tab))
 
         self.untitled_tab_count = 0
 
@@ -130,9 +121,6 @@ class TabbedEditor(QtGui.QTabWidget):
 
         QtGui.QShortcut('Ctrl+T', self, self.new)
         QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
-
-    def _can_close(self, tab):
-        return self.count() > 1 and self.widget(tab).can_close()
 
     def editor(self): return self.widget(self.currentIndex())
 
@@ -145,6 +133,15 @@ class TabbedEditor(QtGui.QTabWidget):
     def can_save(self): return self.editor().selected_file is not None
     def can_undo(self): return len(self.editor().past_history) >= 1
     def can_redo(self): return len(self.editor().future_history) >= 1
+
+    def close_tab(self, tab=None):
+        """ Closes the tab at index "tab", if there is one. """
+        if tab is None:
+            tab = self.currentIndex()
+
+        if tab != -1 and self.count() > 1 and self.widget(tab).can_close():
+            self.removeTab(tab)
+            self._update_tab()
 
     def create_editor(self, root, selected_file):
         """
