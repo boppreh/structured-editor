@@ -73,14 +73,6 @@ class Node(object):
         return self.render()
 
 
-class Dummy(Node):
-    def __init__(self, value):
-        Node.__init__(self, [value])
-
-    def render(self, wrapper=empty_wrapper):
-        return wrapper(str(self.contents[0]))
-
-
 class StaticNode(Node):
     """
     Structure with fixed number of known parts. Automatically cast children to
@@ -92,7 +84,7 @@ class StaticNode(Node):
 
     def __init__(self, toks=None):
         if toks == None:
-            toks = [Dummy(name) for name, type in self.subparts]
+            toks = [type_() for name, type_ in self.subparts]
 
         contents = []
         for tok, subpart in zip(toks, self.subparts):
@@ -114,6 +106,11 @@ class StaticNode(Node):
             dictionary[name] = content.render(wrapper)
 
         return wrapper(self).format(**dictionary)
+
+    def insert(self, index, item):
+        assert self.can_insert(index, item)
+        item.parent = self
+        self.contents[index] = item
 
 class DynamicNode(Node):
     """
@@ -149,15 +146,10 @@ class DynamicNode(Node):
         item.parent = None
         self.contents.remove(item)
 
-    def append(self, item):
-        assert self.can_insert(len(self), item)
-        item.parent = self
-        self.contents.append(item)
-
     def insert(self, index, item):
-        assert self.can_insert(len(self), item)
+        assert self.can_insert(index + 1, item)
         item.parent = self
-        return self.contents.insert(index, item)
+        return self.contents.insert(index + 1, item)
 
     def render(self, wrapper=empty_wrapper):
         rendered_contents = [item.render(wrapper) for item in self.contents]
