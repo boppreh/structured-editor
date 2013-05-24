@@ -142,14 +142,12 @@ class HtmlEditor(GraphicalEditor):
         Returns the opening and closing span tags containing the background
         style for the given node.
         """
-        open_tag_template = '<span style="{}">'
-
-        if node == self.selected:
-            style = self.config.get('Selection', 'background')
-            return open_tag_template.format(style), '</span>'
-        elif node.parent == self.selected.parent:
-            style = self.config.get('Selection', 'siblingsbackground')
-            return open_tag_template.format(style), '</span>'
+        if node.parent == self.selected.parent:
+            if node == self.selected:
+                style = self.config.get('Selection', 'background')
+            else:
+                style = self.config.get('Selection', 'siblingsbackground')
+            return '<span style="{}">'.format(style), '</span>'
         else:
             return '', ''
 
@@ -197,11 +195,7 @@ class HtmlEditor(GraphicalEditor):
         """
         self.node_dict = {}
 
-        template = """<html>
-<body style="{}">
-<pre style="{}">{}</pre>
-</body>
-</html>"""
+        template = """<body style="{}"><pre style="{}">{}</pre></body>"""
 
         background = self.config.get('Global', 'background')
         font = self.config.get('Global', 'font')
