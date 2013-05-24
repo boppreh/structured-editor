@@ -49,7 +49,7 @@ class Node(object):
         elif tok.__class__ == ParseResults:
             return type_(tok)
         else:
-            assert False,  "{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, tok)
+            raise TypeError("{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, repr(tok)))
 
     def get_available_classes(self, index):
         main_class = self.get_expected_class(index)

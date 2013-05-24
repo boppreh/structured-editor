@@ -93,24 +93,22 @@ class InsertionWindow(CommandsWindow):
             button.setParent(None)
         self.buttonsByCommand = {}
 
-        node = editor.selected
-        if node is None:
+        try:
+            parent = editor.selected.parent
+            assert parent
+        except:
             return
 
-        index = node.selected_index
-        for class_ in editor.selected.get_available_classes(index):
+        index = parent.selected_index
+        for class_ in parent.get_available_classes(index):
             if not hasattr(class_, 'abstract') or class_.abstract:
                 continue
 
             button = QtGui.QPushButton(class_.__name__)
-
-            def insert():
-                self.handler(Insert(class_))
-            button.pressed.connect(insert)
-
+            button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
             self.buttonsByCommand[class_] = button
             self.verticalLayout.addWidget(button)
-            button.setEnabled(hasattr(editor.selected, 'append'))
+            #button.setEnabled(hasattr(editor.selected, 'append'))
 
 
 class MainEditorWindow(QtGui.QMainWindow):

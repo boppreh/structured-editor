@@ -182,12 +182,12 @@ class Insert(Action):
 
     def _is_available(self, editor, selected, parent):
         return (hasattr(selected, 'append')
-                and selected.can_insert(selected.selected_index + 1,
-                                        self.structure_class))
+                and parent.can_insert(parent.selected_index + 1,
+                                      self.structure_class))
 
     def _execute(self, editor, selected, parent):
         new_item = self.structure_class()
-        selected.append(new_item)
+        parent.insert(new_item, parent.selected_index + 1)
         return new_item
 
 
