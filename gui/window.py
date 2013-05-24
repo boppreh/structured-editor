@@ -112,7 +112,7 @@ class InsertionWindow(CommandsWindow):
             if not hasattr(class_, 'abstract') or class_.abstract:
                 continue
 
-            button = QtGui.QPushButton(class_.__name__)
+            button = QtGui.QPushButton('{} - {}'.format(i, class_.__name__))
             button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
             self.buttonsByCommand[class_] = button
             self.buttons.append(button)
