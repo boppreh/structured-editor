@@ -9,31 +9,6 @@ from core.actions import *
 # Keys reachable by the left hand on the keyboard.
 insertion_keys = 'qwertasdfgzxcvb'
 
-config = RawConfigParser()
-config.read('theme.ini')
-def extract_hotkeys(group, label_pairs):
-    return {config.get(group, action.__name__): action
-            for action, _ in label_pairs}
-
-editing_label_pairs = [
-                       (Delete, 'Delete'),
-                       (Copy, 'Copy'),
-                       (Cut, 'Cut'),
-                       (Paste, 'Paste'),
-                       (MoveUp, 'Move up'),
-                       (MoveDown, 'Move down'),
-                      ]
-
-movement_label_pairs = [
-                        (SelectParent, 'Parent'),
-                        (SelectChild, 'Child'),
-                        (SelectNextSibling, 'Next'),
-                        (SelectPrevSibling, 'Previous'),
-                       ]
-
-movement_hotkeys = extract_hotkeys('MovementHotkeys', movement_label_pairs)
-editing_hotkeys = extract_hotkeys('EditingHotkeys', editing_label_pairs)
-
 def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
 
@@ -132,6 +107,36 @@ class MainEditorWindow(QtGui.QMainWindow):
 
         self.setCentralWidget(self.tabbedEditor)
 
+        self.createDocks()
+        self.createMenu()
+        self.statusBar()
+
+        self.setWindowTitle("Structured Editor")
+
+        self.settings = QtCore.QSettings("TCC", "Editor Estruturado")
+        self.restoreSettings()
+
+    def createDocks(self):
+        editing_label_pairs = [(Delete, 'Delete'), (Copy, 'Copy'),
+                               (Cut, 'Cut'), (Paste, 'Paste'),
+                               (MoveUp, 'Move up'), (MoveDown, 'Move down')]
+
+        movement_label_pairs = [(SelectParent, 'Parent'),
+                                (SelectChild, 'Child'),
+                                (SelectNextSibling, 'Next'),
+                                (SelectPrevSibling, 'Previous')]
+
+        config = RawConfigParser()
+        config.read('theme.ini')
+        def extract_hotkeys(group, label_pairs):
+            return {config.get(group, action.__name__): action
+                    for action, _ in label_pairs}
+
+        movement_hotkeys = extract_hotkeys('MovementHotkeys',
+                                           movement_label_pairs)
+        editing_hotkeys = extract_hotkeys('EditingHotkeys',
+                                          editing_label_pairs)
+
         self.editingWindow = CommandsWindow('Editing', self)
         self.editingWindow.addCommands(editing_label_pairs,
                                        editing_hotkeys, self.runCommand)
@@ -143,14 +148,6 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.insertionWindow = InsertionWindow(self.runCommand, self)
 
         self.setDockNestingEnabled(True)
-
-        self.createMenu()
-        self.statusBar()
-
-        self.setWindowTitle("Structured Editor")
-
-        self.settings = QtCore.QSettings("TCC", "Editor Estruturado")
-        self.restoreSettings()
 
     def createMenu(self):
         self.menubar = self.menuBar()
