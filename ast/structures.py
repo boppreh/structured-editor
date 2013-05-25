@@ -45,7 +45,8 @@ class Node(object):
     def __setitem__(self, index, item):
         assert self.can_insert(index, item)
         self.contents[index] = item
-        item.parent = self
+        if type(item) != str:
+            item.parent = self
 
     def __len__(self):
         return len(self.contents)

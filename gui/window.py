@@ -1,6 +1,7 @@
 from PyQt4 import QtCore, QtGui
 from ConfigParser import RawConfigParser
 import re
+import string
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
@@ -116,12 +117,30 @@ class MainEditorWindow(QtGui.QMainWindow):
     def createDocks(self):
         config = RawConfigParser()
         config.read('theme.ini')
+
+        def ask_for_name(r, old_name):
+            name, ok = QtGui.QInputDialog.getText(self, 'Rename',
+                                                  'Enter a new name',
+                                                  text=old_name)
+            name = str(name)
+            if not ok or name[0] in string.digits:
+                return old_name
+
+            allowed_chars = string.lowercase + string.digits + ' _'
+            return filter(allowed_chars.__contains__, name.replace(' ', '_'))
+
+        Rename.ask_for_name = ask_for_name
+
         def extractHotkeys(group, pairs):
             return {config.get(group, label): item for item, label in pairs}
 
-        editing_label_pairs = [(Delete, 'Delete'), (Copy, 'Copy'),
-                               (Cut, 'Cut'), (Paste, 'Paste'),
-                               (MoveUp, 'Move up'), (MoveDown, 'Move down')]
+        editing_label_pairs = [(Delete, 'Delete'),
+                               (Copy, 'Copy'),
+                               (Cut, 'Cut'),
+                               (Paste, 'Paste'),
+                               (MoveUp, 'Move up'),
+                               (MoveDown, 'Move down'),
+                               (Rename, 'Rename')]
         self.editingWindow = CommandsWindow('Editing', self)
         self.editingWindow.addCommands(editing_label_pairs,
                                        extractHotkeys('Editing Hotkeys',

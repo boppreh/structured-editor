@@ -197,8 +197,7 @@ class Insert(Action):
 
     def _is_available(self, editor, selected, parent, index):
         return (hasattr(selected, 'add')
-                and parent.can_insert(index,
-                                      self.structure_class))
+                and parent.can_insert(index, self.structure_class))
 
     def _execute(self, editor, selected, parent, index):
         new_item = self.structure_class.default()
@@ -215,3 +214,15 @@ class Select(Action):
 
     def _execute(self, editor, selected, parent, index):
         return self.node
+
+
+class Rename(Action):
+    alters = True
+    ask_for_name = lambda self, old_name: 'new_name'
+
+    def _is_available(self, editor, selected, parent, index):
+        return len(selected) == 1 and type(selected[0]) == str
+
+    def _execute(self, editor, selected, parent, index):
+        selected[0] = self.ask_for_name(selected[0])
+        return selected
