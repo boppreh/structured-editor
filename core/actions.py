@@ -203,7 +203,7 @@ class Insert(Action):
     def _execute(self, editor, selected, parent, index):
         new_item = self.structure_class.default()
         parent.add(index, new_item)
-        return new_item
+        return new_item.defaulted.pop(0)
 
 
 class Select(Action):
