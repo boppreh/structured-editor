@@ -131,6 +131,9 @@ class FunctionCall(Expression, Statement):
                 ('colon_name', ColonName),
                 ('parameters', ExpressionList)]
 
+    @staticmethod
+    def default(): return FunctionCall(None)
+
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
     abstract = False
