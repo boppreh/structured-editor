@@ -6,6 +6,8 @@ class Action(object):
     Base action type, capable of executing an arbitrary action on an editor and
     undoing it if necessary.
     """
+    alters = False
+
     def _expanded_call(self, function, editor):
         parent = editor.selected.parent
         index = parent.index(editor.selected) if parent else -1
@@ -40,7 +42,7 @@ class Action(object):
         Undoes the action done by execute, returning the item selected before
         the 'execute' call.
         """
-        self._rollback(editor, editor.selected, editor.selected.parent)
+        self._rollback(editor)
         return self.previous_selected
 
     def _execute(self, editor, selected, parent, index):
@@ -98,6 +100,8 @@ class SelectChild(Action):
 
 
 class MoveUp(SelectPrevSibling):
+    alters = True
+
     def _is_available(self, editor, selected, parent, index):
         return (SelectPrevSibling._is_available(self, editor, selected, parent, index)
                 and hasattr(parent, 'insert'))
@@ -109,6 +113,8 @@ class MoveUp(SelectPrevSibling):
 
 
 class MoveDown(SelectNextSibling):
+    alters = True
+
     def _is_available(self, editor, selected, parent, index):
         return (SelectNextSibling._is_available(self, editor, selected, parent, index)
                 and hasattr(parent, 'insert'))
@@ -140,6 +146,8 @@ class Copy(Action):
 
 
 class Paste(Action):
+    alters = True
+
     def _is_available(self, editor, selected, parent, index):
         return (editor.clipboard is not None
                 and hasattr(selected, 'insert')
@@ -153,6 +161,8 @@ class Paste(Action):
 
 
 class Delete(Action):
+    alters = True
+
     def _is_available(self, editor, selected, parent, index):
         return hasattr(parent, 'remove')
 
@@ -167,17 +177,21 @@ class Delete(Action):
         else:
             return parent
 
-    def _rollback(self, editor, selected, parent):
+    def _rollback(self, editor):
         self.parent.insert(self.index, self.removed)
 
 
 class Cut(Delete, Copy):
+    alters = True
+
     def _execute(self, editor, selected, parent, index):
         Copy._execute(self, editor, selected, parent, index)
         return Delete._execute(self, editor, selected, parent, index)
 
 
 class Insert(Action):
+    alters = True
+
     def __init__(self, structure_class):
         self.structure_class = structure_class
 

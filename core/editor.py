@@ -64,10 +64,11 @@ class Editor(object):
         Actions must have 'is_available', 'execute' and 'rollback' methods.
         """
         self.selected = action.execute(self)
-        self.past_history.append(action)
 
-        self.future_history = []
-        self.changed = True
+        if action.alters:
+            self.past_history.append(action)
+            self.future_history = []
+            self.changed = True
 
     def is_available(self, action):
         """
