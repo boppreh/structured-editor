@@ -160,13 +160,12 @@ class Paste(Action):
 
     def _is_available(self, editor, selected, parent, index):
         return (editor.clipboard is not None
-                and hasattr(selected, 'insert')
-                and selected.can_insert(0,
-                                        editor.clipboard))
+                and parent is not None
+                and parent.can_insert(index, editor.clipboard))
 
     def _execute(self, editor, selected, parent, index):
         copy = deepcopy(editor.clipboard)
-        selected.insert(0, copy)
+        parent.add(index, copy)
         return copy
 
 
