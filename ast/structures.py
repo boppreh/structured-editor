@@ -111,7 +111,7 @@ class StaticNode(Node):
 
         return wrapper(self).format(**dictionary)
 
-    def insert(self, index, item):
+    def add(self, index, item):
         assert self.can_insert(index, item)
         item.parent = self
         self.contents[index] = item
@@ -150,10 +150,13 @@ class DynamicNode(Node):
         item.parent = None
         self.contents.remove(item)
 
+    def add(self, index, item):
+        return self.insert(index + 1, item)
+
     def insert(self, index, item):
-        assert self.can_insert(index + 1, item)
+        assert self.can_insert(index, item)
         item.parent = self
-        return self.contents.insert(index + 1, item)
+        return self.contents.insert(index, item)
 
     def render(self, wrapper=empty_wrapper):
         rendered_contents = [item.render(wrapper) for item in self.contents]
