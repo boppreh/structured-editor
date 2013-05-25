@@ -94,7 +94,7 @@ class InsertionWindow(CommandsWindow):
 
         try:
             parent = editor.selected.parent
-            assert parent
+            assert parent is not None
         except:
             return
 
