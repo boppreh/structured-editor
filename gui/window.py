@@ -61,7 +61,6 @@ class InsertionWindow(CommandsWindow):
         self.buttonsByLetter = {}
         self.hotkeys = hotkeys
 
-        # Keys reachable by the left hand.
         for letter in hotkeys:
             def shorcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
@@ -125,7 +124,7 @@ class MainEditorWindow(QtGui.QMainWindow):
                                (MoveUp, 'Move up'), (MoveDown, 'Move down')]
         self.editingWindow = CommandsWindow('Editing', self)
         self.editingWindow.addCommands(editing_label_pairs,
-                                       extractHotkeys('EditingHotkeys',
+                                       extractHotkeys('Editing Hotkeys',
                                                       editing_label_pairs),
                                        self.runCommand)
 
@@ -135,11 +134,12 @@ class MainEditorWindow(QtGui.QMainWindow):
                                 (SelectPrevSibling, 'Previous')]
         self.navigationWindow = CommandsWindow('Navigation', self)
         self.navigationWindow.addCommands(movement_label_pairs,
-                                          extractHotkeys('MovementHotkeys',
+                                          extractHotkeys('Movement Hotkeys',
                                                          movement_label_pairs),
                                           self.runCommand)
 
-        insertionHotkeys = 'qwertasdfgzxcvb'
+        insertionHotkeys = [value for i, value in
+                            config.items('Insertion Hotkeys')]
         self.insertionWindow = InsertionWindow(self.runCommand,
                                                insertionHotkeys, self)
 
