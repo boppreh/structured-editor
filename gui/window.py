@@ -6,7 +6,9 @@ from tabbed_editor import TabbedEditor
 from core.actions import *
 
 import re
-import string
+
+# Keys reachable by the left hand on the keyboard.
+insertion_keys = 'qwertasdfgzxcvb'
 
 navigation_hotkeys = {
                       "Left": SelectParent,
@@ -96,14 +98,15 @@ class InsertionWindow(CommandsWindow):
         self.buttonsByCommand = {}
         self.buttonsByLetter = {}
 
-        for letter in string.lowercase:
+        # Keys reachable by the left hand.
+        for letter in insertion_keys:
             def shorcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
                     self.buttonsByLetter[letter].animateClick()
             QtGui.QShortcut(letter, self, shorcut_handler)
 
     def addCommand(self, i, class_):
-        hotkey = string.lowercase[i]
+        hotkey = insertion_keys[i]
         button = QtGui.QPushButton('{} - {}'.format(hotkey, node_name(class_)))
         self.verticalLayout.addWidget(button)
 
