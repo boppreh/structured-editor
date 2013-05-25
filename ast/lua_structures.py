@@ -14,7 +14,7 @@ class Expression(StaticNode):
 
 class DoBlock(Statement):
     abstract = False
-    template = 'do\n{block}\nend'
+    template = 'do{block}\nend'
     subparts = [('block', Block)]
 
 class Constant(Expression):
