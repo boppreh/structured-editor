@@ -1,50 +1,40 @@
 from PyQt4 import QtCore, QtGui
+from ConfigParser import RawConfigParser
+import re
 
 from update import update_and_restart, can_update
-
 from tabbed_editor import TabbedEditor
 from core.actions import *
-
-import re
 
 # Keys reachable by the left hand on the keyboard.
 insertion_keys = 'qwertasdfgzxcvb'
 
-navigation_hotkeys = {
-                      "Left": SelectParent,
-                      "Right": SelectChild,
-                      "Up": SelectPrevSibling,
-                      "Down": SelectNextSibling,
-                     }
+config = RawConfigParser()
+config.read('theme.ini')
+def extract_hotkeys(group, label_pairs):
+    return {config.get(group, action.__name__): action
+            for action, _ in label_pairs}
 
-navigation_commands_with_labels = [
-                                   (SelectParent, 'Parent'),
-                                   (SelectChild, 'Child'),
-                                   (SelectNextSibling, 'Next'),
-                                   (SelectPrevSibling, 'Previous'),
-                                  ]
+editing_label_pairs = [
+                       (Delete, 'Delete'),
+                       (Copy, 'Copy'),
+                       (Cut, 'Cut'),
+                       (Paste, 'Paste'),
+                       (MoveUp, 'Move up'),
+                       (MoveDown, 'Move down'),
+                      ]
 
-editing_hotkeys = {
-                   "Ctrl+D": Delete,
+movement_label_pairs = [
+                        (SelectParent, 'Parent'),
+                        (SelectChild, 'Child'),
+                        (SelectNextSibling, 'Next'),
+                        (SelectPrevSibling, 'Previous'),
+                       ]
 
-                   "Ctrl+C": Copy,
-                   "Ctrl+X": Cut,
-                   "Ctrl+V": Paste,
+movement_hotkeys = extract_hotkeys('MovementHotkeys', movement_label_pairs)
+editing_hotkeys = extract_hotkeys('EditingHotkeys', editing_label_pairs)
 
-                   "Ctrl+U": MoveUp,
-                   "Ctrl+M": MoveDown,
-                  }
-
-editing_commands_with_labels = [
-                                (Delete, 'Delete'),
-                                (Copy, 'Copy'),
-                                (Cut, 'Cut'),
-                                (Paste, 'Paste'),
-                                (MoveUp, 'Move up'),
-                                (MoveDown, 'Move down'),
-                               ]
-
-def node_name(node_type):
+def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
 
 
@@ -107,7 +97,7 @@ class InsertionWindow(CommandsWindow):
 
     def addCommand(self, i, class_):
         hotkey = insertion_keys[i]
-        button = QtGui.QPushButton('{} - {}'.format(hotkey, node_name(class_)))
+        button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
         button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
@@ -143,12 +133,12 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.tabbedEditor)
 
         self.editingWindow = CommandsWindow('Editing', self)
-        self.editingWindow.addCommands(editing_commands_with_labels,
+        self.editingWindow.addCommands(editing_label_pairs,
                                        editing_hotkeys, self.runCommand)
 
         self.navigationWindow = CommandsWindow('Navigation', self)
-        self.navigationWindow.addCommands(navigation_commands_with_labels,
-                                          navigation_hotkeys, self.runCommand)
+        self.navigationWindow.addCommands(movement_label_pairs,
+                                          movement_hotkeys, self.runCommand)
 
         self.insertionWindow = InsertionWindow(self.runCommand, self)
 
@@ -298,7 +288,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         title = title_template.format(editor.name)
         self.setWindowTitle(title)
 
-        self.statusBar().showMessage(node_name(type(editor.selected)))
+        self.statusBar().showMessage(class_label(type(editor.selected)))
 
         self.save_menu.setEnabled(self.tabbedEditor.can_save())
         self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
