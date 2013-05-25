@@ -99,6 +99,16 @@ class SelectChild(Action):
         return selected[0]
 
 
+class CycleDefaulted(Action):
+    def _is_available(self, editor, selected, parent, index):
+        return len(set(selected.defaulted) - set([selected])) > 0
+
+    def _execute(self, editor, selected, parent, index):
+        defaulted = selected.defaulted
+        index = defaulted.index(selected) if selected in defaulted else 0
+        return defaulted[(index + 1) % len(defaulted)]
+
+
 class MoveUp(SelectPrevSibling):
     alters = True
 

@@ -150,7 +150,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         movement_label_pairs = [(SelectParent, 'Parent'),
                                 (SelectChild, 'Child'),
                                 (SelectNextSibling, 'Next'),
-                                (SelectPrevSibling, 'Previous')]
+                                (SelectPrevSibling, 'Previous'),
+                                (CycleDefaulted, 'Cycle')]
         self.navigationWindow = CommandsWindow('Navigation', self)
         self.navigationWindow.addCommands(movement_label_pairs,
                                           extractHotkeys('Movement Hotkeys',
