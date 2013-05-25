@@ -63,17 +63,26 @@ class InsertionWindow(CommandsWindow):
         self.hotkeys = hotkeys
 
         for letter in hotkeys:
-            def shorcut_handler(letter=letter):
+            def shortcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
                     self.buttonsByLetter[letter].animateClick()
-            QtGui.QShortcut(letter, self, shorcut_handler)
+            QtGui.QShortcut(letter, self, shortcut_handler)
+            QtGui.QShortcut('Shift+' + letter, self, shortcut_handler)
+
+    def process(self, class_):
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            # Insert before.
+            self.handler(Insert(class_, True))
+        else:
+            # Insert after.
+            self.handler(Insert(class_, False))
 
     def addCommand(self, i, class_):
         hotkey = self.hotkeys[i]
         button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
-        button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
+        button.pressed.connect(lambda c=class_: self.process(class_))
 
         self.buttonsByCommand[class_] = button
         self.buttonsByLetter[hotkey] = button

@@ -202,8 +202,9 @@ class Cut(Delete, Copy):
 class Insert(Action):
     alters = True
 
-    def __init__(self, structure_class):
+    def __init__(self, structure_class, before=False):
         self.structure_class = structure_class
+        self.before = before
 
     def _is_available(self, editor, selected, parent, index):
         return (hasattr(selected, 'add')
@@ -211,7 +212,10 @@ class Insert(Action):
 
     def _execute(self, editor, selected, parent, index):
         new_item = self.structure_class.default()
-        parent.add(index, new_item)
+        if self.before:
+            parent.add_before(index, new_item)
+        else:
+            parent.add(index, new_item)
         return new_item.defaulted.pop(0)
 
 

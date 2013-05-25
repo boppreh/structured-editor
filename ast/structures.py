@@ -124,6 +124,8 @@ class StaticNode(Node):
         item.parent = self
         self.contents[index] = item
 
+    def add_before(self, index, item): self.add(index, item)
+
 class DynamicNode(Node):
     """
     Structure with variable number of parts derived from the same type.
@@ -159,6 +161,9 @@ class DynamicNode(Node):
 
     def add(self, index, item):
         return self.insert(index + 1, item)
+
+    def add_before(self, index, item):
+        return self.insert(index, item)
 
     def insert(self, index, item):
         assert self.can_insert(index, item)
