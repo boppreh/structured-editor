@@ -28,7 +28,7 @@ class Editor(object):
         self.changed = False
 
         self.config = RawConfigParser()
-        self.config.read('file_templates.ini')
+        self.config.read('output_format.ini')
 
     def _file_wrapper(self, node):
         class_name = type(node).__name__.lower()

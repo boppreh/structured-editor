@@ -96,7 +96,6 @@ class HtmlEditor(GraphicalEditor):
 
         self.config = RawConfigParser()
         self.config.read('theme.ini')
-        self.config.read('display_templates.ini')
 
         self.refresh()
 
