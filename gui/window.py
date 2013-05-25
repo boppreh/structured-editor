@@ -95,13 +95,6 @@ class InsertionWindow(CommandsWindow):
         self.handler = handler
         self.buttonsByCommand = {}
         self.buttonsByLetter = {}
-        self.buttons = []
-
-        for i in range(1, 11):
-            def shorcut_handler(i=i):
-                if i <= len(self.buttons):
-                    self.buttons[i-1].animateClick()
-            QtGui.QShortcut(str(i % 10), self, shorcut_handler)
 
         for letter in string.lowercase:
             def shorcut_handler(letter=letter):
@@ -109,29 +102,20 @@ class InsertionWindow(CommandsWindow):
                     self.buttonsByLetter[letter].animateClick()
             QtGui.QShortcut(letter, self, shorcut_handler)
 
-    def getHotkey(self, name):
-        for letter in name:
-            if letter.lower() not in self.buttonsByLetter:
-                return letter.lower(), name.replace(letter, '&' + letter, 1)
-        return None, name
-
     def addCommand(self, i, class_):
-        hotkey, name = self.getHotkey(node_name(class_))
-
-        button = QtGui.QPushButton('{} - {}'.format(i, name))
+        hotkey = string.lowercase[i]
+        button = QtGui.QPushButton('{} - {}'.format(hotkey, node_name(class_)))
         self.verticalLayout.addWidget(button)
 
         button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
 
         self.buttonsByCommand[class_] = button
         self.buttonsByLetter[hotkey] = button
-        self.buttons.append(button)
 
     def refresh(self, editor):
         for button in self.buttonsByCommand.values():
             button.setParent(None)
         self.buttonsByCommand = {}
-        self.buttons = []
 
         try:
             parent = editor.selected.parent
@@ -140,9 +124,11 @@ class InsertionWindow(CommandsWindow):
             return
 
         index = parent.selected_index
-        for i, class_ in enumerate(parent.get_available_classes(index)):
-            if hasattr(class_, 'abstract') and not class_.abstract:
-                self.addCommand(i, class_)
+        is_concrete = lambda(class_): (hasattr(class_, 'abstract') and
+                                       not class_.abstract)
+        classes = filter(is_concrete, parent.get_available_classes(index))
+        for i, class_ in enumerate(classes):
+            self.addCommand(i, class_)
 
 
 class MainEditorWindow(QtGui.QMainWindow):
