@@ -5,6 +5,8 @@ from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
 from core.actions import *
 
+import re
+
 navigation_hotkeys = {
                       "Left": SelectParent,
                       "Right": SelectChild,
@@ -38,6 +40,10 @@ editing_commands_with_labels = [
                                 (MoveUp, 'Move up'),
                                 (MoveDown, 'Move down'),
                                ]
+
+def node_name(node_type):
+    return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
+
 
 class CommandsWindow(QtGui.QDockWidget):
     def __init__(self, title, parent):
@@ -112,7 +118,7 @@ class InsertionWindow(CommandsWindow):
             if not hasattr(class_, 'abstract') or class_.abstract:
                 continue
 
-            button = QtGui.QPushButton('{} - {}'.format(i, class_.__name__))
+            button = QtGui.QPushButton('{} - {}'.format(i, node_name(class_)))
             button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
             self.buttonsByCommand[class_] = button
             self.buttons.append(button)
@@ -272,7 +278,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.tabbedEditor.execute(command)
 
     def refresh(self):
-        if not self.tabbedEditor.editor():
+        editor = self.tabbedEditor.editor()
+        if not editor:
             return
 
         self.navigationWindow.refresh(self.tabbedEditor.editor())
@@ -280,10 +287,10 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.insertionWindow.refresh(self.tabbedEditor.editor())
 
         title_template = '{} - Structured Editor'
-        title = title_template.format(self.tabbedEditor.editor().name)
+        title = title_template.format(editor.name)
         self.setWindowTitle(title)
-        selected = self.tabbedEditor.editor().selected
-        self.statusBar().showMessage(type(selected).__name__)
+
+        self.statusBar().showMessage(node_name(type(editor.selected)))
 
         self.save_menu.setEnabled(self.tabbedEditor.can_save())
         self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
