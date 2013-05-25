@@ -56,20 +56,6 @@ class Editor(object):
         self.selected_file = new_path
         self.save()
 
-    def _update_selected(self, new_selected):
-        """
-        Changes the currently selected node, updating the parent's
-        selected_index value if it has a parent.
-
-        The selected_index is stored in the node itself so it can be restored
-        when the user navigates back to it.
-        """
-        self.selected = new_selected
-
-        parent = self.selected.parent
-        if parent:
-            parent.selected_index = parent.index(self.selected)
-
     def execute(self, action):
         """
         Executes a new action, allowing it to be reversed by undo. To avoid
@@ -77,7 +63,7 @@ class Editor(object):
 
         Actions must have 'is_available', 'execute' and 'rollback' methods.
         """
-        self._update_selected(action.execute(self))
+        self.selected = action.execute(self)
         self.past_history.append(action)
 
         self.future_history = []
@@ -95,7 +81,7 @@ class Editor(object):
         itself.
         """
         self.past_history.append(self.future_history.pop())
-        self._update_selected(self.past_history[-1].execute(self))
+        self.selected = self.past_history[-1].execute(self)
 
     def undo(self):
         """
@@ -103,7 +89,7 @@ class Editor(object):
         itself.
         """
         self.future_history.append(self.past_history.pop())
-        self._update_selected(self.future_history[-1].rollback(self))
+        self.selected = self.future_history[-1].rollback(self)
 
     def render_tree(self, wrapper=empty_wrapper):
         """

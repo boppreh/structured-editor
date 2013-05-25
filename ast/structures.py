@@ -14,13 +14,12 @@ class Node(object):
     @classmethod
     def default(cls): return cls()
 
-    def __init__(self, contents, parent=None, selected_index=0):
+    def __init__(self, contents, parent=None):
         self.node_id = Node.count
         Node.count += 1
 
         self.contents = contents
         self.parent = parent
-        self.selected_index = selected_index 
 
         for item in contents:
             try:
@@ -122,8 +121,7 @@ class DynamicNode(Node):
     Exposes the standard list functions len, index and bracket access
     (list[0]).
 
-    Automatically sets the parent and selected_index attribute in itself and
-    its children.
+    Automatically sets the parent attribute in itself and its children.
     """
     delimiter = ', '
     child_type = str

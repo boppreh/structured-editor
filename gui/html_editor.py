@@ -190,8 +190,8 @@ class HtmlEditor(GraphicalEditor):
                 template +
                 close_a + close_span + parent_open)
 
-    def _update_selected(self, new_selected):
-        super(HtmlEditor, self)._update_selected(new_selected)
+    def execute(self, action):
+        super(HtmlEditor, self).execute(action)
         self.refresh()
 
     def refresh(self):

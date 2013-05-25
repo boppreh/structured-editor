@@ -123,7 +123,7 @@ class InsertionWindow(CommandsWindow):
         except:
             return
 
-        index = parent.selected_index
+        index = parent.index(editor.selected)
         is_concrete = lambda(class_): (hasattr(class_, 'abstract') and
                                        not class_.abstract)
         classes = filter(is_concrete, parent.get_available_classes(index))
