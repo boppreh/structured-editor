@@ -56,7 +56,9 @@ class Node(object):
 
     def get_available_classes(self, index):
         main_class = self.get_expected_class(index)
-        return main_class.__subclasses__() + [main_class]
+        def subclasses(class_):
+            return [class_] + sum(map(subclasses, class_.__subclasses__()), [])
+        return subclasses(main_class)
 
     def can_insert(self, index, item):
         return isinstance(item, self.get_expected_class(index))
