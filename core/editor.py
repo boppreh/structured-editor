@@ -25,7 +25,6 @@ class Editor(object):
         self.clipboard = None
         self.past_history = []
         self.future_history = []
-        self.changed = False
 
         self.config = RawConfigParser()
         self.config.read('output_format.ini')
@@ -66,7 +65,6 @@ class Editor(object):
         if action.alters:
             self.past_history.append((self.selected, action))
             self.future_history = []
-            self.changed = True
             if len(self.past_history) > 1000:
                 self.past_history = self.past_history[-1000:]
 

@@ -34,7 +34,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         Returns a boolean value indicating if the editor can be closed. If
         there are unsaved changes, ask the user to save or discard.
         """
-        if not self.changed:
+        if len(self.past_history) == 0:
             return True
         else:
             return self._confirm_unsaved_changes()
