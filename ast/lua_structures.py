@@ -40,11 +40,15 @@ class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
     abstract = False
     child_type = Expression
+    @staticmethod
+    def default(): return ExpressionList([Identifier.default()])
 
-class NameList(DynamicNode, Expression):
+class NameList(DynamicNode):
     """ Comma separated list of names ("foo, bar, baz"). """
     abstract = False
     child_type = Identifier
+    @staticmethod
+    def default(): return NameList([Identifier.default()])
 
 class Assignment(Statement):
     abstract = False
@@ -83,7 +87,8 @@ class FunctionName(DynamicNode):
     child_type = Identifier
 
 class ParameterList(NameList):
-    pass
+    @staticmethod
+    def default(): return ParameterList([])
 
 class NamedFunction(Statement):
     """
