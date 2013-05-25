@@ -52,7 +52,10 @@ class Node(object):
         return len(self.contents)
 
     def index(self, item):
-        return self.contents.index(item)
+        try:
+            return self.contents.index(item)
+        except ValueError:
+            return -1
 
     def cast_subpart(self, tok, type_):
         if isinstance(tok, type_):

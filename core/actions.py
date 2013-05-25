@@ -91,12 +91,19 @@ class SelectParent(Action):
         return parent
 
 
+from ast import structures
 class SelectChild(Action):
     def _is_available(self, editor, selected, parent, index):
-        return (len(selected) > 0 and selected[0].__class__ != str)
+        if len(selected) == 0:
+            return hasattr(selected, 'insert')
+        else:
+            return selected[0].__class__ != str
 
     def _execute(self, editor, selected, parent, index):
-        return selected[0]
+        if len(selected):
+            return selected[0]
+        else:
+            return structures.Node([], selected)
 
 
 class NextUnfilled(Action):
@@ -207,8 +214,7 @@ class Insert(Action):
         self.before = before
 
     def _is_available(self, editor, selected, parent, index):
-        return (hasattr(selected, 'add')
-                and parent.can_insert(index, self.structure_class))
+        return parent and parent.can_insert(index, self.structure_class)
 
     def _execute(self, editor, selected, parent, index):
         new_item = self.structure_class.default()
