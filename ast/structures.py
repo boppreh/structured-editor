@@ -89,10 +89,9 @@ class StaticNode(Node):
         if toks == None:
             toks = [type_.default() for name, type_ in self.subparts]
 
-        contents = []
-        for tok, subpart in zip(toks, self.subparts):
-            name, type_ = subpart
-            contents.append(self.cast_subpart(tok, type_))
+        contents = [self.cast_subpart(tok, part[1])
+                    for tok, part in zip(toks, self.subparts)]
+
         Node.__init__(self, contents)
 
     def get_expected_class(self, index):

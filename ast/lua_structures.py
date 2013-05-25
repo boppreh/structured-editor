@@ -9,11 +9,11 @@ from structures import *
 
 class Expression(StaticNode):
     """ Abstract class for expressions that can be used as values. """
-    template = 'ABSTRACT EXPRESSION'
     @staticmethod
     def default(): return Identifier.default()
 
 class DoBlock(Statement):
+    abstract = False
     template = 'do\n{block}\nend'
     subparts = [('block', Block)]
 
