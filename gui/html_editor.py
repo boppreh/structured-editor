@@ -194,6 +194,14 @@ class HtmlEditor(GraphicalEditor):
         super(HtmlEditor, self).execute(action)
         self.refresh()
 
+    def undo(self):
+        super(HtmlEditor, self).undo()
+        self.refresh()
+
+    def redo(self):
+        super(HtmlEditor, self).redo()
+        self.refresh()
+
     def refresh(self):
         """
         Renders tree state in HTML.
