@@ -6,6 +6,7 @@ from tabbed_editor import TabbedEditor
 from core.actions import *
 
 import re
+import string
 
 navigation_hotkeys = {
                       "Left": SelectParent,
@@ -93,6 +94,7 @@ class InsertionWindow(CommandsWindow):
         super(InsertionWindow, self).__init__('Insertion', parent)
         self.handler = handler
         self.buttonsByCommand = {}
+        self.buttonsByLetter = {}
         self.buttons = []
 
         for i in range(1, 11):
@@ -100,6 +102,30 @@ class InsertionWindow(CommandsWindow):
                 if i <= len(self.buttons):
                     self.buttons[i-1].animateClick()
             QtGui.QShortcut(str(i % 10), self, shorcut_handler)
+
+        for letter in string.lowercase:
+            def shorcut_handler(letter=letter):
+                if letter in self.buttonsByLetter:
+                    self.buttonsByLetter[letter].animateClick()
+            QtGui.QShortcut(letter, self, shorcut_handler)
+
+    def getHotkey(self, name):
+        for letter in name:
+            if letter.lower() not in self.buttonsByLetter:
+                return letter.lower(), name.replace(letter, '&' + letter, 1)
+        return None, name
+
+    def addCommand(self, i, class_):
+        hotkey, name = self.getHotkey(node_name(class_))
+
+        button = QtGui.QPushButton('{} - {}'.format(i, name))
+        self.verticalLayout.addWidget(button)
+
+        button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
+
+        self.buttonsByCommand[class_] = button
+        self.buttonsByLetter[hotkey] = button
+        self.buttons.append(button)
 
     def refresh(self, editor):
         for button in self.buttonsByCommand.values():
@@ -115,15 +141,8 @@ class InsertionWindow(CommandsWindow):
 
         index = parent.selected_index
         for i, class_ in enumerate(parent.get_available_classes(index)):
-            if not hasattr(class_, 'abstract') or class_.abstract:
-                continue
-
-            button = QtGui.QPushButton('{} - {}'.format(i, node_name(class_)))
-            button.pressed.connect(lambda c=class_: self.handler(Insert(c)))
-            self.buttonsByCommand[class_] = button
-            self.buttons.append(button)
-            self.verticalLayout.addWidget(button)
-            #button.setEnabled(hasattr(editor.selected, 'append'))
+            if hasattr(class_, 'abstract') and not class_.abstract:
+                self.addCommand(i, class_)
 
 
 class MainEditorWindow(QtGui.QMainWindow):
