@@ -310,7 +310,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         title = title_template.format(editor.name)
         self.setWindowTitle(title)
 
-        self.statusBar().showMessage(class_label(type(editor.selected)))
+        self.statusBar().showMessage('Currently selected: ' +
+                                     class_label(type(editor.selected)))
 
         self.save_menu.setEnabled(self.tabbedEditor.can_save())
         self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
