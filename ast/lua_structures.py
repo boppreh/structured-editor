@@ -10,7 +10,7 @@ from structures import *
 class Expression(StaticNode):
     """ Abstract class for expressions that can be used as values. """
     @staticmethod
-    def default(): return Identifier.default()
+    def _default(): return Identifier.default()
 
 class DoBlock(Statement):
     abstract = False
@@ -30,7 +30,7 @@ class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
     @staticmethod
-    def default(): return Identifier(['value'])
+    def _default(): return Identifier(['value'])
 
 class String(Constant):
     """ Literal string. """
@@ -41,14 +41,14 @@ class ExpressionList(DynamicNode):
     abstract = False
     child_type = Expression
     @staticmethod
-    def default(): return ExpressionList([Identifier.default()])
+    def _default(): return ExpressionList([Identifier.default()])
 
 class NameList(DynamicNode):
     """ Comma separated list of names ("foo, bar, baz"). """
     abstract = False
     child_type = Identifier
     @staticmethod
-    def default(): return NameList([Identifier.default()])
+    def _default(): return NameList([Identifier.default()])
 
 class Assignment(Statement):
     abstract = False
@@ -85,10 +85,12 @@ class FunctionName(DynamicNode):
     abstract = False
     delimiter = '.'
     child_type = Identifier
+    @staticmethod
+    def _default(): return FunctionName([Identifier.default()])
 
 class ParameterList(NameList):
     @staticmethod
-    def default(): return ParameterList([])
+    def _default(): return ParameterList([])
 
 class NamedFunction(Statement):
     """
@@ -132,7 +134,7 @@ class FunctionCall(Expression, Statement):
                 ('parameters', ExpressionList)]
 
     @staticmethod
-    def default(): return FunctionCall(None)
+    def _default(): return FunctionCall(None)
 
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """

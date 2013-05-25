@@ -10,9 +10,17 @@ empty_wrapper = lambda node: node.template
 class Node(object):
     abstract = True
     count = 0
+    defaulted = []
 
     @classmethod
-    def default(cls): return cls()
+    def _default(cls):
+        return cls()
+
+    @classmethod
+    def default(cls):
+        new = cls._default()
+        Node.defaulted.append(new)
+        return new
 
     def __init__(self, contents, parent=None):
         self.node_id = Node.count
