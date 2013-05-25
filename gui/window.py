@@ -6,9 +6,6 @@ from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
 from core.actions import *
 
-# Keys reachable by the left hand on the keyboard.
-insertion_keys = 'qwertasdfgzxcvb'
-
 def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
 
@@ -57,21 +54,22 @@ class CommandsWindow(QtGui.QDockWidget):
 
 
 class InsertionWindow(CommandsWindow):
-    def __init__(self, handler, parent):
+    def __init__(self, handler, hotkeys, parent):
         super(InsertionWindow, self).__init__('Insertion', parent)
         self.handler = handler
         self.buttonsByCommand = {}
         self.buttonsByLetter = {}
+        self.hotkeys = hotkeys
 
         # Keys reachable by the left hand.
-        for letter in insertion_keys:
+        for letter in hotkeys:
             def shorcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
                     self.buttonsByLetter[letter].animateClick()
             QtGui.QShortcut(letter, self, shorcut_handler)
 
     def addCommand(self, i, class_):
-        hotkey = insertion_keys[i]
+        hotkey = self.hotkeys[i]
         button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
@@ -117,35 +115,33 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.restoreSettings()
 
     def createDocks(self):
+        config = RawConfigParser()
+        config.read('theme.ini')
+        def extractHotkeys(group, pairs):
+            return {config.get(group, label): item for item, label in pairs}
+
         editing_label_pairs = [(Delete, 'Delete'), (Copy, 'Copy'),
                                (Cut, 'Cut'), (Paste, 'Paste'),
                                (MoveUp, 'Move up'), (MoveDown, 'Move down')]
+        self.editingWindow = CommandsWindow('Editing', self)
+        self.editingWindow.addCommands(editing_label_pairs,
+                                       extractHotkeys('EditingHotkeys',
+                                                      editing_label_pairs),
+                                       self.runCommand)
 
         movement_label_pairs = [(SelectParent, 'Parent'),
                                 (SelectChild, 'Child'),
                                 (SelectNextSibling, 'Next'),
                                 (SelectPrevSibling, 'Previous')]
-
-        config = RawConfigParser()
-        config.read('theme.ini')
-        def extract_hotkeys(group, label_pairs):
-            return {config.get(group, action.__name__): action
-                    for action, _ in label_pairs}
-
-        movement_hotkeys = extract_hotkeys('MovementHotkeys',
-                                           movement_label_pairs)
-        editing_hotkeys = extract_hotkeys('EditingHotkeys',
-                                          editing_label_pairs)
-
-        self.editingWindow = CommandsWindow('Editing', self)
-        self.editingWindow.addCommands(editing_label_pairs,
-                                       editing_hotkeys, self.runCommand)
-
         self.navigationWindow = CommandsWindow('Navigation', self)
         self.navigationWindow.addCommands(movement_label_pairs,
-                                          movement_hotkeys, self.runCommand)
+                                          extractHotkeys('MovementHotkeys',
+                                                         movement_label_pairs),
+                                          self.runCommand)
 
-        self.insertionWindow = InsertionWindow(self.runCommand, self)
+        insertionHotkeys = 'qwertasdfgzxcvb'
+        self.insertionWindow = InsertionWindow(self.runCommand,
+                                               insertionHotkeys, self)
 
         self.setDockNestingEnabled(True)
 
