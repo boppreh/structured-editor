@@ -63,12 +63,12 @@ class Editor(object):
 
         Actions must have 'is_available', 'execute' and 'rollback' methods.
         """
-        self.selected = action.execute(self)
-
         if action.alters:
-            self.past_history.append(action)
+            self.past_history.append((self.selected, action))
             self.future_history = []
             self.changed = True
+
+        self.selected = action.execute(self)
 
     def is_available(self, action):
         """
@@ -81,16 +81,18 @@ class Editor(object):
         Re-executes the last undone action. This is not considered an action by
         itself.
         """
-        self.past_history.append(self.future_history.pop())
-        self.selected = self.past_history[-1].execute(self)
+        self.selected, action = self.future_history.pop()
+        self.past_history.append((self.selected, action))
+        self.selected = action.execute(self)
 
     def undo(self):
         """
         Rollbacks the last action done. This is not considered an action by
         itself.
         """
-        self.future_history.append(self.past_history.pop())
-        self.selected = self.future_history[-1].rollback(self)
+        self.selected, action = self.past_history.pop()
+        self.future_history.append((self.selected, action))
+        self.selected = action.rollback(self)
 
     def render_tree(self, wrapper=empty_wrapper):
         """
