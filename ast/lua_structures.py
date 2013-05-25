@@ -79,8 +79,7 @@ class Table(DynamicNode, Expression):
 
 class FunctionName(DynamicNode):
     """
-    Dot separated names, used in function declarations. May end with colon
-    and another name ("a.b.c:d")
+    Dot separated names, used in function declarations.
     """
     abstract = False
     delimiter = '.'
@@ -119,9 +118,10 @@ class ColonName(StaticNode):
 
     def render(self, wrapper=empty_wrapper):
         if len(self):
-            return super(ColonName, self).render(wrapper)
+            self.template = ColonName.template
         else:
-            return ''
+            self.template = ''
+        return super(ColonName, self).render(wrapper)
 
 class FunctionCall(Expression, Statement):
     """
@@ -134,7 +134,9 @@ class FunctionCall(Expression, Statement):
                 ('parameters', ExpressionList)]
 
     @staticmethod
-    def _default(): return FunctionCall(None)
+    def _default(): return FunctionCall([Expression.default(),
+                                         ColonName([]),
+                                         ExpressionList()])
 
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
