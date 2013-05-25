@@ -67,6 +67,8 @@ class Editor(object):
             self.past_history.append((self.selected, action))
             self.future_history = []
             self.changed = True
+            if len(self.past_history) > 1000:
+                self.past_history = self.past_history[-1000:]
 
         self.selected = action.execute(self)
 
