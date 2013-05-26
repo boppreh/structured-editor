@@ -5,6 +5,7 @@ level structures. This is where those structures are declared.
 A successfully parsed Lua program should only contain instances from these
 classes in its abstract syntax tree.
 """
+import string
 from structures import *
 
 class Expression(StaticNode):
@@ -22,6 +23,7 @@ class Constant(Expression):
     abstract = False
     subparts = [('value', str)]
     template = '{value}'
+    alphabet = string.digits
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
@@ -29,12 +31,15 @@ class Constant(Expression):
 class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
+    alphabet = string.lowercase + string.digits + '_'
     @staticmethod
     def _default(): return Identifier(['value'])
 
 class String(Constant):
     """ Literal string. """
+    template = '"{value}"'
     abstract = False
+    alphabet = [chr(i) for i in range(256)]
 
 class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """

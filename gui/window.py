@@ -127,7 +127,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         config = RawConfigParser()
         config.read('theme.ini')
 
-        def ask_for_name(r, old_name):
+        def ask_for_name(r, old_name, alphabet):
             old_name = old_name.replace('_', ' ')
             name, ok = QtGui.QInputDialog.getText(self, 'Rename',
                                                   'Enter a new name',
@@ -135,9 +135,9 @@ class MainEditorWindow(QtGui.QMainWindow):
             if not ok:
                 return old_name
 
-            name = str(name)
-            allowed_chars = string.lowercase + string.digits + ' _'
-            return filter(allowed_chars.__contains__, name.replace(' ', '_'))
+            new_name = ''.join(letter for letter in str(name).replace(' ', '_')
+                               if letter in alphabet)
+            return new_name or old_name
 
         Rename.ask_for_name = ask_for_name
 

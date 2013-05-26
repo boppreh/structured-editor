@@ -21,7 +21,7 @@ ellipsis = Literal('...')
 
 # Constants' respective classes.
 name.setParseAction(Identifier)
-string.setParseAction(String)
+string.addParseAction(removeQuotes).addParseAction(String)
 number.setParseAction(Constant)
 nil_.setParseAction(Constant)
 true_.setParseAction(Constant)

@@ -242,5 +242,5 @@ class Rename(Action):
         return len(selected) == 1 and type(selected[0]) == str
 
     def _execute(self, editor, selected, parent, index):
-        selected[0] = self.ask_for_name(selected[0])
+        selected[0] = self.ask_for_name(selected[0], selected.alphabet)
         return selected
