@@ -174,9 +174,13 @@ class Paste(Action):
                 and parent.can_insert(index, editor.clipboard))
 
     def _execute(self, editor, selected, parent, index):
-        copy = deepcopy(editor.clipboard)
-        parent.add(index, copy)
-        return copy
+        if not hasattr(self, 'copy'):
+            self.copy = deepcopy(editor.clipboard)
+        parent.add(index, self.copy)
+        return self.copy
+
+    def _rollback(self, editor, selected, parent, index):
+        parent.remove(self.copy)
 
 
 class Delete(Action):
