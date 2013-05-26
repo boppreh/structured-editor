@@ -209,18 +209,21 @@ class Insert(Action):
 
     def __init__(self, structure_class, before=False):
         self.structure_class = structure_class
+        self.new_item = self.structure_class.default()
         self.before = before
 
     def _is_available(self, editor, selected, parent, index):
         return parent and parent.can_insert(index, self.structure_class)
 
     def _execute(self, editor, selected, parent, index):
-        new_item = self.structure_class.default()
         if self.before:
-            parent.add_before(index, new_item)
+            parent.add_before(index, self.new_item)
         else:
-            parent.add(index, new_item)
-        return new_item.defaulted.pop(0)
+            parent.add(index, self.new_item)
+        return self.new_item.defaulted.pop(0)
+
+    def _rollback(self, editor, selected, parent, index):
+        parent.remove(self.new_item)
 
 
 class Select(Action):
