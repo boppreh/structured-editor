@@ -11,7 +11,7 @@ from structures import *
 class Expression(StaticNode):
     """ Abstract class for expressions that can be used as values. """
     @staticmethod
-    def _default(): return Identifier.default()
+    def default(): return Identifier.default()
 
 class DoBlock(Statement):
     abstract = False
@@ -33,7 +33,10 @@ class Identifier(Constant):
     abstract = False
     alphabet = string.lowercase + string.digits + '_'
     @staticmethod
-    def _default(): return Identifier(['value'])
+    def default():
+        new = Identifier(['value'])
+        Node.defaulted.append(new)
+        return new
 
 class String(Constant):
     """ Literal string. """
@@ -46,14 +49,14 @@ class ExpressionList(DynamicNode):
     abstract = False
     child_type = Expression
     @staticmethod
-    def _default(): return ExpressionList([Identifier.default()])
+    def default(): return ExpressionList([Identifier.default()])
 
 class NameList(DynamicNode):
     """ Comma separated list of names ("foo, bar, baz"). """
     abstract = False
     child_type = Identifier
     @staticmethod
-    def _default(): return NameList([Identifier.default()])
+    def default(): return NameList([Identifier.default()])
 
 class Assignment(Statement):
     abstract = False
@@ -90,11 +93,11 @@ class FunctionName(DynamicNode):
     delimiter = '.'
     child_type = Identifier
     @staticmethod
-    def _default(): return FunctionName([Identifier.default()])
+    def default(): return FunctionName([Identifier.default()])
 
 class ParameterList(NameList):
     @staticmethod
-    def _default(): return ParameterList([])
+    def default(): return ParameterList([])
 
 class NamedFunction(Statement):
     """
@@ -139,7 +142,7 @@ class FunctionCall(Expression, Statement):
                 ('parameters', ExpressionList)]
 
     @staticmethod
-    def _default(): return FunctionCall([Expression.default(),
+    def default(): return FunctionCall([Expression.default(),
                                          ColonName([]),
                                          ExpressionList()])
 

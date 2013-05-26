@@ -13,14 +13,7 @@ class Node(object):
     defaulted = []
 
     @classmethod
-    def _default(cls):
-        return cls()
-
-    @classmethod
-    def default(cls):
-        new = cls._default()
-        Node.defaulted.append(new)
-        return new
+    def default(cls): return cls()
 
     def __init__(self, contents, parent=None):
         self.node_id = Node.count
