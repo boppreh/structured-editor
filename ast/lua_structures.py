@@ -205,13 +205,20 @@ class If(StaticNode):
     subparts = [('condition', Expression), ('body', Block)]
     template = 'if {condition} then{body}'
 
+    def render(self, wrapper=empty_wrapper):
+        if self.parent.index(self) != 0:
+            self.template = 'else' + If.template
+        else:
+            self.template = If.template
+        return super(If, self).render(wrapper)
+
 class IfChain(DynamicNode):
     """
     Structure for the first 'if' and the chain of 'elseif' that follow.
     """
     abstract = False
     child_type = If
-    delimiter = '\nelse'
+    delimiter = '\n'
 
     @staticmethod
     def default():
