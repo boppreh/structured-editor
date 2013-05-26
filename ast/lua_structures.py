@@ -197,7 +197,7 @@ class Else(StaticNode):
     """ The 'else' clause of a conditional. """
     abstract = False
     subparts = [('body', Block)]
-    template = 'else{body}'
+    template = '\nelse{body}'
 
 class If(Else):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
@@ -211,7 +211,7 @@ class IfChain(DynamicNode):
     """
     abstract = False
     child_type = If
-    delimiter = 'else'
+    delimiter = '\nelse'
 
     @staticmethod
     def default():
@@ -220,12 +220,12 @@ class IfChain(DynamicNode):
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
     abstract = False
-    template = '{if_chain}\n{else}\nend'
+    template = '{if_chain}{else}\nend'
     subparts = [('if_chain', IfChain), ('else', Else)]
 
     @staticmethod
     def default():
-        return FullIf([IfChain.default()])
+        return FullIf([IfChain.default(), Else.default()])
 
     def render(self, wrapper=empty_wrapper):
         if len(self) == 1:
