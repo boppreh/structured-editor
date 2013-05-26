@@ -8,17 +8,21 @@ class Action(object):
     """
     alters = False
 
-    def _expanded_call(self, function, editor):
-        parent = editor.selected.parent
-        index = parent.index(editor.selected) if parent else -1
-        return function(editor, editor.selected, parent, index)
+    def _expand(self, editor):
+        """
+        Returns a triple (selected, parent, index), useful for easy access to
+        those properties from an editor.
+        """
+        selected = editor.selected
+        parent = selected.parent
+        return (selected, parent, parent.index(selected) if parent else -1)
 
     def is_available(self, editor):
         """
         Returns True if the action represented by this instance can be executed
         on the given editor.
         """
-        return self._expanded_call(self._is_available, editor)
+        return self._is_available(editor, *self._expand(editor))
 
     def _is_available(self, editor, selected, parent, index):
         """
@@ -34,16 +38,16 @@ class Action(object):
         item in case it needs to be rolled back. Returns the node that should
         be new selected item.
         """
-        self.previous_selected = editor.selected
-        return self._expanded_call(self._execute, editor)
+        self.selected, self.parent, self.index = self._expand(editor)
+        return self._execute(editor, self.selected, self.parent, self.index)
 
     def rollback(self, editor):
         """
         Undoes the action done by execute, returning the item selected before
         the 'execute' call.
         """
-        self._rollback(editor)
-        return self.previous_selected
+        self._rollback(editor, self.selected, self.parent, self.index)
+        return self.selected
 
     def _execute(self, editor, selected, parent, index):
         """
@@ -55,7 +59,7 @@ class Action(object):
         """
         pass
 
-    def _rollback(self, editor, selected, parent):
+    def _rollback(self, editor, selected, parent, index):
         """
         Auxiliary function to be overridden by its subclasses. 'selected' and
         'parent' are just easy to access references, also accessible from the
@@ -63,8 +67,7 @@ class Action(object):
 
         Return value is ignored.
         """
-        pass
-
+        raise NotImplementedError(str(self))
 
 
 class SelectNextSibling(Action):
@@ -183,18 +186,14 @@ class Delete(Action):
         return hasattr(parent, 'remove')
 
     def _execute(self, editor, selected, parent, index):
-        self.parent = parent
-        self.index = index
-        self.removed = selected
-
         parent.remove(selected)
         if len(parent):
             return parent[min(len(parent) - 1, index)]
         else:
             return parent
 
-    def _rollback(self, editor):
-        self.parent.insert(self.index, self.removed)
+    def _rollback(self, editor, selected, parent, index):
+        parent.insert(index, selected)
 
 
 class Cut(Delete, Copy):
