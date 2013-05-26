@@ -213,12 +213,19 @@ class IfChain(DynamicNode):
     child_type = If
     delimiter = 'else'
 
+    @staticmethod
+    def default():
+        return IfChain([If.default()])
+
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
     abstract = False
     template = '{if_chain}\n{else}\nend'
-    subparts = [('if_chain', IfChain),
-                ('else', Else)]
+    subparts = [('if_chain', IfChain), ('else', Else)]
+
+    @staticmethod
+    def default():
+        return FullIf([IfChain.default()])
 
     def render(self, wrapper=empty_wrapper):
         if len(self) == 1:
