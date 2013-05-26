@@ -232,7 +232,7 @@ class Insert(Action):
             parent.add_before(index, self.new_item)
         else:
             parent.add(index, self.new_item)
-        return self.new_item.defaulted.pop(0)
+        return self.new_item
 
     def _rollback(self, editor, selected, parent, index):
         parent.remove(self.new_item)
