@@ -199,7 +199,7 @@ class Else(StaticNode):
     subparts = [('body', Block)]
     template = '\nelse{body}'
 
-class If(Else):
+class If(StaticNode):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
     abstract = False
     subparts = [('condition', Expression), ('body', Block)]
