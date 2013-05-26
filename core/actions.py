@@ -1,8 +1,6 @@
 """
 Module for editor actions.
 """
-from copy import deepcopy
-
 class Action(object):
     """
     Base action type, capable of executing an arbitrary action on an editor and
@@ -36,9 +34,7 @@ class Action(object):
         item in case it needs to be rolled back. Returns the node that should
         be new selected item.
         """
-        if self.alters:
-            self.previous_tree = deepcopy(editor.root)
-            self.previous_selected = editor.selected
+        self.previous_selected = editor.selected
         return self._expanded_call(self._execute, editor)
 
     def rollback(self, editor):
@@ -46,7 +42,7 @@ class Action(object):
         Undoes the action done by execute, returning the item selected before
         the 'execute' call.
         """
-        editor.root = self.previous_tree
+        self._rollback(editor)
         return self.previous_selected
 
     def _execute(self, editor, selected, parent, index):
@@ -56,6 +52,16 @@ class Action(object):
         'editor' instance.
 
         Return value is passed to editor to become the new selected item.
+        """
+        pass
+
+    def _rollback(self, editor, selected, parent):
+        """
+        Auxiliary function to be overridden by its subclasses. 'selected' and
+        'parent' are just easy to access references, also accessible from the
+        'editor' instance.
+
+        Return value is ignored.
         """
         pass
 
@@ -136,6 +142,7 @@ class MoveDown(SelectNextSibling):
         return SelectNextSibling._execute(self, editor, selected, parent, index)
 
     
+from copy import deepcopy
 class Copy(Action):
     def _is_available(self, editor, selected, parent, index):
         return True 
@@ -176,11 +183,18 @@ class Delete(Action):
         return hasattr(parent, 'remove')
 
     def _execute(self, editor, selected, parent, index):
+        self.parent = parent
+        self.index = index
+        self.removed = selected
+
         parent.remove(selected)
         if len(parent):
             return parent[min(len(parent) - 1, index)]
         else:
             return parent
+
+    def _rollback(self, editor):
+        self.parent.insert(self.index, self.removed)
 
 
 class Cut(Delete, Copy):
