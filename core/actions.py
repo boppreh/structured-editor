@@ -245,5 +245,11 @@ class Rename(Action):
         return len(selected) == 1 and type(selected[0]) == str
 
     def _execute(self, editor, selected, parent, index):
-        selected[0] = self.ask_for_name(selected[0], selected.alphabet)
+        self.old_name = selected[0]
+        if not hasattr(self, 'new_name'):
+            self.new_name = self.ask_for_name(selected[0], selected.alphabet)
+        selected[0] = self.new_name
         return selected
+
+    def _rollback(self, editor, selected, parent, index):
+        selected[0] = self.old_name
