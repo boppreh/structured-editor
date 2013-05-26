@@ -131,6 +131,10 @@ class MoveUp(SelectPrevSibling):
         parent.insert(index - 1, selected)
         return SelectPrevSibling._execute(self, editor, selected, parent, index)
 
+    def _rollback(self, editor, selected, parent, index):
+        parent.remove(selected)
+        parent.insert(index, selected)
+
 
 class MoveDown(SelectNextSibling):
     alters = True
@@ -143,6 +147,10 @@ class MoveDown(SelectNextSibling):
         parent.remove(selected)
         parent.insert(index + 1, selected)
         return SelectNextSibling._execute(self, editor, selected, parent, index)
+
+    def _rollback(self, editor, selected, parent, index):
+        parent.remove(selected)
+        parent.insert(index, selected)
 
     
 from copy import deepcopy
