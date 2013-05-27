@@ -181,9 +181,10 @@ class Block(DynamicNode):
     List of statements contained in a function declaration, control structure or
     the program root. Also called compound statement.
     """
-    abstract = False
+    abstract = True
     child_type = Statement
     template = '{children}'
+    delimiter = '\n'
 
     def render(self, wrapper=empty_wrapper):
         str_contents = [item.render(wrapper) for item in self.contents]
@@ -191,7 +192,7 @@ class Block(DynamicNode):
             if '\n' in item and i < len(self) - 1:
                 str_contents[i] += '\n'
 
-        rendered_text = '\n' + '\n'.join(str_contents).strip()
+        rendered_text = '\n' + self.delimiter.join(str_contents).strip()
         if self.parent:
             rendered_text = rendered_text.replace('\n', '\n    ')
         else:
