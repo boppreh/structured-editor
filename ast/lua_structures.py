@@ -265,7 +265,7 @@ class BinOp(Expression):
     subparts = [('left_side', Expression),
                 ('operator', Operator),
                 ('right_side', Expression)]
-    template = '{left_side} {operator} {right_side}'
+    template = '({left_side} {operator} {right_side})'
 
     def __init__(self, toks):
         super(BinOp, self).__init__(toks[0])
