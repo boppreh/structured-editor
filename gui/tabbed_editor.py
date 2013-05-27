@@ -40,7 +40,7 @@ class CodeInput(QtGui.QDialog):
     def accept(self):
         try:
             text = str(self.textedit.toPlainText())
-            self.editor = Editor.from_text(text)
+            self.root = lua_parser.parseString(text)
             super(CodeInput, self).accept()
         except ParseException:
             QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
