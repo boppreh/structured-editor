@@ -68,7 +68,7 @@ def convert(root):
     elif isinstance(root, list):
         return Array(map(convert, root))
     elif isinstance(root, dict):
-        return Object([Assignment([String(key), convert(value)])
+        return Object([Assignment([String([key]), convert(value)])
                        for key, value in root.items()])
 
 def parseString(string):
