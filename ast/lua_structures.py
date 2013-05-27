@@ -252,6 +252,9 @@ class Return(DynamicNode, Statement):
 
 class Operator(Constant):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
+    @staticmethod
+    def default():
+        return Operator(['+'])
 
 class BinOp(Expression):
     """
@@ -267,6 +270,12 @@ class BinOp(Expression):
     def __init__(self, toks):
         super(BinOp, self).__init__(toks[0])
 
+    @staticmethod
+    def default():
+        return BinOp([[Identifier.default(),
+                       Operator.default(),
+                       Identifier.default()]])
+
 class UnoOp(Expression):
     """
     Expression with unary operator, including the right_side and the operator
@@ -279,6 +288,10 @@ class UnoOp(Expression):
 
     def __init__(self, toks):
         super(UnoOp, self).__init__(toks[0])
+
+    @staticmethod
+    def default():
+        return UnoOp([[Identifier.default(), Operator.default()]])
 
 
 if __name__ == '__main__':
