@@ -34,6 +34,9 @@ end
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 #mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
-mainWin.tabbedEditor.create_editor(parseString(test_program), None)
+from ast import lua_parser
+mainWin.tabbedEditor.create_editor(parseString(test_program),
+                                   lua_parser.structures,
+                                   None)
 mainWin.show()
 sys.exit(app.exec_())

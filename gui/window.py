@@ -100,7 +100,8 @@ class InsertionWindow(CommandsWindow):
         index = parent.index(editor.selected)
         is_concrete = lambda(class_): (hasattr(class_, 'abstract') and
                                        not class_.abstract)
-        classes = filter(is_concrete, parent.get_available_classes(index))
+        classes = filter(is_concrete,
+                         parent.get_available_classes(index, editor.structures))
         for i, class_ in enumerate(classes):
             self.addCommand(i, class_)
 

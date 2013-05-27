@@ -141,13 +141,14 @@ class TabbedEditor(QtGui.QTabWidget):
             self.removeTab(tab)
             self._update_tab()
 
-    def create_editor(self, root, selected_file):
+    def create_editor(self, root, structures, selected_file):
         """
         Creates a new tab to contain a given editor and automatically switches
         tab to it.
         """
         editor = HtmlEditor(root, selected_file, self.refresh_handler,
                             parent=self)
+        editor.structures = structures
 
         self.addTab(editor, editor.name)
         # The return value of addTab is not reliable when some tabs have been
@@ -172,9 +173,13 @@ class TabbedEditor(QtGui.QTabWidget):
                                                      filter='*.lua;*.json'))
         if path:
             if path.endswith('.lua'):
-                self.create_editor(lua_parser.parseFile(path), path)
+                self.create_editor(lua_parser.parseFile(path),
+                                   lua_parser.structures,
+                                   path)
             else:
-                self.create_editor(json_parser.parseFile(path), path)
+                self.create_editor(json_parser.parseFile(path),
+                                   json_parser.structures,
+                                   path)
 
     def parse(self, event=None):
         """
@@ -183,4 +188,4 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         input_dialog = CodeInput()
         if input_dialog.exec_():
-            self.create_editor(input_dialog.root, None)
+            self.create_editor(input_dialog.root, lua_parser.structures, None)

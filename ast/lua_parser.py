@@ -191,6 +191,9 @@ def parseFile(filename):
     """
     return parseString(open(filename).read())
 
+import lua_structures
+structures = lua_structures.__name__
+
 if __name__ == '__main__':
     #print parseString('local function a(a) print() end')
     print parseFile('../lua_test_files/full.lua')

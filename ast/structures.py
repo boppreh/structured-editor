@@ -58,11 +58,15 @@ class Node(object):
         else:
             raise TypeError("{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, repr(tok)))
 
-    def get_available_classes(self, index):
+    def get_available_classes(self, index, structures):
         main_class = self.get_expected_class(index)
         def subclasses(class_):
-            return [class_] + sum(map(subclasses, class_.__subclasses__()), [])
-        return subclasses(main_class)
+            result = [class_]
+            for subclass in sum(map(subclasses, class_.__subclasses__()), []):
+                if subclass.__module__ == structures:
+                    result.append(subclass)
+            return result
+        return list(subclasses(main_class))
 
     def can_insert(self, index, item):
         return isinstance(item, self.get_expected_class(index))

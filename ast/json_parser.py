@@ -76,3 +76,5 @@ def parseString(string):
 
 def parseFile(filename):
     return parseString(open(filename).read())
+
+structures = __name__
