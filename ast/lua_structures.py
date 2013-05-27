@@ -264,6 +264,7 @@ class Return(DynamicNode, Statement):
 
 class Operator(Constant):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
+    alphabet = '^#*/%+-.<>=~'
     @staticmethod
     def default():
         return Operator(['+'])
