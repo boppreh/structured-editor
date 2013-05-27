@@ -7,6 +7,9 @@ class String(StaticNode):
     alphabet = [chr(i) for i in range(256)]
     subparts = [('value', basestring)]
 
+    @staticmethod
+    def default(): return String(['value'])
+
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
 
@@ -15,12 +18,18 @@ class Number(StaticNode):
     template = '{value}'
     subparts = [('value', int)]
 
+    @staticmethod
+    def default(): return Number([0])
+
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
 
 class True_(StaticNode):
     abstract = False
     template = 'true'
+
+    @staticmethod
+    def default(): return True_()
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
@@ -29,12 +38,18 @@ class False_(StaticNode):
     abstract = False
     template = 'false'
 
+    @staticmethod
+    def default(): return False_()
+
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
 
 class Null(StaticNode):
     abstract = False
     template = 'null'
+
+    @staticmethod
+    def default(): return Null()
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
@@ -49,6 +64,9 @@ class Assignment(StaticNode):
     abstract = False
     subparts = [('key', String), ('value', Node)]
     template = '{key}: {value}'
+
+    @staticmethod
+    def default(): return Assignment([String.default(), String.default()])
 
 class Object(Block):
     abstract = False
