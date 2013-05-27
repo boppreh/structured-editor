@@ -184,11 +184,18 @@ class Paste(Action):
     def _execute(self, editor, selected, parent, index):
         if not hasattr(self, 'copy'):
             self.copy = deepcopy(editor.clipboard)
+
+        if not hasattr(parent, 'remove'):
+            self.replaced_value = parent[index]
+
         parent.add(index, self.copy)
         return self.copy
 
     def _rollback(self, editor, selected, parent, index):
-        parent.remove(self.copy)
+        if hasattr(parent, 'remove'):
+            parent.remove(self.copy)
+        else:
+            parent[index] = self.replaced_value
 
 
 class Delete(Action):
