@@ -28,6 +28,12 @@ class Constant(Expression):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
 
+    @staticmethod
+    def default():
+        new = Constant(['0'])
+        Node.defaulted.append(new)
+        return new
+
 class Identifier(Constant):
     """ A reference to an identifier. """
     abstract = False
@@ -46,6 +52,12 @@ class String(Constant):
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
+
+    @staticmethod
+    def default():
+        new = String(['value'])
+        Node.defaulted.append(new)
+        return new
 
 class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
