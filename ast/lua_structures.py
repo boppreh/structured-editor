@@ -44,6 +44,9 @@ class String(Constant):
     abstract = False
     alphabet = [chr(i) for i in range(256)]
 
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
+
 class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
     abstract = False
