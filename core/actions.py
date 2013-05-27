@@ -220,14 +220,16 @@ class Insert(Action):
     alters = True
 
     def __init__(self, structure_class, before=False):
-        self.structure_class = structure_class
-        self.new_item = self.structure_class.default()
+        self.new_item = structure_class.default()
         self.before = before
 
     def _is_available(self, editor, selected, parent, index):
-        return parent and parent.can_insert(index, self.structure_class)
+        return parent and parent.can_insert(index, type(self.new_item))
 
     def _execute(self, editor, selected, parent, index):
+        if not hasattr(parent, 'remove'):
+            self.replaced_value = parent[index]
+
         if self.before:
             parent.add_before(index, self.new_item)
         else:
@@ -235,7 +237,10 @@ class Insert(Action):
         return self.new_item
 
     def _rollback(self, editor, selected, parent, index):
-        parent.remove(self.new_item)
+        if hasattr(parent, 'remove'):
+            parent.remove(self.new_item)
+        else:
+            parent[index] = self.replaced_value
 
 
 class Select(Action):
