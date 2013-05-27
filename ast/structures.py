@@ -193,7 +193,7 @@ class Block(DynamicNode):
                 str_contents[i] += '\n'
 
         rendered_text = '\n' + self.delimiter.join(str_contents).strip()
-        if self.parent:
+        if self.parent or self.template != '{children}':
             rendered_text = rendered_text.replace('\n', '\n    ')
         else:
             rendered_text = rendered_text.replace('\n', '', 1)
