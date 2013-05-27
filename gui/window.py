@@ -1,7 +1,6 @@
 from PyQt4 import QtCore, QtGui
 from ConfigParser import RawConfigParser
 import re
-import string
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor

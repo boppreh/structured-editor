@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt4 import QtGui, QtWebKit
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QFileDialog
 from ConfigParser import RawConfigParser

@@ -6,13 +6,11 @@ repositioning tabs, close buttons, hotkeys (Ctrl+W and Ctrl+T), etc. "save",
 """
 from PyQt4 import QtCore, QtGui
 
-import os
-
 from pyparsing import ParseException
 
 from html_editor import HtmlEditor
 from core.editor import Editor
-from ast.lua_parser import parseString, parseFile
+from ast import lua_parser, json_parser
 
 class CodeInput(QtGui.QDialog):
     """
@@ -163,16 +161,20 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         Creates a new tab with an empty editor.
         """
-        self.create_editor(parseString(''), None)
+        self.create_editor(lua_parser.parseString(''), None)
 
     def open(self, event=None):
         """
         Creates a new tab with the editor containing the code from a file
         selected by the user.
         """
-        path = str(QtGui.QFileDialog.getOpenFileName(self, filter='*.lua'))
+        path = str(QtGui.QFileDialog.getOpenFileName(self,
+                                                     filter='*.lua;*.json'))
         if path:
-            self.create_editor(parseFile(path), path)
+            if path.endswith('.lua'):
+                self.create_editor(lua_parser.parseFile(path), path)
+            else:
+                self.create_editor(json_parser.parseFile(path), path)
 
     def parse(self, event=None):
         """
