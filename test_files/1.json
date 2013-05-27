@@ -1,6 +1,9 @@
 {
-    "name": "Jack (\"Bee\") Nimble", 
+    "name": ["Jack", "(\"Bee\")", "Nimble"], 
     "format": {
+        "smokes":     true,
+        "drinks":     false,
+        "null?":      null,
         "type":       "rect", 
         "width":      1920, 
         "height":     1080, 
