@@ -18,17 +18,26 @@ class Number(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
 
-class True(StaticNode):
+class True_(StaticNode):
     abstract = False
     template = 'true'
 
-class False(StaticNode):
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self)
+
+class False_(StaticNode):
     abstract = False
     template = 'false'
+
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self)
 
 class Null(StaticNode):
     abstract = False
     template = 'null'
+
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self)
 
 class Array(Block):
     abstract = False
@@ -50,10 +59,10 @@ class Object(Block):
 def convert(root):
     if isinstance(root, basestring):
         return String([root])
+    elif isinstance(root, bool):
+        return True_() if root else False_()
     elif isinstance(root, int):
         return Number([root])
-    elif isinstance(root, bool):
-        return True() if root else False()
     elif root is None:
         return Null()
     elif isinstance(root, list):
