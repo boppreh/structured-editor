@@ -18,10 +18,22 @@ class Number(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
 
-class Array(DynamicNode):
+class True(StaticNode):
     abstract = False
-    delimiter = ', '
-    template = '[{children}]'
+    template = 'true'
+
+class False(StaticNode):
+    abstract = False
+    template = 'false'
+
+class Null(StaticNode):
+    abstract = False
+    template = 'null'
+
+class Array(Block):
+    abstract = False
+    delimiter = ',\n'
+    template = '[{children}\n]'
     child_type = Node
 
 class Assignment(StaticNode):
@@ -29,16 +41,21 @@ class Assignment(StaticNode):
     subparts = [('key', String), ('value', Node)]
     template = '{key}: {value}'
 
-class Object(DynamicNode):
+class Object(Block):
+    abstract = False
     child_type = Assignment
-    delimiter = ', '
-    template = '{{{children}}}'
+    delimiter = ',\n'
+    template = '{{{children}\n}}'
 
 def convert(root):
     if isinstance(root, basestring):
         return String([root])
     elif isinstance(root, int):
         return Number([root])
+    elif isinstance(root, bool):
+        return True() if root else False()
+    elif root is None:
+        return Null()
     elif isinstance(root, list):
         return Array(map(convert, root))
     elif isinstance(root, dict):
