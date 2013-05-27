@@ -12,7 +12,7 @@ class String(StaticNode):
 
 class Number(StaticNode):
     abstract = False
-    template = '"{value}"'
+    template = '{value}'
     subparts = [('value', int)]
 
     def render(self, wrapper=empty_wrapper):
