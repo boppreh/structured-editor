@@ -278,7 +278,7 @@ class BinOp(Expression):
     subparts = [('left_side', Expression),
                 ('operator', Operator),
                 ('right_side', Expression)]
-    template = '({left_side} {operator} {right_side})'
+    template = '{left_side} {operator} {right_side}'
 
     def __init__(self, toks):
         super(BinOp, self).__init__(toks[0])
@@ -288,6 +288,13 @@ class BinOp(Expression):
         return BinOp([[Identifier.default(),
                        Operator.default(),
                        Identifier.default()]])
+
+    def render(self, wrapper=empty_wrapper):
+        if isinstance(self.parent, Expression):
+            self.template = '(' + BinOp.template + ')'
+        else:
+            self.template = BinOp.template
+        return super(BinOp, self).render(wrapper)
 
 class UnoOp(Expression):
     """
