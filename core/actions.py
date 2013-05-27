@@ -209,7 +209,7 @@ class Delete(Action):
         if len(parent):
             return parent[min(len(parent) - 1, index)]
         else:
-            return parent
+            return structures.Node([], parent)
 
     def _rollback(self, editor, selected, parent, index):
         parent.insert(index, selected)
