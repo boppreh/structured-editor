@@ -132,7 +132,7 @@ class MacroWindow(CommandsWindow):
         self.old_method = self.editor.execute
 
         def wrapper(command):
-            self.recordedActions.append(deepcopy(command))
+            self.recordedActions.append(command)
             self.old_method(command)
 
         self.editor.execute = wrapper
@@ -146,7 +146,7 @@ class MacroWindow(CommandsWindow):
 
     def playback(self):
         for action in self.recordedActions:
-            self.editor.execute(action)
+            self.editor.execute(deepcopy(action))
 
     def refresh(self, editor):
         if self.editor != editor and self.isRecording:
