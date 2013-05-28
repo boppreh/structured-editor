@@ -1,7 +1,10 @@
 import json
 from structures import *
 
-class String(StaticNode):
+class Value(StaticNode):
+    abstract = True
+
+class String(Value):
     abstract = False
     template = '"{value}"'
     alphabet = [chr(i) for i in range(256)]
@@ -13,7 +16,7 @@ class String(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
 
-class Number(StaticNode):
+class Number(Value):
     abstract = False
     template = '{value}'
     subparts = [('value', int)]
@@ -24,7 +27,7 @@ class Number(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
 
-class True_(StaticNode):
+class True_(Value):
     abstract = False
     template = 'true'
 
@@ -34,7 +37,7 @@ class True_(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
 
-class False_(StaticNode):
+class False_(Value):
     abstract = False
     template = 'false'
 
@@ -44,7 +47,7 @@ class False_(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
 
-class Null(StaticNode):
+class Null(Value):
     abstract = False
     template = 'null'
 
@@ -54,21 +57,21 @@ class Null(StaticNode):
     def render(self, wrapper=empty_wrapper):
         return wrapper(self)
 
-class Array(Block):
+class Array(Block, Value):
     abstract = False
     delimiter = ',\n'
     template = '[{children}\n]'
-    child_type = Node
+    child_type = Value
 
 class Assignment(StaticNode):
     abstract = False
-    subparts = [('key', String), ('value', Node)]
+    subparts = [('key', String), ('value', Value)]
     template = '{key}: {value}'
 
     @staticmethod
     def default(): return Assignment([String.default(), String.default()])
 
-class Object(Block):
+class Object(Block, Value):
     abstract = False
     child_type = Assignment
     delimiter = ',\n'
