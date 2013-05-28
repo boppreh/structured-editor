@@ -1,6 +1,7 @@
 from PyQt4 import QtCore, QtGui
 from ConfigParser import RawConfigParser
 import re
+from copy import deepcopy
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
@@ -106,6 +107,58 @@ class InsertionWindow(CommandsWindow):
             self.addCommand(i, class_)
 
 
+class MacroWindow(CommandsWindow):
+    def __init__(self, parent):
+        super(MacroWindow, self).__init__('Macro', parent)
+
+        self.startButton = QtGui.QPushButton('Start recording')
+        self.startButton.pressed.connect(self.startRecording)
+        self.verticalLayout.addWidget(self.startButton)
+
+        self.stopButton = QtGui.QPushButton('Stop recording')
+        self.stopButton.pressed.connect(self.stopRecording)
+        self.verticalLayout.addWidget(self.stopButton)
+
+        self.playbackButton = QtGui.QPushButton('Playback')
+        self.playbackButton.pressed.connect(self.playback)
+        self.verticalLayout.addWidget(self.playbackButton)
+
+        self.editor = None
+        self.recordedActions = []
+        self.isRecording = False
+
+    def startRecording(self):
+        self.recordedActions = []
+        self.old_method = self.editor.execute
+
+        def wrapper(command):
+            self.recordedActions.append(deepcopy(command))
+            self.old_method(command)
+
+        self.editor.execute = wrapper
+        self.isRecording = True
+        self.refresh(self.editor)
+
+    def stopRecording(self):
+        self.editor.execute = self.old_method
+        self.isRecording = False
+        self.refresh(self.editor)
+
+    def playback(self):
+        for action in self.recordedActions:
+            self.editor.execute(action)
+
+    def refresh(self, editor):
+        if self.editor != editor and self.isRecording:
+            self.stopRecording()
+
+        self.editor = editor
+        self.startButton.setEnabled(not self.isRecording)
+        self.stopButton.setEnabled(self.isRecording)
+        self.playbackButton.setEnabled(len(self.recordedActions) > 0 and
+                                       not self.isRecording)
+
+
 class MainEditorWindow(QtGui.QMainWindow):
     def __init__(self):
         super(MainEditorWindow, self).__init__()
@@ -173,6 +226,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.insertionWindow = InsertionWindow(self.runCommand,
                                                insertionHotkeys, self)
 
+        self.macroWindow = MacroWindow(self)
         self.setDockNestingEnabled(True)
 
     def createMenu(self):
@@ -227,6 +281,9 @@ class MainEditorWindow(QtGui.QMainWindow):
         makeMenuAction("&Insertion window", "Alt+I",
                        "Shows the insertion floating window",
                        viewMenu, self.insertionWindow.show)
+        makeMenuAction("&Macro window", "Alt+M",
+                       "Shows the macro floating window",
+                       viewMenu, self.macroWindow.show)
         viewMenu.addSeparator()
         makeMenuAction("&Reset window state", "Alt+R",
                        "Reset the window and commands bar size and state back to the original settings.",
@@ -306,6 +363,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.navigationWindow.refresh(self.tabbedEditor.editor())
         self.editingWindow.refresh(self.tabbedEditor.editor())
         self.insertionWindow.refresh(self.tabbedEditor.editor())
+        self.macroWindow.refresh(self.tabbedEditor.editor())
 
         title_template = '{} - Structured Editor'
         title = title_template.format(editor.name)
