@@ -327,6 +327,8 @@ class MainEditorWindow(QtGui.QMainWindow):
     def resetWindow(self, event=None):
         self.navigationWindow.reset()
         self.editingWindow.reset()
+        self.insertionWindow.reset()
+        self.macroWindow.reset()
 
         self.settings.clear()
         self.settings.sync()
@@ -339,6 +341,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         if len(self.settings.value("geometry").toByteArray()) == 0:
             self.editingWindow.show()
             self.navigationWindow.show()
+            self.insertionWindow.show()
+            self.macroWindow.show()
 
         self.restoreGeometry(self.settings.value("geometry").toByteArray())
         self.restoreState(self.settings.value("state").toByteArray())
