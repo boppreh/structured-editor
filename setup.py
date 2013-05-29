@@ -11,7 +11,7 @@ if os.path.exists('Editor.exe'):
     os.remove('Editor.exe')
 
 setup(windows=[{"script": "main.pyw",
-                "icon_resources": [(1, "editor.ico"), (2, "editor.ico")],
+                #"icon_resources": [(1, "editor.ico"), (2, "editor.ico")],
                 "dest_base": "Editor",
                }],
       name="Structured Editor",
