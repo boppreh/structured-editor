@@ -191,12 +191,15 @@ class Block(DynamicNode):
     delimiter = '\n'
 
     def render(self, wrapper=empty_wrapper):
-        str_contents = [item.render(wrapper) for item in self.contents]
-        for i, item in enumerate(str_contents):
-            if '\n' in item and i < len(self) - 1:
-                str_contents[i] += '\n'
+        rendered = []
+        for i, text in enumerate(node.render(wrapper) for node in self.contents):
+            rendered.append(text)
+            if i < len(self) - 1:
+                rendered.append(self.delimiter)
+                if '\n' in text:
+                    rendered.append('\n')
 
-        rendered_text = '\n' + self.delimiter.join(str_contents).strip()
+        rendered_text = '\n' + ''.join(rendered).strip()
         if self.parent or self.template != '{children}':
             rendered_text = rendered_text.replace('\n', '\n    ')
         else:
