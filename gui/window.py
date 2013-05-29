@@ -89,7 +89,8 @@ class InsertionWindow(CommandsWindow):
 
     def refresh(self, editor):
         for button in self.buttonsByCommand.values():
-            button.setParent(None)
+            self.verticalLayout.removeWidget(button)
+            button.deleteLater()
         self.buttonsByCommand = {}
 
         try:
