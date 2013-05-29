@@ -181,11 +181,8 @@ class HtmlEditor(GraphicalEditor):
 
         # Span tags change the background, but there's no background in empty
         # nodes. So we replace it with a single space.
-        if open_span and len(node) == 0:
-            if template == '{children}':
-                template = ' {children} '
-            else:
-                template = ' '
+        if open_span and len(node) == 0 and template == '{children}':
+            template = '{children} '
         
 
         # Close parent's href tag to avoid nested links.
