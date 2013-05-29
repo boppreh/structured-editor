@@ -19,42 +19,48 @@ false_ = Keyword('false')
 nil_ = Keyword('nil')
 ellipsis = Literal('...')
 
+def registerClass(symbol, class_):
+    class_.symbol = symbol
+    symbol.addParseAction(class_)
+    return symbol
+
+
 # Constants' respective classes.
-name.setParseAction(Identifier)
-string.addParseAction(removeQuotes).addParseAction(String)
-number.setParseAction(Constant)
-nil_.setParseAction(Constant)
-true_.setParseAction(Constant)
-false_.setParseAction(Constant)
-ellipsis.setParseAction(Identifier)
+registerClass(name, Identifier)
+registerClass(string, String).addParseAction(removeQuotes)
+registerClass(number, Constant)
+registerClass(nil_, Constant)
+registerClass(true_, Constant)
+registerClass(false_, Constant)
+registerClass(ellipsis, Identifier)
 
 # Main structures' classes.
-block = Forward().setParseAction(Block)
-doblock = Forward().setParseAction(DoBlock)
-assignment = Forward().setParseAction(Assignment)
-tableconstructor = Forward().setParseAction(Table)
-fieldAssignment = Forward().setParseAction(Assignment)
-localvar = Forward().setParseAction(LocalVar)
-namedfunc = Forward().setParseAction(NamedFunction)
-localfunc = Forward().setParseAction(LocalFunction)
-function = Forward().setParseAction(AnonFunction)
-parlist = Forward().setParseAction(ParameterList)
-functioncall = Forward().setParseAction(FunctionCall)
-var = Forward().setParseAction(Variable)
-listAccess = Forward().setParseAction(ListAccess)
-prefixexp = Forward().setParseAction(make_prefixexp)
-for_ = Forward().setParseAction(For)
-forin = Forward().setParseAction(ForIn)
-whilestat = Forward().setParseAction(While)
-ifstat = Forward().setParseAction(FullIf)
-mainif = Forward().setParseAction(If)
-elsifstat = Forward().setParseAction(If)
-elsestat = Forward().setParseAction(Else)
-retstat = Forward().setParseAction(Return)
-explist = Forward().setParseAction(ExpressionList)
-repeatuntil = Forward().setParseAction(RepeatUntil)
-funcname = Forward().setParseAction(FunctionName)
-namelist = Forward().setParseAction(NameList)
+block = registerClass(Forward(), Block)
+doblock = registerClass(Forward(), DoBlock)
+assignment = registerClass(Forward(), Assignment)
+tableconstructor = registerClass(Forward(), Table)
+fieldAssignment = registerClass(Forward(), Assignment)
+localvar = registerClass(Forward(), LocalVar)
+namedfunc = registerClass(Forward(), NamedFunction)
+localfunc = registerClass(Forward(), LocalFunction)
+function = registerClass(Forward(), AnonFunction)
+parlist = registerClass(Forward(), ParameterList)
+functioncall = registerClass(Forward(), FunctionCall)
+var = registerClass(Forward(), Variable)
+listAccess = registerClass(Forward(), ListAccess)
+prefixexp = registerClass(Forward(), make_prefixexp)
+for_ = registerClass(Forward(), For)
+forin = registerClass(Forward(), ForIn)
+whilestat = registerClass(Forward(), While)
+ifstat = registerClass(Forward(), FullIf)
+mainif = registerClass(Forward(), If)
+elsifstat = registerClass(Forward(), If)
+elsestat = registerClass(Forward(), Else)
+retstat = registerClass(Forward(), Return)
+explist = registerClass(Forward(), ExpressionList)
+repeatuntil = registerClass(Forward(), RepeatUntil)
+funcname = registerClass(Forward(), FunctionName)
+namelist = registerClass(Forward(), NameList)
 
 # Intermediary structures.
 exp = Forward()
@@ -166,12 +172,12 @@ stat << (whilestat |
 # "enablepackrat" enables an important optimization for this type of grammar.
 exp.enablePackrat()
 operators = [
-    (Literal('^').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
-    ((not_ | '#' | '-').setParseAction(Operator), 1, opAssoc.RIGHT, UnoOp),
-    (oneOf('* / %').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
-    (oneOf('+ - ..').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
-    (oneOf('< > <= >= ~= ==').setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
-    ((or_ | and_).setParseAction(Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
+    (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass(oneOf('+ - ..'), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass(oneOf('< > <= >= ~= =='), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass((or_ | and_), Operator), 2, opAssoc.LEFT, BinOp),
 ]
 exp << operatorPrecedence(nil_ | false_ | true_ | '...' | number | string |
                           function | prefixexp | tableconstructor, operators)
