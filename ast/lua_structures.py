@@ -262,9 +262,16 @@ class Return(DynamicNode, Statement):
     child_type = ExpressionList
     template = 'return {children}'
 
-class Operator(Constant):
+class Operator(StaticNode):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
+    abstract = False
+    subparts = [('value', str)]
+    template = '{value}'
     alphabet = '^#*/%+-.<>=~'
+
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self).format(value=self.contents[0])
+
     @staticmethod
     def default():
         return Operator(['+'])
