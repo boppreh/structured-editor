@@ -8,7 +8,10 @@ classes in its abstract syntax tree.
 import string
 from structures import *
 
-class Expression(StaticNode):
+class TableItem(StaticNode):
+    pass
+
+class Expression(TableItem):
     """ Abstract class for expressions that can be used as values. """
     @classmethod
     def default(cls):
@@ -95,13 +98,18 @@ class LocalVar(Assignment):
             self.template = LocalVar.template
         return super(LocalVar, self).render(wrapper)
 
+class FieldAssignment(TableItem):
+    abstract = False
+    template = '{left_side} = {right_side}'
+    subparts = [('left_side', ExpressionList), ('right_side', ExpressionList)]
+
 class Table(DynamicNode, Expression):
     """
     Table declaration. When printing, line breaks are inserted as necessary.
     """
     abstract = False
     delimiter = ', '
-    child_type = StaticNode
+    child_type = TableItem
     template = '{{{children}}}'
 
 class FunctionName(DynamicNode):
