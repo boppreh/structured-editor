@@ -268,8 +268,10 @@ class FullIf(Statement):
             self.template = FullIf.template
         return super(FullIf, self).render(wrapper)
 
-class Return(ExpressionList, Statement):
+class Return(DynamicNode, Statement):
     """ A return statement, with zero or more expression returned. """
+    abstract = False
+    child_type = Expression
     template = 'return {children}'
 
     @staticmethod
