@@ -10,8 +10,12 @@ from structures import *
 
 class Expression(StaticNode):
     """ Abstract class for expressions that can be used as values. """
-    @staticmethod
-    def default(): return Identifier.default()
+    @classmethod
+    def default(cls):
+        if cls == Expression:
+            return Identifier.default()
+        else:
+            return cls()
 
 class DoBlock(Statement):
     abstract = False
@@ -256,11 +260,14 @@ class FullIf(Statement):
             self.template = FullIf.template
         return super(FullIf, self).render(wrapper)
 
-class Return(DynamicNode, Statement):
+class Return(ExpressionList, Statement):
     """ A return statement, with zero or more expression returned. """
-    abstract = False
-    child_type = ExpressionList
     template = 'return {children}'
+
+    @staticmethod
+    def default():
+        return Return()
+
 
 class Operator(StaticNode):
     """ Class for binary and unary operators such as +, and, ^ and not.  """

@@ -112,7 +112,7 @@ or_ = Keyword('or')
 
 # Grammar.
 block << (ZeroOrMore(stat + semicolon) + Optional(retstat + semicolon))
-retstat << (return_ + Optional(explist) | break_)
+retstat << (return_ + delimitedList(exp) | break_)
 funcname << (delimitedList(name, dot) + Optional(colon + name))
 namelist << delimitedList(name)
 explist << delimitedList(exp)
