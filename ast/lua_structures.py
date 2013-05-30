@@ -325,7 +325,7 @@ class UnoOp(Expression):
 
     @staticmethod
     def default():
-        return UnoOp([[Identifier.default(), Operator.default()]])
+        return UnoOp([[Operator.default(), Identifier.default()]])
 
 
 if __name__ == '__main__':
