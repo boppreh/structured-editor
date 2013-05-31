@@ -30,14 +30,10 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
             self.name = basename(self.selected_file)
 
     def can_close(self):
-        """
-        Returns a boolean value indicating if the editor can be closed. If
-        there are unsaved changes, ask the user to save or discard.
-        """
-        if len(self.past_history) == 0:
+        if super(GraphicalEditor, self).can_close():
             return True
         else:
-            return self._confirm_unsaved_changes()
+            return self._confirm_unsaved_changes()            
 
     def _confirm_unsaved_changes(self):
         message_template = 'Do you want to save changes to {}?'
@@ -72,10 +68,11 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         Saves the current editor into the original file or, if there isn't one,
         into a file selected by the user.
         """
-        try:
-            Editor.save(self)
-        except:
-            self.save_as()
+        if self.can_save:
+            super(GraphicalEditor, self).save()
+            return True
+        else:
+            return self.save_as()
 
 
 class HtmlEditor(GraphicalEditor):

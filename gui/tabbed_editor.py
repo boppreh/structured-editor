@@ -131,7 +131,7 @@ class TabbedEditor(QtGui.QTabWidget):
         if tab is None:
             tab = self.currentIndex()
 
-        if tab != -1 and self.count() > 1 and self.widget(tab).can_close():
+        if tab != -1 and self.widget(tab).can_close():
             self.removeTab(tab)
             self.tabBar()._update_tab()
             return True

@@ -125,3 +125,10 @@ class Editor(object):
         Returns true if it's possible to redo an action with this editor.
         """
         return len(self.future_history) >= 1
+
+    def can_close(self):
+        """
+        Returns a boolean value indicating if the editor can be closed. If
+        there are unsaved changes, ask the user to save or discard.
+        """
+        return len(self.past_history) == 0
