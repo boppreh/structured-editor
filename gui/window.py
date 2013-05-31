@@ -242,18 +242,15 @@ class MainEditorWindow(QtGui.QMainWindow):
         fileMenu = self.menubar.addMenu('&File')
         makeMenuAction("&New", "Ctrl+N",
                        "Creates a new empty document.",
-                       fileMenu,
-                       lambda: self.tabbedEditor.editor().new())
+                       fileMenu, self.tabbedEditor.new)
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O",
                        "Open an existing source code file.",
-                       fileMenu,
-                       lambda: self.tabbedEditor.editor().open())
+                       fileMenu, self.tabbedEditor.open)
         makeMenuAction("&Parse text...", "",
                        "Open a source code text by typing it in a temporary "
                        "window.",
-                       fileMenu,
-                       lambda: self.tabbedEditor.editor().parse())
+                       fileMenu, self.tabbedEditor.parse)
         fileMenu.addSeparator()
         self.save_menu = makeMenuAction("&Save", "Ctrl+S",
                                         "Save the current source code back to the file it came "
