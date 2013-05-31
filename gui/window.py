@@ -359,7 +359,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.settings.setValue('geometry', self.saveGeometry())
         self.settings.setValue('state', self.saveState())
         for i in range(self.tabbedEditor.count()):
-            if not self.tabbedEditor.editor().can_close():
+            if not self.tabbedEditor.can_close(i):
                 event.ignore()
                 return
         QtGui.QMainWindow.closeEvent(self, event)

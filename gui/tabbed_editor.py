@@ -134,6 +134,9 @@ class TabbedEditor(QtGui.QTabWidget):
         if tab != -1 and self.count() > 1 and self.widget(tab).can_close():
             self.removeTab(tab)
             self.tabBar()._update_tab()
+            return True
+        else:
+            return False
 
     def create_editor(self, root, structures, selected_file):
         """
