@@ -25,6 +25,7 @@ class Editor(object):
         self.clipboard = None
         self.past_history = []
         self.future_history = []
+        self.last_saved_action = None
 
         self.config = RawConfigParser()
         self.config.read('output_format.ini')
@@ -42,6 +43,9 @@ class Editor(object):
         selected node) to the file that originated this code.
         """
         assert self.selected_file is not None
+
+        if self.past_history:
+            self.last_saved_action = self.past_history[-1]
 
         with open(self.selected_file, 'w') as target_file:
             target_file.write(self.render_tree(self._file_wrapper))
@@ -131,4 +135,5 @@ class Editor(object):
         Returns a boolean value indicating if the editor can be closed. If
         there are unsaved changes, ask the user to save or discard.
         """
-        return len(self.past_history) == 0
+        return (len(self.past_history) == 0
+                and self.last_saved_action == self.past_history[-1])
