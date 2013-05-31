@@ -135,5 +135,6 @@ class Editor(object):
         Returns a boolean value indicating if the editor can be closed. If
         there are unsaved changes, ask the user to save or discard.
         """
-        return (len(self.past_history) == 0
+        return (self.selected_file is not None
+                and len(self.past_history) == 0
                 and self.last_saved_action == self.past_history[-1])
