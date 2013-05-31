@@ -242,23 +242,28 @@ class MainEditorWindow(QtGui.QMainWindow):
         fileMenu = self.menubar.addMenu('&File')
         makeMenuAction("&New", "Ctrl+N",
                        "Creates a new empty document.",
-                       fileMenu, self.tabbedEditor.new)
+                       fileMenu,
+                       lambda: self.tabbedEditor.editor().new())
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O",
                        "Open an existing source code file.",
-                       fileMenu, self.tabbedEditor.open)
+                       fileMenu,
+                       lambda: self.tabbedEditor.editor().open())
         makeMenuAction("&Parse text...", "",
                        "Open a source code text by typing it in a temporary "
                        "window.",
-                       fileMenu, self.tabbedEditor.parse)
+                       fileMenu,
+                       lambda: self.tabbedEditor.editor().parse())
         fileMenu.addSeparator()
         self.save_menu = makeMenuAction("&Save", "Ctrl+S",
                                         "Save the current source code back to the file it came "
                                         "from.",
-                                        fileMenu, self.tabbedEditor.save)
+                                        fileMenu,
+                                        lambda: self.tabbedEditor.editor().save())
         makeMenuAction("&Save as...", "Ctrl+Alt+S",
                        "Save the current source code to a different file.",
-                       fileMenu, self.tabbedEditor.save_as)
+                       fileMenu,
+                       lambda: self.tabbedEditor.editor().save_as())
         fileMenu.addSeparator()
         makeMenuAction("&Quit", "Ctrl+Q",
                        "Close the application.",
@@ -267,10 +272,12 @@ class MainEditorWindow(QtGui.QMainWindow):
         editMenu = self.menubar.addMenu('&Edit')
         self.undo_menu = makeMenuAction("&Undo", "Ctrl+Z",
                                         "Reverts the last change.",
-                                        editMenu, self.tabbedEditor.undo)
+                                        editMenu,
+                                        lambda: self.tabbedEditor.editor().undo())
         self.redo_menu = makeMenuAction("&Redo", "Ctrl+Shift+Z",
                                         "Executes the last change undone",
-                                        editMenu, self.tabbedEditor.redo)
+                                        editMenu,
+                                        lambda: self.tabbedEditor.editor().redo())
 
         viewMenu = self.menubar.addMenu("&View")
         makeMenuAction("&Navigation window", "Alt+N",
@@ -352,23 +359,23 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.settings.setValue('geometry', self.saveGeometry())
         self.settings.setValue('state', self.saveState())
         for i in range(self.tabbedEditor.count()):
-            if not self.tabbedEditor.widget(i).can_close():
+            if not self.tabbedEditor.editor().can_close():
                 event.ignore()
                 return
         QtGui.QMainWindow.closeEvent(self, event)
 
     def runCommand(self, command):
-        self.tabbedEditor.execute(command)
+        self.tabbedEditor.editor().execute(command)
 
     def refresh(self):
         editor = self.tabbedEditor.editor()
         if not editor:
             return
 
-        self.navigationWindow.refresh(self.tabbedEditor.editor())
-        self.editingWindow.refresh(self.tabbedEditor.editor())
-        self.insertionWindow.refresh(self.tabbedEditor.editor())
-        self.macroWindow.refresh(self.tabbedEditor.editor())
+        self.navigationWindow.refresh(editor)
+        self.editingWindow.refresh(editor)
+        self.insertionWindow.refresh(editor)
+        self.macroWindow.refresh(editor)
 
         title_template = '{} - Structured Editor'
         title = title_template.format(editor.name)
@@ -377,6 +384,6 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.statusBar().showMessage('Currently selected: ' +
                                      class_label(type(editor.selected)))
 
-        self.save_menu.setEnabled(self.tabbedEditor.can_save())
-        self.undo_menu.setEnabled(self.tabbedEditor.can_undo())
-        self.redo_menu.setEnabled(self.tabbedEditor.can_redo())
+        self.save_menu.setEnabled(editor.can_save())
+        self.undo_menu.setEnabled(editor.can_undo())
+        self.redo_menu.setEnabled(editor.can_redo())

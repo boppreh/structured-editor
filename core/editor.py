@@ -106,3 +106,22 @@ class Editor(object):
         The default wrapper just returns the node.template unchanged.
         """
         return self.root.render(wrapper)
+
+    def can_save(self):
+        """
+        Returns true if this editor is able to directly save the current
+        file. False in case it doesn't have info on the original file.
+        """
+        return self.selected_file is not None
+
+    def can_undo(self):
+        """
+        Returns true if it's possible to undo an action with this editor.
+        """
+        return len(self.past_history) >= 1
+
+    def can_redo(self):
+        """
+        Returns true if it's possible to redo an action with this editor.
+        """
+        return len(self.future_history) >= 1

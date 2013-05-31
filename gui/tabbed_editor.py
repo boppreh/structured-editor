@@ -120,17 +120,11 @@ class TabbedEditor(QtGui.QTabWidget):
         QtGui.QShortcut('Ctrl+T', self, self.new)
         QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
 
-    def editor(self): return self.widget(self.currentIndex())
-
-    def save(self): self.editor().save()
-    def save_as(self): self.editor().save_as()
-    def undo(self): self.editor().undo()
-    def redo(self): self.editor().redo()
-    def execute(self, command): self.editor().execute(command)
-
-    def can_save(self): return self.editor().selected_file is not None
-    def can_undo(self): return len(self.editor().past_history) >= 1
-    def can_redo(self): return len(self.editor().future_history) >= 1
+    def editor(self):
+        """
+        Returns the current editor instance.
+        """ 
+        return self.widget(self.currentIndex())
 
     def close_tab(self, tab=None):
         """ Closes the tab at index "tab", if there is one. """
