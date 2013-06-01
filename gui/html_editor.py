@@ -8,9 +8,6 @@ from os.path import basename
 from core.editor import Editor
 from core.actions import Select
 
-from ast.structures import *
-from ast.lua_structures import *
-
 class GraphicalEditor(QtWebKit.QWebView, Editor):
     """
     Editor child with Qt graphical capabilities, such as save/save as dialogs
@@ -65,8 +62,8 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
 
     def save(self):
         """
-        Saves the current editor into the original file or, if there isn't one,
-        into a file selected by the user.
+        Saves the current editor into the original file or, if there isn't
+        one, into a file selected by the user.
         """
         if self.can_save:
             super(GraphicalEditor, self).save()
