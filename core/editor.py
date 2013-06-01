@@ -3,7 +3,6 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ConfigParser import RawConfigParser
-from os import path
 
 from ast import lua_parser, json_parser
 
@@ -13,9 +12,9 @@ parsers = {'lua': lua_parser, 'json': json_parser}
 class Editor(object):
     @classmethod
     def from_file(cls, path):
-        language = path.splitext(path)[1]
+        language = path.rsplit('.')[-1]
         root = parsers[language].parse_string(open(path).read())
-        return cls(root, language, selected_file)
+        return cls(root, language, path)
 
     @classmethod
     def from_string(cls, string, language):
