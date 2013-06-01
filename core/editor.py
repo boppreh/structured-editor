@@ -37,6 +37,7 @@ class Editor(object):
         self.selected = root
         self.selected_file = selected_file
         self.structures = parsers[language].structures
+        self.language = language
 
         self.clipboard = None
         self.past_history = []

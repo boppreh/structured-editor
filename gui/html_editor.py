@@ -14,15 +14,16 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
     and pretty name for showing to the user.
     """
     untitled_count = 0
-    untitled_name_template = 'Untitled Document {}.lua'
+    untitled_name_template = 'Untitled Document {}.{}'
 
-    def __init__(self, root, selected_file, parent=None):
-        QtWebKit.QWebView.__init__(self, parent)
-        Editor.__init__(self, root, selected_file)
+    def __init__(self, root, language, selected_file):
+        QtWebKit.QWebView.__init__(self)
+        Editor.__init__(self, root, language, selected_file)
 
         if self.selected_file is None:
             GraphicalEditor.untitled_count += 1
-            self.name = self.untitled_name_template.format(self.untitled_count)
+            template = self.untitled_name_template
+            self.name = template.format(self.untitled_count, self.language)
         else:
             self.name = basename(self.selected_file)
 
@@ -77,8 +78,8 @@ class HtmlEditor(GraphicalEditor):
     Graphical editor that displays the code in HTML, allowing the user to click
     on the text to select nodes.
     """
-    def __init__(self, root, selected_file, refresh_handler=None, parent=None):
-        super(HtmlEditor, self).__init__(root, selected_file, parent)
+    def __init__(self, root, language, selected_file, refresh_handler=None):
+        super(HtmlEditor, self).__init__(root, language, selected_file)
 
         self.refresh_handler = refresh_handler
 
