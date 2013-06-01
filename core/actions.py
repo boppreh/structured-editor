@@ -152,8 +152,7 @@ class MoveDown(SelectNextSibling):
         parent.remove(selected)
         parent.insert(index, selected)
 
-    
-from copy import deepcopy
+
 class Copy(Action):
     def _is_available(self, editor, selected, parent, index):
         return True 
@@ -169,7 +168,6 @@ class Copy(Action):
             print 'Could not copy HTML.'
         clipboard.setMimeData(mime)
 
-        editor.clipboard = deepcopy(selected)
         return selected
 
 
@@ -177,13 +175,18 @@ class Paste(Action):
     alters = True
 
     def _is_available(self, editor, selected, parent, index):
-        return (editor.clipboard is not None
-                and parent is not None
-                and parent.can_insert(index, editor.clipboard))
+        return parent is not None
 
     def _execute(self, editor, selected, parent, index):
         if not hasattr(self, 'copy'):
-            self.copy = deepcopy(editor.clipboard)
+            if isinstance(parent, structures.StaticNode):
+                parse = parent.get_expected_class(index).symbol.parseString
+            else:
+                parse = parent.get_expected_class(index + 1).symbol.parseString
+            
+            from PyQt4 import QtGui, QtCore
+            clipboard = QtGui.QApplication.clipboard()
+            self.copy = parse(str(clipboard.text()))[0]
 
         if not hasattr(parent, 'remove'):
             self.replaced_value = parent[index]
