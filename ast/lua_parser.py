@@ -64,7 +64,10 @@ namelist = registerClass(Forward(), NameList)
 
 # Intermediary structures.
 exp = Forward()
+Expression.symbol = exp
 stat = Forward()
+Statement.symbol = stat
+
 varOrExp = Forward()
 nameAndArgs = Forward()
 varSuffix = Forward()
