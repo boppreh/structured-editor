@@ -9,8 +9,6 @@ from PyQt4 import QtCore, QtGui
 from pyparsing import ParseException
 
 from html_editor import HtmlEditor
-from core.editor import Editor
-from ast import lua_parser, json_parser
 
 class CodeInput(QtGui.QDialog):
     """
@@ -40,7 +38,7 @@ class CodeInput(QtGui.QDialog):
     def accept(self):
         try:
             text = str(self.textedit.toPlainText())
-            self.root = lua_parser.parseString(text)
+            self.editor = HtmlEditor.from_string(text, 'lua')
             super(CodeInput, self).accept()
         except ParseException:
             QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
@@ -138,20 +136,19 @@ class TabbedEditor(QtGui.QTabWidget):
         else:
             return False
 
-    def create_editor(self, root, structures, selected_file):
+    def add(self, editor):
         """
         Creates a new tab to contain a given editor and automatically switches
         tab to it.
         """
-        editor = HtmlEditor(root, selected_file, self.refresh_handler,
-                            parent=self)
-        editor.structures = structures
+        editor.refresh_handler = self.refresh_handler
+        editor.refresh()
 
-        self.addTab(editor, editor.name)
         # The return value of addTab is not reliable when some tabs have been
         # closed, so we calculate it on our own, assuming all tabs are open on
         # on the right end.
-        tab = self.count() - 1
+        tab = self.count()
+        self.addTab(editor, editor.name)
         self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
 
@@ -159,9 +156,7 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         Creates a new tab with an empty editor.
         """
-        self.create_editor(lua_parser.parseString(''),
-                           lua_parser.structures,
-                           None)
+        self.add(HtmlEditor.parse_string('', 'lua'))
 
     def open(self, event=None):
         """
@@ -170,15 +165,8 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         filters = 'Lua files (*.lua);;JSON files (*.json);;All files (*.*)';
         path = str(QtGui.QFileDialog.getOpenFileName(self, filter=filters))
-        if path:
-            if path.endswith('.lua'):
-                self.create_editor(lua_parser.parseFile(path),
-                                   lua_parser.structures,
-                                   path)
-            else:
-                self.create_editor(json_parser.parseFile(path),
-                                   json_parser.structures,
-                                   path)
+        if path is not None:
+            self.add(HtmlEditor.from_file(path))
 
     def parse(self, event=None):
         """
@@ -187,4 +175,4 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         input_dialog = CodeInput()
         if input_dialog.exec_():
-            self.create_editor(input_dialog.root, lua_parser.structures, None)
+            self.add(input_dialog.editor)

@@ -2,10 +2,9 @@ import json
 from structures import *
 
 class Value(StaticNode):
-    abstract = True
+    pass
 
 class String(Value):
-    abstract = False
     template = '"{value}"'
     alphabet = [chr(i) for i in range(256)]
     subparts = [('value', basestring)]
@@ -17,7 +16,6 @@ class String(Value):
         return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
 
 class Number(Value):
-    abstract = False
     template = '{value}'
     subparts = [('value', int)]
 
@@ -28,7 +26,6 @@ class Number(Value):
         return wrapper(self).format(value=self.contents[0])
 
 class True_(Value):
-    abstract = False
     template = 'true'
 
     @staticmethod
@@ -38,7 +35,6 @@ class True_(Value):
         return wrapper(self)
 
 class False_(Value):
-    abstract = False
     template = 'false'
 
     @staticmethod
@@ -48,7 +44,6 @@ class False_(Value):
         return wrapper(self)
 
 class Null(Value):
-    abstract = False
     template = 'null'
 
     @staticmethod
@@ -58,13 +53,11 @@ class Null(Value):
         return wrapper(self)
 
 class Array(Block, Value):
-    abstract = False
     delimiter = ',\n'
     template = '[{children}\n]'
     child_type = Value
 
 class Assignment(StaticNode):
-    abstract = False
     subparts = [('key', String), ('value', Value)]
     template = '{key}: {value}'
 
@@ -72,7 +65,6 @@ class Assignment(StaticNode):
     def default(): return Assignment([String.default(), String.default()])
 
 class Object(Block, Value):
-    abstract = False
     child_type = Assignment
     delimiter = ',\n'
     template = '{{{children}\n}}'
@@ -92,10 +84,7 @@ def convert(root):
         return Object([Assignment([String([key]), convert(value)])
                        for key, value in root.items()])
 
-def parseString(string):
+def parse_string(string):
     return convert(json.loads(string))
 
-def parseFile(filename):
-    return parseString(open(filename).read())
-
-structures = __name__
+structures = [Value, Number, True_, False_, Null, Array, Assignment, Object]

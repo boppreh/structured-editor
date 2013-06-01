@@ -3,17 +3,32 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ConfigParser import RawConfigParser
+from os import path
 
-from ast.structures import empty_wrapper
+from ast import lua_parser, json_parser
+
+parsers = {'lua': lua_parser, 'json': json_parser}
+
 
 class Editor(object):
+    @classmethod
+    def from_file(cls, path):
+        language = path.splitext(path)[1]
+        root = parsers[language].parse_string(open(path).read())
+        return cls(root, language, selected_file)
+
+    @classmethod
+    def from_string(cls, string, language):
+        root = parsers[language].parse_string(string)
+        return cls(root, language, None)
+
     """
     Class for an abstract code editor. Supports execution of arbitrary actions,
     undo/redo, clipboard attribute (to be used by actions), node selection
     (single selection only for the moment) and rendering the tree with a
     user-specified function running on every node's text.
     """
-    def __init__(self, root, selected_file=None):
+    def __init__(self, root, language, selected_file=None):
         """
         Initializes an editor from an existing root node, selecting the root
         node, with empty clipboard and undo/redo history.
@@ -21,6 +36,7 @@ class Editor(object):
         self.root = root
         self.selected = root
         self.selected_file = selected_file
+        self.structures = parsers[language].structures
 
         self.clipboard = None
         self.past_history = []
@@ -59,7 +75,7 @@ class Editor(object):
         self.selected_file = new_path
         self.save()
 
-    def execute(self, action):
+    def execute(self, action, save_history=True):
         """
         Executes a new action, allowing it to be reversed by undo. To avoid
         forking the action history, all actions undone and not redone are lost.
@@ -98,7 +114,7 @@ class Editor(object):
         self.future_history.append((self.selected, action))
         self.selected = action.rollback(self)
 
-    def render_tree(self, wrapper=empty_wrapper):
+    def render_tree(self, wrapper=None):
         """
         Returns the textual representation of the entire tree (not just the
         selected node).
@@ -109,7 +125,10 @@ class Editor(object):
         rendering. It takes the node as parameter and returns the new template.
         The default wrapper just returns the node.template unchanged.
         """
-        return self.root.render(wrapper)
+        if wrapper is not None:
+            return self.root.render(wrapper)
+        else:
+            return self.root.render()
 
     def can_save(self):
         """

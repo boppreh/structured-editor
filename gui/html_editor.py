@@ -91,8 +91,6 @@ class HtmlEditor(GraphicalEditor):
         self.config = RawConfigParser()
         self.config.read('theme.ini')
 
-        self.refresh()
-
     def node_style(self, node):
         """
         Returns the CSS to color the node according to its node type.

@@ -188,24 +188,20 @@ exp << operatorPrecedence(nil_ | false_ | true_ | '...' | number | string |
 
 import re
 
-def parseString(string):
+def parse_string(string):
     """
     Parses a Lua program from a string.
     """
     return block.parseString(re.sub(r'--.+', '', string), parseAll=True)[0]
 
-def parseFile(filename):
-    """
-    Parses a Lua program from the contents of a file in a given path.
-    """
-    return parseString(open(filename).read())
-
-import lua_structures
-structures = lua_structures.__name__
+import lua_structures, inspect
+all_classes = inspect.getmembers(lua_structures, inspect.isclass)
+structures = [cls for name, cls in all_classes]
 
 if __name__ == '__main__':
+    pass
     #print parseString('local function a(a) print() end')
-    print parseFile('../lua_test_files/full.lua')
+    #print parseFile('../lua_test_files/full.lua')
     #print(parseString(str(parseFile('tests/1.lua'))))
     #from editor import Editor
     #print assignment.parseString('a = 5')

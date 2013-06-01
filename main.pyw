@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 import sys
 
 from gui.window import MainEditorWindow
-from ast.lua_parser import parseString
+from gui.html_editor import HtmlEditor
 
 test_program = """
 function allwords ()
@@ -34,9 +34,6 @@ end
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 #mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
-from ast import lua_parser
-mainWin.tabbedEditor.create_editor(parseString(test_program),
-                                   lua_parser.structures,
-                                   None)
+mainWin.tabbedEditor.add(HtmlEditor.from_string(test_program, 'lua'))
 mainWin.show()
 sys.exit(app.exec_())

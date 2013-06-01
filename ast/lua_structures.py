@@ -21,13 +21,11 @@ class Expression(TableItem):
             return cls()
 
 class DoBlock(Statement):
-    abstract = False
     template = 'do{block}\nend'
     subparts = [('block', Block)]
 
 class Constant(Expression):
     """ Literal string, number, nil, true or false. """
-    abstract = False
     subparts = [('value', str)]
     template = '{value}'
     alphabet = string.digits
@@ -43,7 +41,6 @@ class Constant(Expression):
 
 class Identifier(Constant):
     """ A reference to an identifier. """
-    abstract = False
     alphabet = string.lowercase + string.digits + '_'
     @staticmethod
     def default():
@@ -54,7 +51,6 @@ class Identifier(Constant):
 class String(Constant):
     """ Literal string. """
     template = '"{value}"'
-    abstract = False
     alphabet = [chr(i) for i in range(256)]
 
     def render(self, wrapper=empty_wrapper):
@@ -68,26 +64,22 @@ class String(Constant):
 
 class ExpressionList(DynamicNode):
     """ Comma separated list of expressions ("foo, bar + 2, baz[1]"). """
-    abstract = False
     child_type = Expression
     @staticmethod
     def default(): return ExpressionList([Identifier.default()])
 
 class NameList(DynamicNode):
     """ Comma separated list of names ("foo, bar, baz"). """
-    abstract = False
     child_type = Identifier
     @staticmethod
     def default(): return NameList([Identifier.default()])
 
 class Assignment(Statement):
-    abstract = False
     template = '{left_side} = {right_side}'
     subparts = [('left_side', ExpressionList), ('right_side', ExpressionList)]
 
 class LocalVar(Assignment):
     """ Variable declaration with "local" modifier. """
-    abstract = False
     subparts = [('names', NameList), ('values', ExpressionList)]
     template = 'local {names} = {values}'
 
@@ -99,7 +91,6 @@ class LocalVar(Assignment):
         return super(LocalVar, self).render(wrapper)
 
 class FieldAssignment(TableItem):
-    abstract = False
     template = '{left_side} = {right_side}'
     subparts = [('left_side', ExpressionList), ('right_side', ExpressionList)]
 
@@ -107,7 +98,6 @@ class Table(DynamicNode, Expression):
     """
     Table declaration. When printing, line breaks are inserted as necessary.
     """
-    abstract = False
     delimiter = ', '
     child_type = TableItem
     template = '{{{children}}}'
@@ -116,7 +106,6 @@ class FunctionName(DynamicNode):
     """
     Dot separated names, used in function declarations.
     """
-    abstract = False
     delimiter = '.'
     child_type = Identifier
     @staticmethod
@@ -130,24 +119,20 @@ class NamedFunction(Statement):
     """
     Declaration of a named function, in contrast to an anonymous function.
     """
-    abstract = False
     template = 'function {name}({parameters}){body}\nend'
     subparts = [('name', FunctionName), ('parameters', ParameterList), ('body', Block)]
 
 class LocalFunction(Statement):
     """ Specialization of a named function with the local modifier.  """
-    abstract = False
     template = 'local ' + NamedFunction.template
     subparts = [('name', Identifier), ('parameters', ParameterList), ('body', Block)]
 
 class AnonFunction(Expression):
     """ Anonymous function declaration. Can be used as expression value. """
-    abstract = False
     template = 'function ({parameters}){body}\nend'
     subparts = [('parameters', NameList), ('body', Block)]
 
 class ColonName(StaticNode):
-    abstract = False
     subparts = [('name', Identifier)]
     template = ':{name}'
 
@@ -162,7 +147,6 @@ class FunctionCall(Expression, Statement):
     """
     A function call, possibly with method call syntax ("a:b(params)").
     """
-    abstract = False
     template = '{name}{colon_name}({parameters})'
     subparts = [('name', Expression),
                 ('colon_name', ColonName),
@@ -175,13 +159,11 @@ class FunctionCall(Expression, Statement):
 
 class Variable(DynamicNode, Expression):
     """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
-    abstract = False
     child_type = Expression
     delimiter = '.'
 
 class ListAccess(Expression):
     """ Simple list access using the bracket notation ("[exp]"). """
-    abstract = False
     subparts = [('owner', Expression), ('index', Expression)]
     template = '{owner}[{index}]'
 
@@ -199,36 +181,30 @@ def make_prefixexp(toks):
 
 class ForIn(Statement):
     """ "for item in list do" control structure. """
-    abstract = False
     subparts = [('item', NameList), ('iterator', ExpressionList), ('body', Block)] 
     template = 'for {item} in {iterator} do{body}\nend'
 
 class For(Statement):
-    abstract = False
     subparts = [('item', Identifier), ('range', ExpressionList), ('body', Block)]
     template = 'for {item} = {range} do{body}\nend'
 
 class RepeatUntil(Statement):
     """ "for item in list do" control structure. """
-    abstract = False
     subparts = [('body', Block), ('condition', Expression)] 
     template = 'repeat{body}\nuntil {condition}'
 
 class While(Statement):
     """ "while condition do" control structure. """
-    abstract = False
     subparts = [('condition', Expression), ('body', Block)]
     template = 'while {condition} do{body}\nend'
 
 class Else(StaticNode):
     """ The 'else' clause of a conditional. """
-    abstract = False
     subparts = [('body', Block)]
     template = '\nelse{body}'
 
 class If(StaticNode):
     """ The condition/body pair of an 'if'/'elseif' control structure. """
-    abstract = False
     subparts = [('condition', Expression), ('body', Block)]
     template = 'if {condition} then{body}'
 
@@ -243,7 +219,6 @@ class IfChain(DynamicNode):
     """
     Structure for the first 'if' and the chain of 'elseif' that follow.
     """
-    abstract = False
     child_type = If
     delimiter = '\n'
 
@@ -253,7 +228,6 @@ class IfChain(DynamicNode):
 
 class FullIf(Statement):
     """ If control structure, including related elseifs and elses. """
-    abstract = False
     template = '{if_chain}{else}\nend'
     subparts = [('if_chain', IfChain), ('else', Else)]
 
@@ -270,7 +244,6 @@ class FullIf(Statement):
 
 class Return(DynamicNode, Statement):
     """ A return statement, with zero or more expression returned. """
-    abstract = False
     child_type = Expression
     template = 'return {children}'
 
@@ -281,7 +254,6 @@ class Return(DynamicNode, Statement):
 
 class Operator(StaticNode):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
-    abstract = False
     subparts = [('value', str)]
     template = '{value}'
     alphabet = '^#*/%+-.<>=~'
@@ -298,7 +270,6 @@ class BinOp(Expression):
     Expression with binary operator, including the left_ and right_side and
     the operator itself.
     """
-    abstract = False
     subparts = [('left_side', Expression),
                 ('operator', Operator),
                 ('right_side', Expression)]
@@ -325,7 +296,6 @@ class UnoOp(Expression):
     Expression with unary operator, including the right_side and the operator
     itself.
     """
-    abstract = False
     subparts = [('operator', Operator),
                 ('right_side', Expression)]
     template = '{operator}{right_side}'
@@ -336,7 +306,6 @@ class UnoOp(Expression):
     @staticmethod
     def default():
         return UnoOp([[Operator.default(), Identifier.default()]])
-
 
 if __name__ == '__main__':
     from lua_parser import parseFile, parseString

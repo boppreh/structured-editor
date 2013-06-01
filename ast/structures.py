@@ -8,7 +8,6 @@ from copy import deepcopy
 empty_wrapper = lambda node: node.template
 
 class Node(object):
-    abstract = True
     count = 0
     defaulted = []
 
@@ -57,16 +56,6 @@ class Node(object):
             return type_(tok)
         else:
             raise TypeError("{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, repr(tok)))
-
-    def get_available_classes(self, index, structures):
-        main_class = self.get_expected_class(index)
-        def subclasses(class_):
-            result = [class_]
-            for subclass in sum(map(subclasses, class_.__subclasses__()), []):
-                if subclass.__module__ == structures:
-                    result.append(subclass)
-            return result
-        return list(subclasses(main_class))
 
     def can_insert(self, index, item):
         return isinstance(item, self.get_expected_class(index))
@@ -185,7 +174,6 @@ class Block(DynamicNode):
     List of statements contained in a function declaration, control structure or
     the program root. Also called compound statement.
     """
-    abstract = True
     child_type = Statement
     template = '{children}'
     delimiter = '\n'
