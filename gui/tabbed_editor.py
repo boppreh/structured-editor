@@ -156,7 +156,7 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         Creates a new tab with an empty editor.
         """
-        self.add(HtmlEditor.parse_string('', 'lua'))
+        self.add(HtmlEditor.from_string('', 'lua'))
 
     def open(self, event=None):
         """
