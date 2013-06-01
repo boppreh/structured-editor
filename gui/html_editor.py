@@ -65,7 +65,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         Saves the current editor into the original file or, if there isn't
         one, into a file selected by the user.
         """
-        if self.can_save:
+        if self.can_save():
             super(GraphicalEditor, self).save()
             return True
         else:

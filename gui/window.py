@@ -381,6 +381,5 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.statusBar().showMessage('Currently selected: ' +
                                      class_label(type(editor.selected)))
 
-        self.save_menu.setEnabled(editor.can_save())
         self.undo_menu.setEnabled(editor.can_undo())
         self.redo_menu.setEnabled(editor.can_redo())
