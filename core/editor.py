@@ -68,7 +68,7 @@ class Editor(object):
             self.last_saved_action = self.past_history[-1]
 
         with open(self.selected_file, 'w') as target_file:
-            target_file.write(self.render_tree(self._file_wrapper))
+            target_file.write(self.root.render(self._file_wrapper))
 
     def save_as(self, new_path):
         """
@@ -117,22 +117,6 @@ class Editor(object):
         self.selected, action = self.past_history.pop()
         self.future_history.append((self.selected, action))
         self.selected = action.rollback(self)
-
-    def render_tree(self, wrapper=None):
-        """
-        Returns the textual representation of the entire tree (not just the
-        selected node).
-
-        'wrapper': lambda node: node.template
-
-        'wrapper' should be a function to change the node template before
-        rendering. It takes the node as parameter and returns the new template.
-        The default wrapper just returns the node.template unchanged.
-        """
-        if wrapper is not None:
-            return self.root.render(wrapper)
-        else:
-            return self.root.render()
 
     def can_save(self):
         """

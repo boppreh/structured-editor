@@ -1,12 +1,12 @@
 from PyQt4 import QtGui, QtWebKit
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QFileDialog
-from ConfigParser import RawConfigParser
 from time import time
 from os.path import basename
 
 from core.editor import Editor
 from core.actions import Select
+from core.html_renderer import HtmlRendering
 
 class GraphicalEditor(QtWebKit.QWebView, Editor):
     """
@@ -89,26 +89,13 @@ class HtmlEditor(GraphicalEditor):
         self.lastClickTime = time()
         self.lastClickNode = None
 
-        self.config = RawConfigParser()
-        self.config.read('theme.ini')
-
-    def node_style(self, node):
-        """
-        Returns the CSS to color the node according to its node type.
-        """
-        class_name = type(node).__name__.lower()
-        try:
-            return self.config.get('Structures', class_name)
-        except:
-            return self.config.get('Structures', 'default')
-
     def _selection_handler(self, url):
         """
         Select the node corresponding to the given url, or its parent when
         clicked multiple times.
         """
         node_id = int(basename(str(url.toString())))
-        node_clicked = self.node_dict[node_id]
+        node_clicked = self.rendering.node_dict[node_id]
         node_selected = node_clicked
 
         time_elapsed = time() - self.lastClickTime 
@@ -129,60 +116,6 @@ class HtmlEditor(GraphicalEditor):
 
         self.execute(Select(node_selected))
 
-    def _span_tags(self, node):
-        """
-        Returns the opening and closing span tags containing the background
-        style for the given node.
-        """
-        if node.parent == self.selected.parent:
-            if node == self.selected:
-                style = self.config.get('Selection', 'background')
-            else:
-                style = self.config.get('Selection', 'siblingsbackground')
-            return '<span style="{}">'.format(style), '</span>'
-        else:
-            return '', ''
-
-    def _link_tags(self, node):
-        """
-        Returns the opening and closing link tags, with user-specified style,
-        for the given node.
-        """
-        template = '<a href="{}" style="text-decoration: none; {}">'
-        return template.format(node.node_id, self.node_style(node)), '</a>'
-
-    def _linked_template(self, node):
-        """
-        Returns the node's template with link and span tags added.
-        """
-        # Dictionary of all nodes and their corresponding urls, to be used when
-        # the user clicks on any of the links.
-        self.node_dict[node.node_id] = node
-
-        if node.parent:
-            parent_open, parent_close = self._link_tags(node.parent)
-        else:
-            parent_open, parent_close = '', ''
-
-        open_a, close_a = self._link_tags(node)
-        open_span, close_span = self._span_tags(node)
-
-        try:
-            template = self.config.get('Templates', type(node).__name__)
-        except:
-            template = node.template
-
-        # Span tags change the background, but there's no background in empty
-        # nodes. So we replace it with a single space.
-        if open_span and len(node) == 0 and template == '{children}':
-            template = '{children} '
-        
-
-        # Close parent's href tag to avoid nested links.
-        return (parent_close + open_span + open_a +
-                template +
-                close_a + close_span + parent_open)
-
     def execute(self, action):
         super(HtmlEditor, self).execute(action)
         self.refresh()
@@ -199,14 +132,6 @@ class HtmlEditor(GraphicalEditor):
         """
         Renders tree state in HTML.
         """
-        self.node_dict = {}
-
-        template = """<body style="{}"><pre style="{}">{}</pre></body>"""
-
-        background = self.config.get('Global', 'background')
-        font = self.config.get('Global', 'font')
-        text = self.render_tree(self._linked_template)
-
-        self.setHtml(template.format(background, font, text))
-
+        self.rendering = HtmlRendering(self.root, self.selected)
+        self.setHtml(self.rendering.html)
         self.refresh_handler()
