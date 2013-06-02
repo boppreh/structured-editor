@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
-from core.actions import *
+from core import editor, actions
 
 def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
@@ -72,10 +72,10 @@ class InsertionWindow(CommandsWindow):
     def process(self, class_):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             # Insert before.
-            self.handler(Insert(class_, True))
+            self.handler(actions.Insert(class_, True))
         else:
             # Insert after.
-            self.handler(Insert(class_, False))
+            self.handler(actions.Insert(class_, False))
 
     def addCommand(self, i, class_):
         hotkey = self.hotkeys[i]
@@ -193,29 +193,29 @@ class MainEditorWindow(QtGui.QMainWindow):
                                if letter in alphabet)
             return new_name or old_name
 
-        Rename.ask_for_name = ask_for_name
+        actions.Rename.ask_for_name = ask_for_name
 
         def extractHotkeys(group, pairs):
             return {config.get(group, label): item for item, label in pairs}
 
-        editing_label_pairs = [(Delete, 'Delete'),
-                               (Copy, 'Copy'),
-                               (Cut, 'Cut'),
-                               (Paste, 'Paste'),
-                               (MoveUp, 'Move up'),
-                               (MoveDown, 'Move down'),
-                               (Rename, 'Rename')]
+        editing_label_pairs = [(actions.Delete, 'Delete'),
+                               (actions.Copy, 'Copy'),
+                               (actions.Cut, 'Cut'),
+                               (actions.Paste, 'Paste'),
+                               (actions.MoveUp, 'Move up'),
+                               (actions.MoveDown, 'Move down'),
+                               (actions.Rename, 'Rename')]
         self.editingWindow = CommandsWindow('Editing', self)
         self.editingWindow.addCommands(editing_label_pairs,
                                        extractHotkeys('Editing Hotkeys',
                                                       editing_label_pairs),
                                        self.runCommand)
 
-        movement_label_pairs = [(SelectParent, 'Parent'),
-                                (SelectChild, 'Child'),
-                                (SelectNextSibling, 'Next'),
-                                (SelectPrevSibling, 'Previous'),
-                                (NextUnfilled, 'Next unfilled')]
+        movement_label_pairs = [(actions.SelectParent, 'Parent'),
+                                (actions.SelectChild, 'Child'),
+                                (actions.SelectNextSibling, 'Next'),
+                                (actions.SelectPrevSibling, 'Previous'),
+                                (actions.NextUnfilled, 'Next unfilled')]
         self.navigationWindow = CommandsWindow('Navigation', self)
         self.navigationWindow.addCommands(movement_label_pairs,
                                           extractHotkeys('Movement Hotkeys',
