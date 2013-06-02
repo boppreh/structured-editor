@@ -10,6 +10,13 @@ parsers = {'lua': lua_parser, 'json': json_parser}
 
 
 class Editor(object):
+    """
+    Class for an abstract code editor. Supports execution of arbitrary actions,
+    undo/redo, clipboard attribute (to be used by actions), node selection
+    (single selection only for the moment) and rendering the tree with a
+    user-specified function running on every node's text.
+    """
+    
     @classmethod
     def from_file(cls, path):
         language = path.rsplit('.')[-1]
@@ -25,12 +32,6 @@ class Editor(object):
     def new_empty(cls, language):
         return cls(parsers[language].new_empty(), language, None)
 
-    """
-    Class for an abstract code editor. Supports execution of arbitrary actions,
-    undo/redo, clipboard attribute (to be used by actions), node selection
-    (single selection only for the moment) and rendering the tree with a
-    user-specified function running on every node's text.
-    """
     def __init__(self, root, language, selected_file=None):
         """
         Initializes an editor from an existing root node, selecting the root
