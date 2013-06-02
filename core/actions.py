@@ -135,6 +135,7 @@ class Copy(Action):
         mime = QtCore.QMimeData()
         mime.setText(selected.render())
         try:
+            print HtmlRendering(selected, None).html
             mime.setHtml(HtmlRendering(selected, None).html)
         except AttributeError:
             print 'Could not copy HTML.'

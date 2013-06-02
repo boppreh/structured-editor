@@ -6,7 +6,7 @@ from os.path import basename
 
 from core.editor import Editor
 from core.actions import Select
-from core.html_renderer import HtmlRendering
+from core.html_renderer import LinkedRendering
 
 class GraphicalEditor(QtWebKit.QWebView, Editor):
     """
@@ -132,6 +132,6 @@ class HtmlEditor(GraphicalEditor):
         """
         Renders tree state in HTML.
         """
-        self.rendering = HtmlRendering(self.root, self.selected)
+        self.rendering = LinkedRendering(self.root, self.selected)
         self.setHtml(self.rendering.html)
         self.refresh_handler()
