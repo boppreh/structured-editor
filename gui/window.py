@@ -240,9 +240,15 @@ class MainEditorWindow(QtGui.QMainWindow):
             return action
 
         fileMenu = self.menubar.addMenu('&File')
-        makeMenuAction("&New", "Ctrl+N",
-                       "Creates a new empty document.",
-                       fileMenu, self.tabbedEditor.new)
+
+        newMenu = fileMenu.addMenu("&New")
+        makeMenuAction("&Lua file", "Ctrl+N",
+                       "Creates a new empty Lua document.",
+                       newMenu, lambda: self.tabbedEditor.new('lua'))
+        makeMenuAction("&JSON file", "",
+                       "Creates a new empty JSON document.",
+                       newMenu, lambda: self.tabbedEditor.new('json'))
+
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O",
                        "Open an existing source code file.",

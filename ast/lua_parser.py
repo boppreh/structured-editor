@@ -194,6 +194,9 @@ def parse_string(string):
     """
     return block.parseString(re.sub(r'--.+', '', string), parseAll=True)[0]
 
+def new_empty():
+    return parse_string('')
+
 import lua_structures, inspect
 all_classes = inspect.getmembers(lua_structures, inspect.isclass)
 structures = [cls for name, cls in all_classes]

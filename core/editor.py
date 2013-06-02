@@ -21,6 +21,10 @@ class Editor(object):
         root = parsers[language].parse_string(string)
         return cls(root, language, None)
 
+    @classmethod
+    def new_empty(cls, language):
+        return cls(parsers[language].new_empty(), language, None)
+
     """
     Class for an abstract code editor. Supports execution of arbitrary actions,
     undo/redo, clipboard attribute (to be used by actions), node selection

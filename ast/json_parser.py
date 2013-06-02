@@ -87,4 +87,7 @@ def convert(root):
 def parse_string(string):
     return convert(json.loads(string))
 
+def new_empty():
+    return Object()
+
 structures = [Value, Number, True_, False_, Null, Array, Assignment, Object]

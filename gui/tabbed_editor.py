@@ -152,11 +152,11 @@ class TabbedEditor(QtGui.QTabWidget):
         self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
 
-    def new(self, event=None):
+    def new(self, language='lua'):
         """
         Creates a new tab with an empty editor.
         """
-        self.add(HtmlEditor.from_string('', 'lua'))
+        self.add(HtmlEditor.new_empty(language))
 
     def open(self, event=None):
         """
