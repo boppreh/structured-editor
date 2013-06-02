@@ -14,6 +14,7 @@ def class_label(node_type):
 class CommandsWindow(QtGui.QDockWidget):
     def __init__(self, title, parent):
         super(CommandsWindow, self).__init__(title, parent)
+        self.title = title
 
         verticalCommands = QtGui.QWidget(self)
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -205,8 +206,8 @@ class MainEditorWindow(QtGui.QMainWindow):
                                (actions.MoveUp, 'Move up'),
                                (actions.MoveDown, 'Move down'),
                                (actions.Rename, 'Rename')]
-        self.editingWindow = CommandsWindow('Editing', self)
-        self.editingWindow.addCommands(editing_label_pairs,
+        editingWindow = CommandsWindow('Editing', self)
+        editingWindow.addCommands(editing_label_pairs,
                                        extractHotkeys('Editing Hotkeys',
                                                       editing_label_pairs),
                                        self.runCommand)
@@ -216,19 +217,23 @@ class MainEditorWindow(QtGui.QMainWindow):
                                 (actions.SelectNextSibling, 'Next'),
                                 (actions.SelectPrevSibling, 'Previous'),
                                 (actions.NextUnfilled, 'Next unfilled')]
-        self.navigationWindow = CommandsWindow('Navigation', self)
-        self.navigationWindow.addCommands(movement_label_pairs,
+        navigationWindow = CommandsWindow('Navigation', self)
+        navigationWindow.addCommands(movement_label_pairs,
                                           extractHotkeys('Movement Hotkeys',
                                                          movement_label_pairs),
                                           self.runCommand)
 
         insertionHotkeys = [value for i, value in
                             config.items('Insertion Hotkeys')]
-        self.insertionWindow = InsertionWindow(self.runCommand,
+        insertionWindow = InsertionWindow(self.runCommand,
                                                insertionHotkeys, self)
 
-        self.macroWindow = MacroWindow(self)
+        macroWindow = MacroWindow(self)
+
         self.setDockNestingEnabled(True)
+
+        self.docks = [editingWindow, navigationWindow,
+                      insertionWindow, macroWindow]
 
     def createMenu(self):
         self.menubar = self.menuBar()
@@ -283,18 +288,11 @@ class MainEditorWindow(QtGui.QMainWindow):
                                         lambda: self.tabbedEditor.editor().redo())
 
         viewMenu = self.menubar.addMenu("&View")
-        makeMenuAction("&Navigation window", "Alt+N",
-                       "Show the navigation floating window.",
-                       viewMenu, self.navigationWindow.show)
-        makeMenuAction("&Editing window", "Alt+E",
-                       "Show the editing floating window.",
-                       viewMenu, self.editingWindow.show)
-        makeMenuAction("&Insertion window", "Alt+I",
-                       "Shows the insertion floating window",
-                       viewMenu, self.insertionWindow.show)
-        makeMenuAction("&Macro window", "Alt+M",
-                       "Shows the macro floating window",
-                       viewMenu, self.macroWindow.show)
+        for dock in self.docks:
+            makeMenuAction("&" + dock.title, "Alt+" + dock.title[0],
+                           "Show the floating {}.".format(dock.title.lower()),
+                           viewMenu, dock.show)
+
         viewMenu.addSeparator()
         makeMenuAction("&Reset window state", "Alt+R",
                        "Reset the window and commands bar size and state back to the original settings.",
@@ -336,10 +334,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.updater = updater
 
     def resetWindow(self, event=None):
-        self.navigationWindow.reset()
-        self.editingWindow.reset()
-        self.insertionWindow.reset()
-        self.macroWindow.reset()
+        for dock in self.docks:
+            dock.reset()
 
         self.settings.clear()
         self.settings.sync()
@@ -350,10 +346,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         # This is a workaround that detects if there are settings saved and, if not,
         # forces the display of the commands bar.
         if len(self.settings.value("geometry").toByteArray()) == 0:
-            self.editingWindow.show()
-            self.navigationWindow.show()
-            self.insertionWindow.show()
-            self.macroWindow.show()
+            for dock in self.docks:
+                dock.show()
 
         self.restoreGeometry(self.settings.value("geometry").toByteArray())
         self.restoreState(self.settings.value("state").toByteArray())
@@ -365,6 +359,7 @@ class MainEditorWindow(QtGui.QMainWindow):
             if not self.tabbedEditor.close_tab():
                 event.ignore()
                 return
+
         QtGui.QMainWindow.closeEvent(self, event)
 
     def runCommand(self, command):
@@ -375,10 +370,8 @@ class MainEditorWindow(QtGui.QMainWindow):
         if not editor:
             return
 
-        self.navigationWindow.refresh(editor)
-        self.editingWindow.refresh(editor)
-        self.insertionWindow.refresh(editor)
-        self.macroWindow.refresh(editor)
+        for dock in self.docks:
+            dock.refresh(editor)
 
         title_template = '{} - Structured Editor'
         title = title_template.format(editor.name)
