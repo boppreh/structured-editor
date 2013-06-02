@@ -92,13 +92,13 @@ class Editor(object):
             if len(self.past_history) > 1000:
                 self.past_history = self.past_history[-1000:]
 
-        self.selected = action.execute(self)
+        self.selected = action.execute(self.selected)
 
     def is_available(self, action):
         """
         Checks if a given action can be executed with the current editor state.
         """
-        return action.is_available(self)
+        return action.is_available(self.selected)
 
     def redo(self):
         """
@@ -107,7 +107,7 @@ class Editor(object):
         """
         self.selected, action = self.future_history.pop()
         self.past_history.append((self.selected, action))
-        self.selected = action.execute(self)
+        self.selected = action.execute(self.selected)
 
     def undo(self):
         """
@@ -116,7 +116,7 @@ class Editor(object):
         """
         self.selected, action = self.past_history.pop()
         self.future_history.append((self.selected, action))
-        self.selected = action.rollback(self)
+        self.selected = action.rollback(self.selected)
 
     def can_save(self):
         """
