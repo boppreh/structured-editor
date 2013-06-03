@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
-from core import editor, actions
+from core import actions
 
 def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)

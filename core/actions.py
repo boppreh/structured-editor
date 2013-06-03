@@ -156,7 +156,7 @@ class Paste(Action):
             else:
                 parse = parent.get_expected_class(index + 1).symbol.parseString
             
-            from PyQt4 import QtGui, QtCore
+            from PyQt4 import QtGui
             clipboard = QtGui.QApplication.clipboard()
             self.copy = parse(str(clipboard.text()))[0]
 
