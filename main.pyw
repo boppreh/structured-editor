@@ -33,7 +33,14 @@ end
 
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
+
+files = sys.argv[1:]
+if files:
+    for path in files:
+        mainWin.tabbedEditor.add(HtmlEditor.from_file(path))
+else:
+    mainWin.tabbedEditor.add(HtmlEditor.from_string(test_program, 'lua'))
+
 #mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
-mainWin.tabbedEditor.add(HtmlEditor.from_string(test_program, 'lua'))
 mainWin.show()
 sys.exit(app.exec_())
