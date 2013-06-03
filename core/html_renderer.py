@@ -29,7 +29,9 @@ class HtmlRendering(object):
         Returns the opening and closing span tags containing the background
         style for the given node.
         """
-        if node == self.selected:
+        if self.selected is None or node.parent != self.selected.parent:
+            selection_style = ''
+        elif node == self.selected:
             selection_style = self.config.get('Selection', 'background')
         elif node.parent == self.selected.parent:
             selection_style = self.config.get('Selection', 'siblingsbackground')
@@ -73,7 +75,7 @@ class LinkedRendering(HtmlRendering):
         Returns the opening and closing link tags, with user-specified style,
         for the given node.
         """
-        template = '<a href="{}" style="text-decoration: none;">'
+        template = '<a href="{}" style="text-decoration: inherit; color: inherit;">'
         return template.format(node.node_id), '</a>'
 
     def _make_parts(self, node):
