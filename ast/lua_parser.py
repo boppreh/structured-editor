@@ -170,17 +170,30 @@ stat << (whilestat |
          namedfunc |
          functioncall)
 
+def parse_bin(toks):
+    """
+    Converts a flat list of operands and operations into a nested list of
+    items.
+    """
+    if len(toks) == 3:
+        return BinOp([toks])
+    else:
+        return BinOp([[parse_bin(toks[:-2]), toks[-2], toks[-1]]])
+
+binop = lambda toks: parse_bin(toks[0])
+
+
 # This part makes uses of a pyparsing functionality of automatically generating
 # an operator grammar, with correct precedences.
 # "enablepackrat" enables an important optimization for this type of grammar.
 exp.enablePackrat()
 operators = [
-    (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
-    (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, BinOp),
-    (registerClass(oneOf('+ - ..'), Operator), 2, opAssoc.LEFT, BinOp),
-    (registerClass(oneOf('< > <= >= ~= =='), Operator), 2, opAssoc.LEFT, BinOp),
-    (registerClass((or_ | and_), Operator), 2, opAssoc.LEFT, BinOp),
+    (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, binop),
+    (registerClass(oneOf('+ - ..'), Operator), 2, opAssoc.LEFT, binop),
+    (registerClass(oneOf('< > <= >= ~= =='), Operator), 2, opAssoc.LEFT, binop),
+    (registerClass((or_ | and_), Operator), 2, opAssoc.LEFT, binop),
 ]
 exp << operatorPrecedence(nil_ | false_ | true_ | '...' | number | string |
                           function | prefixexp | tableconstructor, operators)
@@ -202,8 +215,8 @@ all_classes = inspect.getmembers(lua_structures, inspect.isclass)
 structures = [cls for name, cls in all_classes]
 
 if __name__ == '__main__':
-    pass
-    #print parseString('local function a(a) print() end')
+    print exp.parseString('1 + 1 + 1')[0]
+    print stat.parseString('return 1 or 1 and 1 < 1 > 1 <= 1 >= 1 ~= 1 == 1 ..  1 + 1 - 1 * 1 / 1 % 1 ^ 1')
     #print parseFile('../lua_test_files/full.lua')
     #print(parseString(str(parseFile('tests/1.lua'))))
     #from editor import Editor
