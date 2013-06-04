@@ -2,9 +2,8 @@
 Module for editing a program's source code interactively with a structured
 editor.
 """
-from ConfigParser import RawConfigParser
-
 from ast import lua_parser, json_parser
+import config
 
 parsers = {'lua': lua_parser, 'json': json_parser}
 
@@ -48,13 +47,10 @@ class Editor(object):
         self.future_history = []
         self.last_saved_action = None
 
-        self.config = RawConfigParser()
-        self.config.read('output_format.ini')
-
     def _file_wrapper(self, node):
         class_name = type(node).__name__.lower()
         try:
-            return self.config.get('Templates', class_name)
+            return config.get('Templates', class_name)
         except:
             return node.template
 

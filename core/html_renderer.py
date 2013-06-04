@@ -1,15 +1,12 @@
-from ConfigParser import RawConfigParser
+import config
 
 class HtmlRendering(object):
     def __init__(self, root, selected=None):
         self.selected = selected
 
-        self.config = RawConfigParser()
-        self.config.read('theme.ini')
-        
         text = root.render(self._process_node)
-        background = self.config.get('Global', 'background')
-        font = self.config.get('Global', 'font')
+        background = config.get('Global', 'background')
+        font = config.get('Global', 'font')
 
         template = """<body style="{}"><pre style="{}">{}</pre></body>"""
         self.html = template.format(background, font, text)
@@ -20,9 +17,9 @@ class HtmlRendering(object):
         """
         class_name = type(node).__name__.lower()
         try:
-            return self.config.get('Structures', class_name)
+            return config.get('Structures', class_name)
         except:
-            return self.config.get('Structures', 'default')
+            return config.get('Structures', 'default')
 
     def _span_tags(self, node):
         """
@@ -32,9 +29,9 @@ class HtmlRendering(object):
         if self.selected is None or node.parent != self.selected.parent:
             selection_style = ''
         elif node == self.selected:
-            selection_style = self.config.get('Selection', 'background')
+            selection_style = config.get('Selection', 'background')
         elif node.parent == self.selected.parent:
-            selection_style = self.config.get('Selection', 'siblingsbackground')
+            selection_style = config.get('Selection', 'siblingsbackground')
 
         style = selection_style + self._node_style(node)
 
@@ -48,7 +45,7 @@ class HtmlRendering(object):
         open_span, close_span = self._span_tags(node)
 
         try:
-            template = self.config.get('Templates', type(node).__name__)
+            template = config.get('Templates', type(node).__name__)
         except:
             template = node.template
 

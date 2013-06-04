@@ -1,11 +1,10 @@
 from PyQt4 import QtCore, QtGui
-from ConfigParser import RawConfigParser
 import re
 from copy import deepcopy
 
 from update import update_and_restart, can_update
 from tabbed_editor import TabbedEditor
-from core import actions
+from core import actions, config
 
 def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
@@ -179,9 +178,6 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.restoreSettings()
 
     def createDocks(self):
-        config = RawConfigParser()
-        config.read('theme.ini')
-
         def ask_for_name(r, old_name, token_rule):
             old_name = old_name.replace('_', ' ')
             name, ok = QtGui.QInputDialog.getText(self, 'Rename',
