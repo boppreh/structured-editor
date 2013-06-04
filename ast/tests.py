@@ -130,9 +130,8 @@ class TestSpecificParsing(unittest.TestCase):
 
     def test_operators(self):
         operators = 'or and < > <= >= ~= == .. + - * / % ^'.split()
-        print 'return 1 ' + ' 1 '.join(operators) + ' 1'
         self.do_simple_test('return 1 ' + ' 1 '.join(operators) + ' 1', '() ')
-        self.do_simple_test('not 1 + #1 + -1', '() ')
+        self.do_simple_test('return not 1 + #1 + -1', '() ')
 
 
 if __name__ == '__main__':
