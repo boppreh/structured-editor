@@ -246,7 +246,7 @@ class Rename(Action):
     def _execute(self, selected, parent, index):
         self.old_name = selected[0]
         if not hasattr(self, 'new_name'):
-            self.new_name = self.ask_for_name(selected[0], selected.alphabet)
+            self.new_name = self.ask_for_name(selected[0], selected.token_rule)
         selected[0] = self.new_name
         return selected
 

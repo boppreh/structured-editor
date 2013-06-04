@@ -5,7 +5,6 @@ level structures. This is where those structures are declared.
 A successfully parsed Lua program should only contain instances from these
 classes in its abstract syntax tree.
 """
-import string
 from structures import *
 
 class TableItem(StaticNode):
@@ -28,7 +27,7 @@ class Constant(Expression):
     """ Literal string, number, nil, true or false. """
     subparts = [('value', str)]
     template = '{value}'
-    alphabet = string.digits
+    token_rule = '\d+'
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
@@ -41,7 +40,7 @@ class Constant(Expression):
 
 class Identifier(Constant):
     """ A reference to an identifier. """
-    alphabet = string.lowercase + string.digits + '_'
+    token_rule = '[a-zA-Z_]\w+'
     @staticmethod
     def default():
         new = Identifier(['value'])
@@ -51,7 +50,7 @@ class Identifier(Constant):
 class String(Constant):
     """ Literal string. """
     template = '"{value}"'
-    alphabet = [chr(i) for i in range(256)]
+    token_rule = '.+'
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
@@ -256,7 +255,7 @@ class Operator(StaticNode):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
     subparts = [('value', str)]
     template = '{value}'
-    alphabet = '^#*/%+-.<>=~'
+    token_rule = '[#^*/%+-.<>=~]'
 
     def render(self, wrapper=empty_wrapper):
         return wrapper(self).format(value=self.contents[0])
