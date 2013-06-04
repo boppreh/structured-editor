@@ -25,18 +25,18 @@ class TestSpecificParsing(unittest.TestCase):
         """
         if ignored is None:
             ignored = '\n ()'
-        root = parseString(test_string)
+        root = parse_string(test_string)
         self.compare(root.render(), test_string, ignored=ignored)
 
     def test_empty_program(self):
-        root = parseString('')
+        root = parse_string('')
         self.assertIsNotNone(root)
         self.assertIsInstance(root, Block)
         self.assertEqual(len(root), 0)
         self.compare(root.render(), '')
 
     def test_simple_statement(self):
-        root = parseString('a = 1')
+        root = parse_string('a = 1')
         self.assertIsNotNone(root)
         self.assertIsInstance(root, Block)
         self.assertEqual(len(root), 1)
@@ -118,18 +118,19 @@ class TestSpecificParsing(unittest.TestCase):
 
     def test_statement_after_return(self):
         with self.assertRaises(ParseException):
-            parseString('if c then print(); return 5; print(); end')
+            parse_string('if c then print(); return 5; print(); end')
 
     def test_functioncall_without_prefixep(self):
         with self.assertRaises(ParseException):
-            parseString('1:n()')
+            parse_string('1:n()')
 
     def test_funcname_with_expression(self):
         with self.assertRaises(ParseException):
-            parseString('function a[2].f() end')
+            parse_string('function a[2].f() end')
 
     def test_operators(self):
         operators = 'or and < > <= >= ~= == .. + - * / % ^'.split()
+        print 'return 1 ' + ' 1 '.join(operators) + ' 1'
         self.do_simple_test('return 1 ' + ' 1 '.join(operators) + ' 1', '() ')
         self.do_simple_test('not 1 + #1 + -1', '() ')
 
