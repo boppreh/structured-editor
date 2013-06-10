@@ -13,7 +13,7 @@ name = ~MatchFirst(map(Keyword, keywords)) + Word(alphas + '_', alphanums + '_',
                                                   asKeyword=True)
 # Constants.
 number = Word(nums, asKeyword=True)
-string = quotedString
+string = quotedString.addParseAction(removeQuotes)
 true_ = Keyword('true')
 false_ = Keyword('false')
 nil_ = Keyword('nil')
@@ -27,7 +27,7 @@ def registerClass(symbol, class_):
 
 # Constants' respective classes.
 registerClass(name, Identifier)
-registerClass(string, String).addParseAction(removeQuotes)
+registerClass(string, String)
 registerClass(number, Constant)
 registerClass(nil_, Constant)
 registerClass(true_, Constant)
