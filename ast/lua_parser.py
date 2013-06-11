@@ -195,7 +195,7 @@ operators = [
     (registerClass(oneOf('< > <= >= ~= =='), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((or_ | and_), Operator), 2, opAssoc.LEFT, binop),
 ]
-exp << operatorPrecedence(nil_ | false_ | true_ | '...' | number | string |
+exp << operatorPrecedence(nil_ | false_ | true_ | ellipsis | number | string |
                           function | prefixexp | tableconstructor, operators)
 
 
@@ -215,8 +215,9 @@ all_classes = inspect.getmembers(lua_structures, inspect.isclass)
 structures = [cls for name, cls in all_classes]
 
 if __name__ == '__main__':
-    print exp.parseString('1 + 1 + 1')[0]
-    print stat.parseString('return 1 or 1 and 1 < 1 > 1 <= 1 >= 1 ~= 1 == 1 ..  1 + 1 - 1 * 1 / 1 % 1 ^ 1')
+    print parse_string(open('../test_files/3.lua').read())
+    #print exp.parseString('1 + 1 + 1')[0]
+    #print stat.parseString('return 1 or 1 and 1 < 1 > 1 <= 1 >= 1 ~= 1 == 1 ..  1 + 1 - 1 * 1 / 1 % 1 ^ 1')
     #print parseFile('../lua_test_files/full.lua')
     #print(parseString(str(parseFile('tests/1.lua'))))
     #from editor import Editor
