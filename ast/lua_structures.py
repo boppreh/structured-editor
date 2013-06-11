@@ -163,8 +163,8 @@ class Variable(DynamicNode, Expression):
 
 class ListAccess(Expression):
     """ Simple list access using the bracket notation ("[exp]"). """
-    subparts = [('owner', Expression), ('index', Expression)]
-    template = '{owner}[{index}]'
+    subparts = [('index', Expression)]
+    template = '[{index}]'
 
 def make_prefixexp(toks):
     """
