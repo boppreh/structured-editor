@@ -52,7 +52,7 @@ class HtmlRendering(object):
         # Span tags change the background, but there's no background in empty
         # nodes. So we replace it with a single space.
         if open_span and len(node) == 0 and template == '{children}':
-            template = '{children} '
+            template = '{children} ' # Note the trailing space.
 
         return (open_span, template, close_span)
 
