@@ -7,6 +7,8 @@ from copy import deepcopy
 
 empty_wrapper = lambda node: node.template
 
+class CastError(Exception): pass
+
 class Node(object):
     count = 0
     defaulted = []
@@ -55,7 +57,7 @@ class Node(object):
         elif tok.__class__ == ParseResults:
             return type_(tok)
         else:
-            raise TypeError("{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, repr(tok)))
+            raise CastError("{} can't cast {} into {} ({})".format(self.__class__.__name__, tok.__class__.__name__, type_.__name__, repr(tok)))
 
     def can_insert(self, index, item):
         return isinstance(item, self.get_expected_class(index))
@@ -85,7 +87,7 @@ class StaticNode(Node):
     template = '<Abstract Static Node>'
 
     def __init__(self, toks=None):
-        if toks == None:
+        if toks is None:
             toks = [type_.default() for name, type_ in self.subparts]
 
         contents = [self.cast_subpart(tok, part[1])
@@ -128,7 +130,7 @@ class DynamicNode(Node):
     template = '{children}'
 
     def __init__(self, contents=None):
-        if not contents:
+        if contents is None:
             contents = []
 
         # ParseResults don't play well with lists, overriding important methods
@@ -138,7 +140,7 @@ class DynamicNode(Node):
         if contents.__class__ == ParseResults:
             contents = list(contents)
 
-        contents = [self.cast_subpart(i, self.child_type) for i in contents]
+        contents = [self.cast_subpart(c, self.child_type) for c in contents]
         Node.__init__(self, contents)
 
     def get_expected_class(self, index):
