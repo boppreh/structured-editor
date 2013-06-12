@@ -1,4 +1,8 @@
-from urllib.request import urlretrieve, urlopen
+try:
+    from urllib.request import urlretrieve, urlopen
+except:
+    from urllib import urlretrieve
+    from urllib2 import urlopen
 from subprocess import Popen
 from os.path import basename
 from sys import exit, argv

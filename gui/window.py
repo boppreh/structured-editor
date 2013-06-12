@@ -346,12 +346,19 @@ class MainEditorWindow(QtGui.QMainWindow):
         # Bug: when the geometry is empty, the commands bar is not shown by default.
         # This is a workaround that detects if there are settings saved and, if not,
         # forces the display of the commands bar.
-        if len(self.settings.value("geometry")) == 0:
+        try:
+            geometry_bytes = self.settings.value("geometry").toByteArray()
+            state_bytes = self.settings.value("state").toByteArray()
+        except:
+            geometry_bytes = self.settings.value("geometry")
+            state_bytes = self.settings.value("state")
+
+        if len(geometry_bytes) == 0:
             for dock in self.docks:
                 dock.show()
 
-        self.restoreGeometry(self.settings.value("geometry"))
-        self.restoreState(self.settings.value("state"))
+        self.restoreGeometry(geometry_bytes)
+        self.restoreState(state_bytes)
 
     def closeEvent(self, event):
         self.settings.setValue('geometry', self.saveGeometry())

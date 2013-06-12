@@ -1,4 +1,7 @@
-from configparser import RawConfigParser
+try:
+    from configparser import RawConfigParser
+except:
+    from ConfigParser import RawConfigParser
 import os
 import sys
 
