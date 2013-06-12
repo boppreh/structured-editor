@@ -10,14 +10,18 @@ from structures import *
 class TableItem(StaticNode):
     pass
 
-class Expression(TableItem):
+class Expression(TableItem, Statement):
     """ Abstract class for expressions that can be used as values. """
+    template = 'ABSTRACT EXPRESSION'
     @classmethod
     def default(cls):
         if cls == Expression:
             return Identifier.default()
         else:
             return cls()
+
+class Break(Statement):
+    template = 'break'
 
 class DoBlock(Statement):
     template = 'do{block}\nend'
@@ -131,52 +135,20 @@ class AnonFunction(Expression):
     template = 'function ({parameters}){body}\nend'
     subparts = [('parameters', NameList), ('body', Block)]
 
-class ColonName(StaticNode):
-    subparts = [('name', Identifier)]
-    template = ':{name}'
+class SuffixOperator(Node): pass
 
-    def render(self, wrapper=empty_wrapper):
-        if len(self):
-            self.template = ColonName.template
-        else:
-            self.template = ''
-        return super(ColonName, self).render(wrapper)
-
-class FunctionCall(Expression, Statement):
-    """
-    A function call, possibly with method call syntax ("a:b(params)").
-    """
-    template = '{name}{colon_name}({parameters})'
-    subparts = [('name', Expression),
-                ('colon_name', ColonName),
-                ('parameters', ExpressionList)]
-
-    @staticmethod
-    def default(): return FunctionCall([Expression.default(),
-                                         ColonName([]),
-                                         ExpressionList()])
-
-class Variable(DynamicNode, Expression):
-    """ Variable reference, possibly with chained accesses ("(a).b[0].c.d"). """
+class FunctionCall(DynamicNode, SuffixOperator):
+    """ Simple function call with variable number of arguments. """
     child_type = Expression
-    delimiter = '.'
+    template = '({children})'
 
-class ListAccess(Expression):
+    def __init__(self, toks):
+        super(FunctionCall, self).__init__(toks)
+
+class ListAccess(StaticNode, SuffixOperator):
     """ Simple list access using the bracket notation ("[exp]"). """
     subparts = [('index', Expression)]
     template = '[{index}]'
-
-def make_prefixexp(toks):
-    """
-    To remove left recursion from the grammar, the prefixexp non-terminal was
-    created. This method converts a prefixexp into a function call or regular
-    expression.
-    """
-    assert len(toks), 'Tokens for prefixexp must have at least one element; {} found.'.format(len(toks))
-    if len(toks) == 1:
-        return toks[0]
-    else:
-        return FunctionCall(toks)
 
 class ForIn(Statement):
     """ "for item in list do" control structure. """
@@ -253,7 +225,7 @@ class Return(DynamicNode, Statement):
 
 class Operator(StaticNode):
     """ Class for binary and unary operators such as +, and, ^ and not.  """
-    subparts = [('value', str)]
+    subparts = [('value', object)]
     template = '{value}'
     token_rule = '[#^*/%+-.<>=~]'
 
@@ -306,7 +278,21 @@ class UnoOp(Expression):
     def default():
         return UnoOp([[Operator.default(), Identifier.default()]])
 
+class DotAccess(DynamicNode, Expression):
+    child_type = Expression
+    delimiter = '.'
+    template = '{children}'
+
+    def __init__(self, toks):
+        toks = filter(lambda t: type(t) != Operator, toks[0])
+        super(DotAccess, self).__init__(toks)
+
+class ExpWithSuffix(UnoOp):
+    subparts = [('right_side', Expression),
+                ('operator', SuffixOperator)]
+    template = '{right_side}{operator}'
+
 if __name__ == '__main__':
     from lua_parser import parseFile, parseString
     #print parseString('if (1) then print("oi") elseif "oi" then print("bye") end')
-    print parseFile('tests/1.lua')
+    #print parseFile('tests/1.lua')
