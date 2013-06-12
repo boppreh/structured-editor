@@ -3,7 +3,7 @@ Module for editing a program's source code interactively with a structured
 editor.
 """
 from ast import lua_parser, json_parser
-import config
+from . import config
 
 parsers = {'lua': lua_parser, 'json': json_parser}
 

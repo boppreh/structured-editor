@@ -8,7 +8,7 @@ from PyQt4 import QtCore, QtGui
 
 from pyparsing import ParseException
 
-from html_editor import HtmlEditor
+from gui.html_editor import HtmlEditor
 
 class CodeInput(QtGui.QDialog):
     """

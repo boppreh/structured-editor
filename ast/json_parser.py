@@ -1,5 +1,5 @@
 import json
-from structures import *
+from .structures import *
 
 class Value(StaticNode):
     pass
@@ -7,7 +7,7 @@ class Value(StaticNode):
 class String(Value):
     template = '"{value}"'
     alphabet = [chr(i) for i in range(256)]
-    subparts = [('value', basestring)]
+    subparts = [('value', str)]
 
     @staticmethod
     def default(): return String(['value'])
@@ -70,7 +70,7 @@ class Object(Block, Value):
     template = '{{{children}\n}}'
 
 def convert(root):
-    if isinstance(root, basestring):
+    if isinstance(root, str):
         return String([root])
     elif isinstance(root, bool):
         return True_() if root else False_()

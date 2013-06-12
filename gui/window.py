@@ -3,7 +3,7 @@ import re
 from copy import deepcopy
 
 from update import update_and_restart, can_update
-from tabbed_editor import TabbedEditor
+from gui.tabbed_editor import TabbedEditor
 from core import actions, config
 
 def class_label(node_type):
@@ -346,12 +346,12 @@ class MainEditorWindow(QtGui.QMainWindow):
         # Bug: when the geometry is empty, the commands bar is not shown by default.
         # This is a workaround that detects if there are settings saved and, if not,
         # forces the display of the commands bar.
-        if len(self.settings.value("geometry").toByteArray()) == 0:
+        if len(self.settings.value("geometry")) == 0:
             for dock in self.docks:
                 dock.show()
 
-        self.restoreGeometry(self.settings.value("geometry").toByteArray())
-        self.restoreState(self.settings.value("state").toByteArray())
+        self.restoreGeometry(self.settings.value("geometry"))
+        self.restoreState(self.settings.value("state"))
 
     def closeEvent(self, event):
         self.settings.setValue('geometry', self.saveGeometry())

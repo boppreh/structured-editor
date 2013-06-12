@@ -1,4 +1,4 @@
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 import os
 import sys
 

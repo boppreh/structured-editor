@@ -4,7 +4,7 @@ returned is composed of structures from the structures.py module.
 """
 
 from pyparsing import *
-from lua_structures import *
+from .lua_structures import *
 
 keywords = ['if', 'elseif', 'else', 'for', 'while', 'end', 'do', 'then', 'and',
             'not', 'or', 'break', 'goto', 'while', 'repeat', 'until',
@@ -205,7 +205,8 @@ def parse_string(string):
 def new_empty():
     return parse_string('')
 
-import lua_structures, inspect
+from . import lua_structures
+import inspect
 all_classes = inspect.getmembers(lua_structures, inspect.isclass)
 structures = [cls for name, cls in all_classes]
 

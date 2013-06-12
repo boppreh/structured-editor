@@ -5,7 +5,7 @@ level structures. This is where those structures are declared.
 A successfully parsed Lua program should only contain instances from these
 classes in its abstract syntax tree.
 """
-from structures import *
+from .structures import *
 
 class TableItem(StaticNode):
     pass

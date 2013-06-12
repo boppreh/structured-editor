@@ -1,4 +1,4 @@
-import config
+from . import config
 
 class HtmlRendering(object):
     def __init__(self, root, selected=None):

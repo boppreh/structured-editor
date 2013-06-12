@@ -137,7 +137,7 @@ class Copy(Action):
         try:
             mime.setHtml(HtmlRendering(selected, None).html)
         except AttributeError:
-            print 'Could not copy HTML.'
+            print('Could not copy HTML.')
         clipboard.setMimeData(mime)
 
         return selected
