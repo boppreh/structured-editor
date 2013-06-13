@@ -71,7 +71,7 @@ class SelectChild(Action):
         if len(selected) == 0:
             return hasattr(selected, 'insert')
         else:
-            return selected[0].__class__ != str
+            return selected[0].__class__ not in (str, int)
 
     def _execute(self, selected, parent, index):
         if len(selected):
