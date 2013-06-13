@@ -10,7 +10,7 @@ from .structures import *
 class TableItem(StaticNode):
     pass
 
-class Expression(TableItem, Statement):
+class Expression(TableItem):
     """ Abstract class for expressions that can be used as values. """
     template = 'ABSTRACT EXPRESSION'
     @classmethod
@@ -142,9 +142,6 @@ class FunctionCall(DynamicNode, SuffixOperator):
     child_type = Expression
     template = '({children})'
 
-    def __init__(self, toks):
-        super(FunctionCall, self).__init__(toks)
-
 class ListAccess(StaticNode, SuffixOperator):
     """ Simple list access using the bracket notation ("[exp]"). """
     subparts = [('index', Expression)]
@@ -246,7 +243,7 @@ class BinOp(Expression):
                 ('right_side', Expression)]
     template = '{left_side} {operator} {right_side}'
 
-    def __init__(self, toks):
+    def __init__(self, toks=[None]):
         super(BinOp, self).__init__(toks[0])
 
     @staticmethod
@@ -271,25 +268,26 @@ class UnoOp(Expression):
                 ('right_side', Expression)]
     template = '{operator}{right_side}'
 
-    def __init__(self, toks):
+    def __init__(self, toks=[None]):
         super(UnoOp, self).__init__(toks[0])
-
-    @staticmethod
-    def default():
-        return UnoOp([[Operator.default(), Identifier.default()]])
 
 class DotAccess(DynamicNode, Expression):
     child_type = Expression
     delimiter = '.'
     template = '{children}'
 
-    def __init__(self, toks):
+    def __init__(self, toks=[None]):
         toks = filter(lambda t: type(t) != Operator, toks[0])
         super(DotAccess, self).__init__(toks)
 
-class ExpWithSuffix(UnoOp):
+class ListAccessExp(UnoOp):
     subparts = [('right_side', Expression),
-                ('operator', SuffixOperator)]
+                ('operator', ListAccess)]
+    template = '{right_side}{operator}'
+
+class FunctionCallExp(UnoOp, Statement):
+    subparts = [('right_side', Expression),
+                ('operator', FunctionCall)]
     template = '{right_side}{operator}'
 
 if __name__ == '__main__':

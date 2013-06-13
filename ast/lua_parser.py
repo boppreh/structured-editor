@@ -181,8 +181,8 @@ exp.enablePackrat()
 operators = [
     (registerClass(Literal('.'), Operator), 2, opAssoc.LEFT, DotAccess),
     (registerClass(Literal(':'), Operator), 2, opAssoc.LEFT, DotAccess),
-    (registerClass(listAccess, ListAccess), 1, opAssoc.LEFT, ExpWithSuffix),
-    (registerClass(args, FunctionCall), 1, opAssoc.LEFT, ExpWithSuffix),
+    (registerClass(listAccess, ListAccess), 1, opAssoc.LEFT, ListAccessExp),
+    (registerClass(args, FunctionCall), 1, opAssoc.LEFT, FunctionCallExp),
     (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
     (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, binop),

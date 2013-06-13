@@ -350,8 +350,8 @@ class MainEditorWindow(QtGui.QMainWindow):
             geometry_bytes = self.settings.value("geometry").toByteArray()
             state_bytes = self.settings.value("state").toByteArray()
         except:
-            geometry_bytes = self.settings.value("geometry")
-            state_bytes = self.settings.value("state")
+            geometry_bytes = self.settings.value("geometry") or b''
+            state_bytes = self.settings.value("state") or b''
 
         if len(geometry_bytes) == 0:
             for dock in self.docks:
