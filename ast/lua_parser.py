@@ -173,6 +173,7 @@ def group_exp(toks, class_, arity):
         return class_([[group_exp(toks[:-arity], class_, arity)] + toks[-arity:]])
 
 binop = lambda toks: group_exp(toks[0], BinOp, 2)
+suffixexp = lambda toks: group_exp(toks[0], SuffixExp, 1)
 
 
 # This part makes uses of a pyparsing functionality of automatically generating
@@ -182,7 +183,7 @@ exp.enablePackrat()
 operators = [
     (registerClass(Literal('.'), Operator), 2, opAssoc.LEFT, DotAccess),
     (registerClass(Literal(':'), Operator), 2, opAssoc.LEFT, DotAccess),
-    (args | listAccess, 1, opAssoc.LEFT, SuffixExp),
+    (args | listAccess, 1, opAssoc.LEFT, suffixexp),
     (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
     (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, binop),
