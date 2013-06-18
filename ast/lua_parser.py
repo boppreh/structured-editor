@@ -162,17 +162,17 @@ stat << (retstat |
          namedfunc |
          exp)
 
-def parse_bin(toks):
+def group_exp(toks, class_, arity):
     """
     Converts a flat list of operands and operations into a nested list of
     items.
     """
-    if len(toks) == 3:
-        return BinOp([toks])
+    if len(toks) == arity + 1:
+        return class_([toks])
     else:
-        return BinOp([[parse_bin(toks[:-2]), toks[-2], toks[-1]]])
+        return class_([[group_exp(toks[:-arity], class_, arity)] + toks[-arity:]])
 
-binop = lambda toks: parse_bin(toks[0])
+binop = lambda toks: group_exp(toks[0], BinOp, 2)
 
 
 # This part makes uses of a pyparsing functionality of automatically generating
