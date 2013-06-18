@@ -135,18 +135,6 @@ class AnonFunction(Expression):
     template = 'function ({parameters}){body}\nend'
     subparts = [('parameters', NameList), ('body', Block)]
 
-class SuffixOperator(Node): pass
-
-class FunctionCall(DynamicNode, SuffixOperator):
-    """ Simple function call with variable number of arguments. """
-    child_type = Expression
-    template = '({children})'
-
-class ListAccess(StaticNode, SuffixOperator):
-    """ Simple list access using the bracket notation ("[exp]"). """
-    subparts = [('index', Expression)]
-    template = '[{index}]'
-
 class ForIn(Statement):
     """ "for item in list do" control structure. """
     subparts = [('item', NameList), ('iterator', ExpressionList), ('body', Block)] 
@@ -280,17 +268,19 @@ class DotAccess(DynamicNode, Expression):
         toks = filter(lambda t: type(t) != Operator, toks[0])
         super(DotAccess, self).__init__(toks)
 
-class ListAccessExp(UnoOp):
-    subparts = [('right_side', Expression),
-                ('operator', ListAccess)]
-    template = '{right_side}{operator}'
+class SuffixOperator(Node): pass
 
-class FunctionCallExp(UnoOp, Statement):
-    subparts = [('right_side', Expression),
-                ('operator', FunctionCall)]
-    template = '{right_side}{operator}'
+class FunctionCallArgs(DynamicNode, SuffixOperator):
+    """ Simple function call with variable number of arguments. """
+    child_type = Expression
+    template = '({children})'
 
-if __name__ == '__main__':
-    from lua_parser import parseFile, parseString
-    #print parseString('if (1) then print("oi") elseif "oi" then print("bye") end')
-    #print parseFile('tests/1.lua')
+class ListAccess(StaticNode, SuffixOperator):
+    """ Simple list access using the bracket notation ("[exp]"). """
+    subparts = [('index', Expression)]
+    template = '[{index}]'
+
+class SuffixExp(UnoOp, Statement):
+    subparts = [('right_side', Expression),
+                ('operator', SuffixOperator)]
+    template = '{right_side}{operator}'

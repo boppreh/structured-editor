@@ -59,9 +59,11 @@ funcname = registerClass(Forward(), FunctionName)
 namelist = registerClass(Forward(), NameList)
 break_ = registerClass(Keyword('break'), Break)
 
+listAccess = registerClass(Forward(), ListAccess)
+args = registerClass(Forward(), FunctionCallArgs)
+
 # Intermediary structures.
 exp = Forward()
-listAccess = Forward()
 Expression.symbol = exp
 stat = Forward()
 Statement.symbol = stat
@@ -69,7 +71,6 @@ Statement.symbol = stat
 varOrExp = Forward()
 nameAndArgs = Forward()
 varSuffix = Forward()
-args = Forward()
 funcbody = Forward()
 fieldlist = Forward()
 field = Forward()
@@ -181,8 +182,7 @@ exp.enablePackrat()
 operators = [
     (registerClass(Literal('.'), Operator), 2, opAssoc.LEFT, DotAccess),
     (registerClass(Literal(':'), Operator), 2, opAssoc.LEFT, DotAccess),
-    (registerClass(listAccess, ListAccess), 1, opAssoc.LEFT, ListAccessExp),
-    (registerClass(args, FunctionCall), 1, opAssoc.LEFT, FunctionCallExp),
+    (args | listAccess, 1, opAssoc.LEFT, SuffixExp),
     (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
     (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, binop),
