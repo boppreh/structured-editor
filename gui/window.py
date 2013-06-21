@@ -62,7 +62,7 @@ class InsertionWindow(CommandsWindow):
         self.buttonsByLetter = {}
         self.hotkeys = hotkeys
 
-        for letter in hotkeys:
+        for letter in hotkeys.values():
             def shortcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
                     self.buttonsByLetter[letter].animateClick()
@@ -78,7 +78,7 @@ class InsertionWindow(CommandsWindow):
             self.handler(actions.Insert(class_, False))
 
     def addCommand(self, i, class_):
-        hotkey = self.hotkeys[i]
+        hotkey = self.hotkeys[class_.__name__]
         button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
@@ -224,10 +224,9 @@ class MainEditorWindow(QtGui.QMainWindow):
                                                          movement_label_pairs),
                                           self.runCommand)
 
-        insertionHotkeys = [value for i, value in
-                            config.items('Insertion Hotkeys')]
         insertionWindow = InsertionWindow(self.runCommand,
-                                               insertionHotkeys, self)
+                                          dict(config.items('Insertion Hotkeys')),
+                                          self)
 
         macroWindow = MacroWindow(self)
 
