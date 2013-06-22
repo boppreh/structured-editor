@@ -11,8 +11,14 @@ config = RawConfigParser()
 config.read(os.path.join(folder, 'output_format.ini'))
 config.read(os.path.join(folder, 'theme.ini'))
 
-def get(section, item):
-    return config.get(section, item)
+def get(section, item, default=''):
+    try:
+        return config.get(section, item)
+    except:
+        return default
 
 def items(section):
-    return config.items(section)
+    try:
+        return config.items(section)
+    except:
+        return []
