@@ -49,10 +49,7 @@ class Editor(object):
 
     def _file_wrapper(self, node):
         class_name = type(node).__name__.lower()
-        try:
-            return config.get('Templates', class_name)
-        except:
-            return node.template
+        return config.get('Output Templates', class_name, node.template)
 
     def save(self):
         """
