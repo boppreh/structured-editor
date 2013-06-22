@@ -118,7 +118,7 @@ namelist << delimitedList(name)
 explist << delimitedList(exp)
 listAccess << (open_brackets + exp + close_brackets)
 args << ((open_parens + (delimitedList(exp) | empty) + close_parens |
-         Group(tableconstructor) | Group(string)))
+         tableconstructor | string))
 function << (function_ + funcbody)
 funcbody << (open_parens + parlist + close_parens + block + end_)
 parlist << Optional(delimitedList(name) + Optional(comma + ellipsis) | ellipsis)
