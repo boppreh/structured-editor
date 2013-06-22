@@ -146,7 +146,7 @@ repeatuntil << (repeat_ + block + until_ + exp)
 localfunc << (local_ + function_ + name + funcbody)
 
 doblock << (do_ + block + end_)
-retstat << (return_ + delimitedList(exp))
+retstat << (return_ + Optional(delimitedList(exp)))
 
 stat << (retstat |
          break_ |
