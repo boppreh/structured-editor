@@ -4,6 +4,7 @@ except:
     from ConfigParser import RawConfigParser
 import os
 import sys
+from collections import defaultdict
 
 folder = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -17,8 +18,8 @@ def get(section, item, default=''):
     except:
         return default
 
-def items(section):
+def section(section_name):
     try:
-        return config.items(section)
+        return defaultdict(str, config.items(section_name))
     except:
-        return []
+        return defaultdict(str)

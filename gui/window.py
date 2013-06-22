@@ -225,7 +225,7 @@ class MainEditorWindow(QtGui.QMainWindow):
                                           self.runCommand)
 
         insertionWindow = InsertionWindow(self.runCommand,
-                                          dict(config.items('Insertion Hotkeys')),
+                                          config.section('Insertion Hotkeys'),
                                           self)
 
         macroWindow = MacroWindow(self)
