@@ -181,9 +181,9 @@ suffixexp = lambda toks: group_exp(toks[0], SuffixExp, 1)
 # "enablepackrat" enables an important optimization for this type of grammar.
 exp.enablePackrat()
 operators = [
+    (args | listAccess, 1, opAssoc.LEFT, suffixexp),
     (registerClass(Literal('.'), Operator), 2, opAssoc.LEFT, DotAccess),
     (registerClass(Literal(':'), Operator), 2, opAssoc.LEFT, DotAccess),
-    (args | listAccess, 1, opAssoc.LEFT, suffixexp),
     (registerClass(Literal('^'), Operator), 2, opAssoc.LEFT, binop),
     (registerClass((not_ | '#' | '-'), Operator), 1, opAssoc.RIGHT, UnoOp),
     (registerClass(oneOf('* / %'), Operator), 2, opAssoc.LEFT, binop),
