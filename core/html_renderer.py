@@ -44,10 +44,7 @@ class HtmlRendering(object):
         """
         open_span, close_span = self._span_tags(node)
 
-        try:
-            template = config.get('Templates', type(node).__name__)
-        except:
-            template = node.template
+        template = config.get('Templates', type(node).__name__, node.template)
 
         # Span tags change the background, but there's no background in empty
         # nodes. So we replace it with a single space.
