@@ -236,6 +236,7 @@ class Select(Action):
         return self.node
 
 
+import re
 class Rename(Action):
     alters = True
     ask_for_name = lambda self, old_name: 'new_name'
@@ -245,8 +246,16 @@ class Rename(Action):
 
     def _execute(self, selected, parent, index):
         self.old_name = selected[0]
+
         if not hasattr(self, 'new_name'):
-            self.new_name = self.ask_for_name(selected[0], selected.token_rule)
+            self.new_name = self.ask_for_name(self.old_name)
+            print self.new_name, selected.token_rule, re.match(selected.token_rule, self.new_name)
+            if not re.match(selected.token_rule, self.new_name):
+                if re.match(selected.token_rule, self.new_name.replace(' ', '_')):
+                    self.new_name = self.new_name.replace(' ', '_')
+                else:
+                    self.new_name = self.old_name
+
         selected[0] = self.new_name
         return selected
 

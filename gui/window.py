@@ -178,20 +178,13 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.restoreSettings()
 
     def createDocks(self):
-        def ask_for_name(r, old_name, token_rule):
+        def ask_for_name(r, old_name):
             old_name = old_name.replace('_', ' ')
             name, ok = QtGui.QInputDialog.getText(self, 'Rename',
                                                   'Enter a new name',
                                                   text=old_name)
-            if not ok:
-                return old_name
-
-            name = str(name)
-
-            if re.match(token_rule, name):
-                return name
-            elif re.match(token_rule, name.replace(' ', '_')):
-                return name.replace(' ', '_')
+            if ok:
+                return str(name)
             else:
                 return old_name
 
