@@ -16,12 +16,13 @@ class CodeInput(QtGui.QDialog):
     self.editor attribute, containing an entire Editor instance with no
     selected_file value.
     """
-    def __init__(self, parent=None):
+    def __init__(self, base_text='', parent=None):
         super(CodeInput, self).__init__(parent)
 
         self.setWindowTitle("Source code input")
 
         self.textedit = QtGui.QPlainTextEdit(self)
+        self.textedit.setPlaintext(base_text)
 
         buttons = QtGui.QDialogButtonBox()
         buttons.setOrientation(QtCore.Qt.Horizontal)
