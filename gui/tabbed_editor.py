@@ -22,7 +22,7 @@ class CodeInput(QtGui.QDialog):
         self.setWindowTitle("Source code input")
 
         self.textedit = QtGui.QPlainTextEdit(self)
-        self.textedit.setPlaintext(base_text)
+        self.textedit.setPlainText(base_text)
 
         buttons = QtGui.QDialogButtonBox()
         buttons.setOrientation(QtCore.Qt.Horizontal)
