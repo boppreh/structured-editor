@@ -44,7 +44,7 @@ class Constant(Expression):
 
 class Identifier(Constant):
     """ A reference to an identifier. """
-    token_rule = '[a-zA-Z_]\w+'
+    token_rule = '[a-zA-Z_]\w*'
     @staticmethod
     def default():
         new = Identifier(['value'])
