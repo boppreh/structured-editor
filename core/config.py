@@ -9,8 +9,8 @@ from collections import defaultdict
 folder = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 config = RawConfigParser()
-config.read(os.path.join(folder, 'output_format.ini'))
-config.read(os.path.join(folder, 'theme.ini'))
+config.read(os.path.join(folder, 'config/output_format.ini'))
+config.read(os.path.join(folder, 'config/theme.ini'))
 
 def get(section, item, default=''):
     try:
