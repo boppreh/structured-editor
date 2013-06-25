@@ -164,7 +164,7 @@ class TabbedEditor(QtGui.QTabWidget):
         Creates a new tab with the editor containing the code from a file
         selected by the user.
         """
-        filters = 'Lua files (*.lua);;JSON files (*.json);;All files (*.*)';
+        filters = 'Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
         path = str(QtGui.QFileDialog.getOpenFileName(self, filter=filters))
         if path is not None:
             self.add(HtmlEditor.from_file(path))

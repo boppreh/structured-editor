@@ -249,7 +249,6 @@ class Rename(Action):
 
         if not hasattr(self, 'new_name'):
             self.new_name = self.ask_for_name(self.old_name)
-            print self.new_name, selected.token_rule, re.match(selected.token_rule, self.new_name)
             if not re.match(selected.token_rule, self.new_name):
                 if re.match(selected.token_rule, self.new_name.replace(' ', '_')):
                     self.new_name = self.new_name.replace(' ', '_')
