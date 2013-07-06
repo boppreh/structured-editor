@@ -95,10 +95,10 @@ class Language(object):
         if isinstance(type_.rule, str):
             node = StrNode(root.text, type_)
         elif isinstance(type_.rule, NodeType):
-            children = map(self.convert_tree, root)
+            children = map(self._convert_tree, root)
             node = ListNode(children, type_)
         else:
-            children = {i: self.convert_tree(child)
+            children = {i: self._convert_tree(child)
                         for i, child in enumerate(root)}
             node = DictNode(children, type_)
 
