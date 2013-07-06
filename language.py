@@ -6,16 +6,28 @@ import re, os
 import xml.etree.ElementTree as ET
 from subprocess import Popen, PIPE
 
+# Grammar regexes. Examples:
+# assignment(statement) = expression expression
+# parameters = expression*
+# identifier(expression) = /[a-zA-Z_]w*/
 node_name_regex = r'(\w+)(?:\((\w+)\))?'
 node_rule_regex = r'(\w+\*|/[^/]+/|(?:\w+ *)+|\?)'
 
 class NodeType(object):
+    """
+    Class for representing a node type, for example "Assignment" or
+    "Expression". Each node type has a name, a formation rule and possibly
+    another node type as parent.
+    """
     def __init__(self, name, rule, parent):
         self.name = name
         self.rule = rule
         self.parent = parent
 
     def extends(self, other):
+        """
+        Returns if the "parent" chain of this node type reaches the given one.
+        """
         if self == other:
             return True
         elif self.parent:
@@ -24,6 +36,11 @@ class NodeType(object):
             return False
 
 class ListNode(list):
+    """
+    AST element for nodes that contain a variable number of other nodes. Its
+    node type "rule" attribute defines what kind of node types are expected as
+    children.
+    """
     def __init__(self, value, type_):
         self.type_ = type_
         list.__init__(self, value)
@@ -33,6 +50,13 @@ class ListNode(list):
         return self.type_.output_template.format(', '.join(children))
 
 class DictNode(dict):
+    """
+    AST element for nodes that contain a fixed number of other nodes. Its node
+    type "rule" attribute define the type of each children, by position.
+
+    The dictionary keys are numbers. A dictionary is used to disallow
+    insertions and removals of elements.
+    """
     def __init__(self, value, type_):
         self.type_ = type_
         dict.__init__(self, value)
@@ -41,6 +65,9 @@ class DictNode(dict):
         return self.type_.output_template.format(*map(str, self.values()))
 
 class StrNode(str):
+    """
+    AST element containing a single string value.
+    """
     def __new__(cls, value, type_):
         obj = str.__new__(cls, value)
         obj.type_ = type_
@@ -50,11 +77,19 @@ class StrNode(str):
         return self.type_.output_template.format(str.__str__(self))
 
 class Language(object):
+    """
+    Class representing a supported language, with group of node types and
+    parser.
+    """
     def __init__(self, types, parser):
         self.types = types
         self.parser = parser
 
-    def convert_tree(self, root):
+    def _convert_tree(self, root):
+        """
+        Converts an XML tree to a tree of ListNode, DictNode and StrNode
+        elements with their types appropriately set.
+        """
         type_ = self.types[root.tag]
 
         if isinstance(type_.rule, str):
@@ -70,15 +105,30 @@ class Language(object):
         return node
 
     def parse_xml(self, xml):
-        return self.convert_tree(ET.fromstring(xml))
+        """
+        Parses an XML string and returns the equivalent AST with type
+        annotations.
+        """
+        return self._convert_tree(ET.fromstring(xml))
 
     def parse(self, text):
+        """
+        Parses arbitrary text in this language into the equivalent AST with
+        type annotations.
+        """
         process = Popen(['python', self.parser], stdout=PIPE, stdin=PIPE)
         stdout, stderr = process.communicate(text)
         return self.parse_xml(stdout)
 
     
 def parse_grammar(rule_pairs):
+    """
+    Converts a list of (name, rule) keypairs into a dictionary
+    {name: NodeType}. "name" can extend other names by specifying the parent in
+    parenthesis, and the rule must abstract ("?"), literal ("/regex/"),
+    list-like ("expression*") or with a fixed number of known types
+    ("name parameters body")
+    """
     nodes = {}
     for node_name, rule in rule_pairs:
         name, parent_name = re.match(node_name_regex, node_name).groups()
@@ -101,6 +151,10 @@ def parse_grammar(rule_pairs):
     return nodes
 
 def read_language(language):
+    """
+    Reads the configuration file for a given language and returns the Language
+    object representing it.
+    """
     parser_path = os.path.join('languages', language, 'parser.py')
     config_path = os.path.join('languages', language, 'config.ini')
     assert os.path.exists(parser_path) and os.path.exists(config_path)
