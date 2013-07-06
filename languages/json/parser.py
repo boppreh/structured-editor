@@ -2,16 +2,16 @@ import sys, json, collections
 
 def convert(node):
     if isinstance(node, basestring):
-        type_ = 'str'
+        type_ = 'string'
         value = node
     elif isinstance(node, bool):
         type_ = 'bool'
         value = node == 'true'
     elif node is None:
-        type_ = 'none'
-        value = 'none'
-    elif isinstance(node, int):
-        type_ = 'int'
+        type_ = 'null'
+        value = 'null'
+    elif isinstance(node, int) or isinstance(node, float):
+        type_ = 'number'
         value = str(node)
     else:
         convert_compound(node)
@@ -21,16 +21,18 @@ def convert(node):
 
 def convert_compound(node):
     if isinstance(node, list):
-        print('<list>')
+        print('<array>')
         for child in node:
             convert(child)
-        print('</list>')
+        print('</array>')
     elif isinstance(node, dict):
-        print('<dict>')
+        print('<object>')
         for key, child in node.items():
+            print('<assignment>')
             convert(key)
             convert(child)
-        print('</dict>')
+            print('</assignment>')
+        print('</object>')
 
 
 if len(sys.argv) > 1:
