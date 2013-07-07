@@ -1,6 +1,15 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
 
 class Tabbed(QtGui.QTabWidget):
+    """
+    Tabbed interface with focus on usability:
+    - tabs can be moved
+    - the currently focused tab has a close button
+    - Ctrl+W closes the current tab
+    - the user can middle-click on a tab to close it
+    - the tab bar is hidden when there's only one tab
+    - when a tab is open, change to it
+    """
     def __init__(self, *args, **kargs):
         QtGui.QTabWidget.__init__(self, *args, **kargs)
         self.setMovable(True)
@@ -11,10 +20,11 @@ class Tabbed(QtGui.QTabWidget):
                         lambda: self._close_tab(self.currentIndex()))
 
     def _update_tab(self, new_tab=None):
+        self.setCurrentIndex(new_tab)
         for i in range(self.count()):
             button = self.tabBar().tabButton(i, QtGui.QTabBar.RightSide)
             if button:
-                button.setVisible(i == self.currentIndex())
+                button.setVisible(i == new_tab)
 
         self.tabBar().setVisible(self.count() > 1)
 
@@ -28,39 +38,54 @@ class Tabbed(QtGui.QTabWidget):
         QtGui.QTabWidget.mouseReleaseEvent(self, event)
 
     def addTab(self, widget, title):
-        QtGui.QTabWidget.addTab(self, widget, title)
-        self._update_tab(-1)
+        self._update_tab(QtGui.QTabWidget.addTab(self, widget, title))
 
 
 class MainWindow(QtGui.QMainWindow):
-    def __init__(self):
+    def __init__(self, title):
         QtGui.QMainWindow.__init__(self)
-        self.setWindowTitle('Structured Editor')
+        self.setWindowTitle(title)
+        self.setCentralWidget(Tabbed())
+        self.untitled_count = 0
+        QtGui.QShortcut('Ctrl+N', self, self.newDocument)
+        self.toolbars = {}
 
-        self.addToolBar('Actions1').addAction('Action1')
-        self.addToolBar('Actions2').addAction('Action2')
+    def addMenuAction(self, menu, action):
+        raise NotImplemented()
 
-        self.setDockNestingEnabled(True)
+    def addToolbarAction(self, toolbar_name, label, redo, undo=None):
+        if toolbar_name not in self.toolbars:
+            self.toolbars[toolbar_name] = self.addToolBar(toolbar_name)
 
-        tabbed = Tabbed()
-        self.setCentralWidget(tabbed)
+        action = self.toolbars[toolbar_name].addAction(label)
+        action.triggered.connect(redo)
+        action.undo = undo
+
+    def addDocument(self, text, label=None):
+        if label is None:
+            self.untitled_count += 1
+            label = 'Untitled Document ' + str(self.untitled_count)
 
         contents = QtWebKit.QWebView()
-        contents.setHtml('<html>Hello World 1</html>')
-        tabbed.addTab(contents, 'Tab1')
-        contents = QtWebKit.QWebView()
-        contents.setHtml('<html>Hello Rest 2</html>')
-        tabbed.addTab(contents, 'Tab2')
+        contents.setHtml(text)
+        contents.undo_stack = QtGui.QUndoStack()
+        return self.centralWidget().addTab(contents, label)
+
+    def newDocument(self):
+        self.addDocument('', None)
 
 
 if __name__ == '__main__':
-    import sys
+    import sys, os
     app = QtGui.QApplication([__file__])
-    main_window = MainWindow()
-    main_window.show()
+    main_window = MainWindow('Structured Editor')
+    main_window.addToolbarAction('Toolbar 1', 'A1', main_window.newDocument)
+    main_window.addToolbarAction('Toolbar 1', 'A2', main_window.newDocument)
+    main_window.addToolbarAction('Toolbar 2', 'B1', main_window.newDocument)
+    main_window.addToolbarAction('Toolbar 2', 'B2', main_window.newDocument)
 
     for path in sys.argv[1:]:
-        print(path)
-        #main_window.tabbedEditor.add(HtmlEditor.from_file(path))
+        main_window.add(open(path).read(), os.path.basename(path))
 
+    main_window.show()
     exit(app.exec_())
