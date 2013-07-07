@@ -97,13 +97,51 @@ def test_parse_grammar():
 
     assert n['b'].parent == n['a']
 
-def test_read_language():
+def test_merge_config():
     from ConfigParser import RawConfigParser
     c = RawConfigParser()
+
     c.add_section('Composition Rules')
-    c.set('Composition Rules', 'a', '/.+/')
-    c.set('Composition Rules', 'b(a)', '/\w+/')
-    c.set('Composition Rules', 'b(a)', '/\w+/')
+    c.set('Composition Rules', 'a', '')
+    c.set('Composition Rules', 'b', '')
+
+    c.add_section('Defaults')
+    c.set('Defaults', 'a', '<a/>')
+    c.set('Defaults', 'b', '<b/>')
+
+    c.add_section('Hotkeys')
+    c.set('Hotkeys', 'a', '1')
+    c.set('Hotkeys', 'b', '2')
+
+    c.add_section('Style')
+    c.set('Style', 'a', 'a1')
+    c.set('Style', 'b', 'b2')
+
+    c.add_section('Output Templates')
+    c.set('Output Templates', 'a', 'a {}')
+    c.set('Output Templates', 'b', 'b {}')
+
+    c.add_section('Display Templates')
+    # Use default template for 'a'
+    # c.set('Display Templates', 'a', 'a {}')
+    c.set('Display Templates', 'b', '{} b')
+
+    n = merge_config(c)
+
+    assert n['a'].default.tag == 'a'
+    assert n['b'].default.tag == 'b'
+
+    assert n['a'].hotkey == '1'
+    assert n['b'].hotkey == '2'
+
+    assert n['a'].style == 'a1'
+    assert n['b'].style == 'b2'
+
+    assert n['a'].output_template == 'a {}'
+    assert n['b'].output_template == 'b {}'
+
+    assert n['a'].display_template == 'a {}'
+    assert n['b'].display_template == '{} b'
 
 
 pytest.main()
