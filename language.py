@@ -10,8 +10,7 @@ from subprocess import Popen, PIPE
 # assignment(statement) = expression expression
 # parameters = expression*
 # identifier(expression) = /[a-zA-Z_]w*/
-node_name_regex = r'(\w+)(?:\((\w+)\))?'
-node_rule_regex = r'(\w+\*|/[^/]+/|(?:\w+ *)+|\?)'
+node_name_regex = re.compile(r'^(\w+)(?:\((\w+)\))?$')
 
 class NodeType(object):
     """
@@ -131,7 +130,7 @@ def parse_grammar(rule_pairs):
     """
     nodes = {}
     for node_name, rule in rule_pairs:
-        name, parent_name = re.match(node_name_regex, node_name).groups()
+        name, parent_name = node_name_regex.match(node_name).groups()
         if parent_name:
             parent = nodes[parent_name]
         else:
@@ -140,7 +139,7 @@ def parse_grammar(rule_pairs):
         if rule == '?':
             rule = None
         elif rule.startswith('/'):
-            rule = rule
+            rule = rule[1:-1]
         elif rule.endswith('*') or rule.endswith('+'):
             rule = nodes[rule[:-1]]
         else:
@@ -179,10 +178,10 @@ def read_language(language):
 
     return Language(types, parser_path)
 
-languages = {}
-for language in os.listdir('languages'):
-    languages[language] = read_language(language)
+def read_languages():
+    return {language: read_language(language)
+            for language in os.listdir('languages')}
 
 if __name__ == '__main__':
     text = open('test_files/1.json').read()
-    print(languages['json'].parse(text))
+    print(read_language('json').parse(text))
