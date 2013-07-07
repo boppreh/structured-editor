@@ -156,18 +156,14 @@ def parse_grammar(rule_pairs):
 
     return nodes
 
-def read_language(language):
+def merge_config(config):
     """
-    Reads the configuration file for a given language and returns the Language
-    object representing it.
+    From the configuration object for a given language, parses the grammar
+    structure, defaults, hotkeys, styles and output and display templates.
+
+    Returns the types dictionary {type_name: type_object} with types setup
+    according to the configuration object.
     """
-    parser_path = os.path.join('languages', language, 'parser.py')
-    config_path = os.path.join('languages', language, 'config.ini')
-    assert os.path.exists(parser_path) and os.path.exists(config_path)
-
-    config = configparser.RawConfigParser()
-    config.read(config_path)
-
     types = parse_grammar(config.items('Composition Rules'))
 
     for n in types.values():
@@ -184,7 +180,22 @@ def read_language(language):
         except configparser.NoOptionError:
             n.display_template = n.output_template
 
-    return Language(types, parser_path)
+    return types
+
+
+def read_language(language):
+    """
+    Reads the configuration file for a given language and returns the Language
+    object representing it.
+    """
+    parser_path = os.path.join('languages', language, 'parser.py')
+    config_path = os.path.join('languages', language, 'config.ini')
+    assert os.path.exists(parser_path) and os.path.exists(config_path)
+
+    config = configparser.RawConfigParser()
+    config.read(config_path)
+
+    return Language(merge_config(config), parser_path)
 
 def read_languages():
     return {language: read_language(language)
