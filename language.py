@@ -92,11 +92,14 @@ class Language(object):
         type_ = self.types[root.tag]
 
         if isinstance(type_.rule, str):
+            # Literal type, rule is regex.
             node = StrNode(root.text, type_)
         elif isinstance(type_.rule, NodeType):
+            # List type, rule is child type.
             children = map(self._convert_tree, root)
             node = ListNode(children, type_)
         else:
+            # List type, rule is list of children type.
             children = {i: self._convert_tree(child)
                         for i, child in enumerate(root)}
             node = DictNode(children, type_)
@@ -137,12 +140,16 @@ def parse_grammar(rule_pairs):
             parent = None
 
         if rule == '?':
+            # Abstract type.
             rule = None
         elif rule.startswith('/'):
+            # Literal type, rule is regex.
             rule = rule[1:-1]
         elif rule.endswith('*') or rule.endswith('+'):
+            # List type, rule is reference to one other type.
             rule = nodes[rule[:-1]]
         else:
+            # Dict type, rule is list of references to other types.
             rule = map(nodes.get, rule.split(' '))
 
         nodes[name] = NodeType(name, rule, parent)
@@ -160,6 +167,7 @@ def read_language(language):
 
     config = configparser.RawConfigParser()
     config.read(config_path)
+
     types = parse_grammar(config.items('Composition Rules'))
 
     for n in types.values():
