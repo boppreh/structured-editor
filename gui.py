@@ -42,18 +42,29 @@ class Tabbed(QtGui.QTabWidget):
 
 
 class MainWindow(QtGui.QMainWindow):
+    """
+    Class for a multi-document window, if automatic handling of actions and
+    tabs.
+    """
     def __init__(self, title):
         QtGui.QMainWindow.__init__(self)
         self.setWindowTitle(title)
         self.setCentralWidget(Tabbed())
+
         self.untitled_count = 0
-        QtGui.QShortcut('Ctrl+N', self, self.newDocument)
         self.toolbars = {}
+
+        QtGui.QShortcut('Ctrl+N', self, self.newDocument)
 
     def addMenuAction(self, menu, action):
         raise NotImplemented()
 
     def addToolbarAction(self, toolbar_name, label, redo, undo=None):
+        """
+        Adds a new action to the given toolbar. The toolbar is created if
+        necessary. By specifying an "undo" action, the action becomes tied to
+        the document and can be undone.
+        """
         if toolbar_name not in self.toolbars:
             self.toolbars[toolbar_name] = self.addToolBar(toolbar_name)
 
@@ -62,6 +73,9 @@ class MainWindow(QtGui.QMainWindow):
         action.undo = undo
 
     def addDocument(self, text, label=None):
+        """
+        Opens a new document in a new tab, displaying the given text as HTML.
+        """
         if label is None:
             self.untitled_count += 1
             label = 'Untitled Document ' + str(self.untitled_count)
@@ -69,10 +83,14 @@ class MainWindow(QtGui.QMainWindow):
         contents = QtWebKit.QWebView()
         contents.setHtml(text)
         contents.undo_stack = QtGui.QUndoStack()
-        return self.centralWidget().addTab(contents, label)
+        self.centralWidget().addTab(contents, label)
+        return contents
 
     def newDocument(self):
-        self.addDocument('', None)
+        """
+        Opens a new empty document in a new tab.
+        """
+        return self.addDocument('', None)
 
 
 if __name__ == '__main__':
