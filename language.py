@@ -198,6 +198,10 @@ def read_language(language):
     return Language(merge_config(config), parser_path)
 
 def read_languages():
+    """
+    Reads all language configurations in ./languages/ and returns a dictionary
+    {name: Language}.
+    """
     return {language: read_language(language)
             for language in os.listdir('languages')}
 
