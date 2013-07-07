@@ -143,5 +143,46 @@ def test_merge_config():
     assert n['a'].display_template == 'a {}'
     assert n['b'].display_template == '{} b'
 
+def test_read_language():
+    print('a')
+    import os
+    if not os.path.exists('languages'):
+        os.mkdir(languages)
+    if not os.path.exists('languages/test_language'):
+        os.mkdir('languages/test_language')
+
+    f = open('languages/test_language/parser.py', 'w')
+    f.write("""
+import sys
+assert sys.stdin.read() == 'input'
+print('<a>output</a>')""")
+    f.close()
+
+    f = open('languages/test_language/config.ini', 'w')
+    f.write("""
+[Composition Rules]
+a = /.+/
+[Defaults]
+a = <a/>
+[Hotkeys]
+a = a
+[Style]
+a = 
+[Output Templates]
+a = {}
+[Display Templates]
+""")
+    f.close()
+
+    languages = read_languages()
+    l = languages['test_language']
+    assert l
+    assert l.parse('input') == 'output'
+
+
+    os.remove('languages/test_language/parser.py')
+    os.remove('languages/test_language/config.ini')
+    os.rmdir('languages/test_language')
+
 
 pytest.main()
