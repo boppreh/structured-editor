@@ -1,7 +1,7 @@
 try:
-    import configparser as ConfigParser
+    import ConfigParser as configparser
 except:
-    import ConfigParser
+    import configparser
 import re, os
 import xml.etree.ElementTree as ET
 from subprocess import Popen, PIPE
@@ -158,7 +158,7 @@ def read_language(language):
     config_path = os.path.join('languages', language, 'config.ini')
     assert os.path.exists(parser_path) and os.path.exists(config_path)
 
-    config = ConfigParser.RawConfigParser()
+    config = configparser.RawConfigParser()
     config.read(config_path)
     types = parse_grammar(config.items('Composition Rules'))
 
@@ -173,7 +173,7 @@ def read_language(language):
         n.output_template = config.get('Output Templates', n.name)
         try:
             n.display_template = config.get('Display Templates', n.name)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             n.display_template = n.output_template
 
     return Language(types, parser_path)
