@@ -55,6 +55,10 @@ class MainWindow(QtGui.QMainWindow):
         self.toolbars = {}
 
         QtGui.QShortcut('Ctrl+N', self, self.newDocument)
+        QtGui.QShortcut('Ctrl+Z', self,
+                        lambda: self.currentDocument().undo_stack.undo())
+        QtGui.QShortcut('Ctrl+Shift+Z', self,
+                        lambda: self.currentDocument().undo_stack.redo())
 
     def addMenuAction(self, menu, action):
         raise NotImplemented()
@@ -69,8 +73,15 @@ class MainWindow(QtGui.QMainWindow):
             self.toolbars[toolbar_name] = self.addToolBar(toolbar_name)
 
         action = self.toolbars[toolbar_name].addAction(label)
-        action.triggered.connect(redo)
-        action.undo = undo
+        if undo:
+            def execute():
+                command = QtGui.QUndoCommand()
+                command.redo = redo
+                command.undo = undo
+                self.currentDocument().undo_stack.push(command)
+            action.triggered.connect(execute)
+        else:
+            action.triggered.connect(redo)
 
     def addDocument(self, text, label=None):
         """
@@ -92,12 +103,22 @@ class MainWindow(QtGui.QMainWindow):
         """
         return self.addDocument('', None)
 
+    def currentDocument(self):
+        """
+        Returns the currently focused HTML widget.
+        """
+        return self.centralWidget().currentWidget()
+
 
 if __name__ == '__main__':
     import sys, os
     app = QtGui.QApplication([__file__])
     main_window = MainWindow('Structured Editor')
-    main_window.addToolbarAction('Toolbar 1', 'A1', main_window.newDocument)
+    def a():
+        print 'a'
+    def b():
+        print 'b'
+    main_window.addToolbarAction('Toolbar 1', 'A1', a, b)
     main_window.addToolbarAction('Toolbar 1', 'A2', main_window.newDocument)
     main_window.addToolbarAction('Toolbar 2', 'B1', main_window.newDocument)
     main_window.addToolbarAction('Toolbar 2', 'B2', main_window.newDocument)
