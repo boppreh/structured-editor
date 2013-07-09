@@ -53,5 +53,9 @@ def test_really_nested_links():
                     ], single_type)
     assert render(tree) == """<a href="/"></a><a href="/0/">value1</a><a href="/">, </a><a href="/1/"></a><a href="/1/0/"></a><a href="/1/">-</a><a href="/1/1/">value2</a><a href="/1/"></a><a href="/">, </a><a href="/2/"></a><a href="/2/0/">value3</a><a href="/2/"></a><a href="/"></a>"""
 
+def test_simple_style():
+    tree = StrNode('value', make_type('{}', 'style'))
+    assert render(tree) == '<a href="/"><span style="style">value</span></a>'
+
 
 pytest.main()
