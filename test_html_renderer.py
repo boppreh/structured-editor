@@ -1,4 +1,5 @@
 import pytest
+import re
 from html_renderer import render
 from language import ListNode, DictNode, StrNode, NodeType
 
@@ -8,12 +9,15 @@ def make_type(display_template, style=''):
     type_.display_template = display_template
     return type_
 
+def render_text(tree):
+    return re.sub('<[^>]+>', '', render(tree))
+
 single_type = make_type('{}')
 double_type = make_type('{}-{}')
 
 def test_simplest():
     root = StrNode('value', single_type)
-    assert render(root) == 'value'
+    assert render_text(root) == 'value'
 
 def test_recursion():
     tree = ListNode([
@@ -25,10 +29,15 @@ def test_recursion():
                      ListNode([StrNode('value3', single_type)], single_type),
                     ], single_type)
 
-    assert render(tree[0]) == 'value1'
-    assert render(tree[1]) == '-value2'
-    assert render(tree[2]) == 'value3'
-    assert render(tree) == 'value1, -value2, value3'
+    assert render_text(tree[0]) == 'value1'
+    assert render_text(tree[1]) == '-value2'
+    assert render_text(tree[2]) == 'value3'
+    assert render_text(tree) == 'value1, -value2, value3'
+
+def test_single_link():
+    tree = StrNode('value', single_type)
+    assert render(tree, 'link') == '<a href="link">value</a>'
+
 
 
 pytest.main()

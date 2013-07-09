@@ -8,6 +8,9 @@ def render(node, link=''):
     elif isinstance(node, DictNode):
         replacements = map(render, node.values())
 
+    open_link = '<a href="{}">'.format(link)
+    close_link = '</a>'
+
     inner_content = node.type_.display_template.format(*replacements)
 
-    return inner_content
+    return open_link + inner_content + close_link
