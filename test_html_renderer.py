@@ -38,6 +38,20 @@ def test_single_link():
     tree = StrNode('value', single_type)
     assert render(tree, 'link') == '<a href="link">value</a>'
 
+def test_nested_links():
+    tree = ListNode([StrNode('value', single_type)], single_type)
+    assert render(tree, 'link') == '<a href="link"></a><a href="link/0">value</a><a href="link"></a>'
+
+def test_really_nested_links():
+    tree = ListNode([
+                     StrNode('value1', single_type),
+                     DictNode({
+                               0: ListNode([], single_type),
+                               1: StrNode('value2', single_type),
+                              }, double_type),
+                     ListNode([StrNode('value3', single_type)], single_type),
+                    ], single_type)
+    assert render(tree) == """<a href=""></a><a href="/0">value1</a><a href="">, </a><a href="/1"></a><a href="/1/0"></a><a href="/1">-</a><a href="/1/1">value2</a><a href="/1"></a><a href="">, </a><a href="/2"></a><a href="/2/0">value3</a><a href="/2"></a><a href=""></a>"""
 
 
 pytest.main()
