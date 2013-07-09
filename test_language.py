@@ -28,11 +28,11 @@ def test_name_regex():
     assert r.match('5name5(5name5)')
 
 def test_node_type_inheritance():
-    a = NodeType('a', None, None)
-    b = NodeType('b', None, a)
-    c = NodeType('c', None, b)
-    d = NodeType('d', None, b)
-    e = NodeType('e', None, a)
+    a = NodeType(None, None)
+    b = NodeType(None, a)
+    c = NodeType(None, b)
+    d = NodeType(None, b)
+    e = NodeType(None, a)
 
     assert a.extends(a)
     assert b.extends(b)
@@ -52,9 +52,9 @@ def test_node_type_inheritance():
     assert not e.extends(b)
 
 def test_serialization():
-    type_a = NodeType('a', None, None)
+    type_a = NodeType(None, None)
     type_a.output_template = '%{}%'
-    type_b = NodeType('b', None, None)
+    type_b = NodeType(None, None)
     type_b.output_template = '%{} {} {}%'
 
     assert str(StrNode('', type_a)) == '%%'
@@ -72,11 +72,11 @@ def test_serialization():
     assert str(DictNode({0: StrNode('a', type_a)}, type_a)) == '%%a%%'
 
 def test_language():
-    type_a = NodeType('a', '.+', None)
+    type_a = NodeType('.+', None)
     type_a.output_template = '{}'
-    type_b = NodeType('b', type_a, None)
+    type_b = NodeType(type_a, None)
     type_b.output_template = '{}'
-    type_c = NodeType('c', [type_a, type_b], None)
+    type_c = NodeType([type_a, type_b], None)
     type_c.output_template = '{} {}'
     l = Language({'a': type_a, 'b': type_b, 'c': type_c}, None)
 

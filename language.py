@@ -18,8 +18,7 @@ class NodeType(object):
     "Expression". Each node type has a name, a formation rule and possibly
     another node type as parent.
     """
-    def __init__(self, name, rule, parent):
-        self.name = name
+    def __init__(self, rule=None, parent=None):
         self.rule = rule
         self.parent = parent
 
@@ -152,7 +151,7 @@ def parse_grammar(rule_pairs):
             # Dict type, rule is list of references to other types.
             rule = map(nodes.get, rule.split(' '))
 
-        nodes[name] = NodeType(name, rule, parent)
+        nodes[name] = NodeType(rule, parent)
 
     return nodes
 
@@ -166,19 +165,19 @@ def merge_config(config):
     """
     types = parse_grammar(config.items('Composition Rules'))
 
-    for n in types.values():
-        if n.rule is None:
+    for name, type_ in types.items():
+        if type_.rule is None:
             continue
 
-        n.default = ET.fromstring(config.get('Defaults', n.name))
-        n.hotkey = config.get('Hotkeys', n.name)
-        n.style = config.get('Style', n.name)
+        type_.default = ET.fromstring(config.get('Defaults', name))
+        type_.hotkey = config.get('Hotkeys', name)
+        type_.style = config.get('Style', name)
 
-        n.output_template = config.get('Output Templates', n.name)
+        type_.output_template = config.get('Output Templates', name)
         try:
-            n.display_template = config.get('Display Templates', n.name)
+            type_.display_template = config.get('Display Templates', name)
         except configparser.NoOptionError:
-            n.display_template = n.output_template
+            type_.display_template = type_.output_template
 
     return types
 
