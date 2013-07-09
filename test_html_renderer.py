@@ -55,7 +55,13 @@ def test_really_nested_links():
 
 def test_simple_style():
     tree = StrNode('value', make_type('{}', 'style'))
-    assert render(tree) == '<a href="/"><span style="style">value</span></a>'
+    assert render(tree) == '<span style="style"><a href="/">value</a></span>'
+
+def test_nested_style():
+    type1 = make_type('{}', 'style1')
+    type2 = make_type('{}', 'style2')
+    tree = ListNode([StrNode('value', type2)], type1)
+    assert render(tree) == '<span style="style1"><a href="/"></a><span style="style2"><a href="/0/">value</a></span><a href="/"></a></span>'
 
 
 pytest.main()

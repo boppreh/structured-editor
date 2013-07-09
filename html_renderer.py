@@ -16,8 +16,10 @@ def render(node, link='/'):
             replacements = [', '.join(replacements)]
 
     inner_content = node.type_.display_template.format(*replacements)
+    linked_content = open_link + inner_content + close_link
+
     if node.type_.style:
         span_template = '<span style="{}">{}</span>'
-        inner_content = span_template.format(node.type_.style, inner_content)
-
-    return open_link + inner_content + close_link
+        return span_template.format(node.type_.style, linked_content)
+    else:
+        return linked_content
