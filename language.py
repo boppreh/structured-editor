@@ -117,7 +117,8 @@ class Language(object):
         Parses arbitrary text in this language into the equivalent AST with
         type annotations.
         """
-        process = Popen(['python', self.parser], stdout=PIPE, stdin=PIPE, universal_newlines=True)
+        process = Popen(['python', self.parser], stdout=PIPE, stdin=PIPE,
+                        universal_newlines=True)
         stdout, stderr = process.communicate(text)
         return self.parse_xml(stdout)
 
