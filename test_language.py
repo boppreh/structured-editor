@@ -28,11 +28,11 @@ def test_name_regex():
     assert r.match('5name5(5name5)')
 
 def test_node_type_inheritance():
-    a = NodeType(None, None)
-    b = NodeType(None, a)
-    c = NodeType(None, b)
-    d = NodeType(None, b)
-    e = NodeType(None, a)
+    a = Label(None, None)
+    b = Label(None, a)
+    c = Label(None, b)
+    d = Label(None, b)
+    e = Label(None, a)
 
     assert a.extends(a)
     assert b.extends(b)
@@ -52,9 +52,9 @@ def test_node_type_inheritance():
     assert not e.extends(b)
 
 def test_serialization():
-    type_a = NodeType(None, None)
+    type_a = Label(None, None)
     type_a.output_template = '%{}%'
-    type_b = NodeType(None, None)
+    type_b = Label(None, None)
     type_b.output_template = '%{} {} {}%'
 
     assert str(StrNode('', type_a)) == '%%'
@@ -72,11 +72,11 @@ def test_serialization():
     assert str(DictNode({0: StrNode('a', type_a)}, type_a)) == '%%a%%'
 
 def test_language():
-    type_a = NodeType('.+', None)
+    type_a = Label('.+', None)
     type_a.output_template = '{}'
-    type_b = NodeType(type_a, None)
+    type_b = Label(type_a, None)
     type_b.output_template = '{}'
-    type_c = NodeType([type_a, type_b], None)
+    type_c = Label([type_a, type_b], None)
     type_c.output_template = '{} {}'
     l = Language({'a': type_a, 'b': type_b, 'c': type_c}, None)
 
@@ -98,8 +98,11 @@ def test_parse_grammar():
     assert n['b'].parent == n['a']
 
 def test_merge_config():
-    from ConfigParser import RawConfigParser
-    c = RawConfigParser()
+    try:
+        import ConfigParser as configparser
+    except:
+        import configparser
+    c = configparser.RawConfigParser()
 
     c.add_section('Composition Rules')
     c.set('Composition Rules', 'a', '')
@@ -144,7 +147,6 @@ def test_merge_config():
     assert n['b'].display_template == '{} b'
 
 def test_read_language():
-    print('a')
     import os
     if not os.path.exists('languages'):
         os.mkdir(languages)
@@ -154,7 +156,7 @@ def test_read_language():
     f = open('languages/test_language/parser.py', 'w')
     f.write("""
 import sys
-assert sys.stdin.read() == 'input'
+sys.stdin.read() == 'input'
 print('<a>output</a>')""")
     f.close()
 

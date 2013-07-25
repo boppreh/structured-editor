@@ -1,5 +1,10 @@
 from language import ListNode, DictNode, StrNode
 
+try:
+    range = xrange
+except NameError:
+    pass
+
 def render(node, link='/'):
     open_link = '<a href="{}">'.format(link)
     close_link = '</a>'
@@ -8,7 +13,7 @@ def render(node, link='/'):
         replacements = (str.__str__(node),)
     else:
         replacements = []
-        for i in xrange(len(node)):
+        for i in range(len(node)):
             child_text = render(node[i], link + str(i) + '/')
             replacements.append(close_link + child_text + open_link)
 

@@ -1,10 +1,10 @@
 import pytest
 import re
 from html_renderer import render
-from language import ListNode, DictNode, StrNode, NodeType
+from language import ListNode, DictNode, StrNode, Label
 
 def make_type(display_template, style=''):
-    type_ = NodeType()
+    type_ = Label()
     type_.style = style
     type_.display_template = display_template
     return type_

@@ -12,7 +12,7 @@ from subprocess import Popen, PIPE
 # identifier(expression) = /[a-zA-Z_]w*/
 node_name_regex = re.compile(r'^(\w+)(?:\((\w+)\))?$')
 
-class NodeType(object):
+class Label(object):
     """
     Class for representing a node type, for example "Assignment" or
     "Expression". Each node type has a name, a formation rule and possibly
@@ -93,9 +93,9 @@ class Language(object):
         if isinstance(type_.rule, str):
             # Literal type, rule is regex.
             node = StrNode(root.text, type_)
-        elif isinstance(type_.rule, NodeType):
+        elif isinstance(type_.rule, Label):
             # List type, rule is child type.
-            children = map(self._convert_tree, root)
+            children = [self._convert_tree(n) for n in root]
             node = ListNode(children, type_)
         else:
             # List type, rule is list of children type.
@@ -117,7 +117,7 @@ class Language(object):
         Parses arbitrary text in this language into the equivalent AST with
         type annotations.
         """
-        process = Popen(['python', self.parser], stdout=PIPE, stdin=PIPE)
+        process = Popen(['python', self.parser], stdout=PIPE, stdin=PIPE, universal_newlines=True)
         stdout, stderr = process.communicate(text)
         return self.parse_xml(stdout)
 
@@ -125,7 +125,7 @@ class Language(object):
 def parse_grammar(rule_pairs):
     """
     Converts a list of (name, rule) keypairs into a dictionary
-    {name: NodeType}. "name" can extend other names by specifying the parent in
+    {name: Label}. "name" can extend other names by specifying the parent in
     parenthesis, and the rule must abstract ("?"), literal ("/regex/"),
     list-like ("expression*") or with a fixed number of known types
     ("name parameters body")
@@ -149,9 +149,9 @@ def parse_grammar(rule_pairs):
             rule = nodes[rule[:-1]]
         else:
             # Dict type, rule is list of references to other types.
-            rule = map(nodes.get, rule.split(' '))
+            rule = [nodes[r] for r in rule.split()]
 
-        nodes[name] = NodeType(rule, parent)
+        nodes[name] = Label(rule, parent)
 
     return nodes
 
