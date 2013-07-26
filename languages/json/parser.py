@@ -1,12 +1,17 @@
 import sys, json, collections
 
+try:
+    str_type = basestring
+except NameError:
+    str_type = str
+
 def convert(node):
-    if isinstance(node, basestring):
+    if isinstance(node, str_type):
         type_ = 'string'
         value = node
     elif isinstance(node, bool):
         type_ = 'bool'
-        value = node == 'true'
+        value = node
     elif node is None:
         type_ = 'null'
         value = 'null'
@@ -39,4 +44,5 @@ if len(sys.argv) > 1:
     text = open(sys.argv[1]).read()
 else:
     text = sys.stdin.read()
+
 convert(json.loads(text, object_pairs_hook=collections.OrderedDict))
