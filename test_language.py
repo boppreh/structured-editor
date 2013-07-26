@@ -57,16 +57,22 @@ def test_serialization():
     type_b = Label(None, None)
     type_b.output_template = '%{} {} {}%'
 
+    l = Label(None, None)
+    l.output_template = '{}'
+    const1 = ConstantLeaf(l, '1')
+    const2 = ConstantLeaf(l, '2')
+    const3 = ConstantLeaf(l, '3')
+
     assert str(ConstantLeaf(type_a, '')) == '%%'
     assert str(ConstantLeaf(type_a, 'a')) == '%a%'
     assert str(ConstantLeaf(type_a, 'asdf')) == '%asdf%'
 
     assert str(ListTree(type_a, [])) == '%%'
-    assert str(ListTree(type_a, [1])) == '%1%'
-    assert str(ListTree(type_a, [1, 2])) == '%1, 2%'
+    assert str(ListTree(type_a, [const1])) == '%1%'
+    assert str(ListTree(type_a, [const1, const2])) == '%1, 2%'
 
-    assert str(FixedTree(type_a, ['a'])) == '%a%'
-    assert str(FixedTree(type_b, ['a', 'b', 'c'])) == '%a b c%'
+    assert str(FixedTree(type_a, [const1])) == '%1%'
+    assert str(FixedTree(type_b, [const1, const2, const3])) == '%1 2 3%'
 
     assert str(ListTree(type_a, [ConstantLeaf(type_a, 'a')])) == '%%a%%'
     assert str(FixedTree(type_a, [ConstantLeaf(type_a, 'a')])) == '%%a%%'
