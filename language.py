@@ -5,6 +5,7 @@ except:
 import re, os
 import xml.etree.ElementTree as ET
 from subprocess import Popen, PIPE
+from tree import Tree, Leaf
 
 # Grammar regexes. Examples:
 # assignment(statement) = expression expression
@@ -33,21 +34,17 @@ class Label(object):
         else:
             return False
 
-class ListNode(list):
+class ListTree(Tree):
     """
     AST element for nodes that contain a variable number of other nodes. Its
     node type "rule" attribute defines what kind of node types are expected as
     children.
     """
-    def __init__(self, value, type_):
-        self.type_ = type_
-        list.__init__(self, value)
-
     def __str__(self):
-        children = map(str, self)
+        children = map(str, self.children)
         return self.type_.output_template.format(', '.join(children))
 
-class DictNode(dict):
+class FixedTree(Tree):
     """
     AST element for nodes that contain a fixed number of other nodes. Its node
     type "rule" attribute define the type of each children, by position.
@@ -55,24 +52,16 @@ class DictNode(dict):
     The dictionary keys are numbers. A dictionary is used to disallow
     insertions and removals of elements.
     """
-    def __init__(self, value, type_):
-        self.type_ = type_
-        dict.__init__(self, value)
-
     def __str__(self):
-        return self.type_.output_template.format(*map(str, self.values()))
+        children = map(str, self.children)
+        return self.type_.output_template.format(*children)
 
-class StrNode(str):
+class ConstantLeaf(Leaf):
     """
     AST element containing a single string value.
     """
-    def __new__(cls, value, type_):
-        obj = str.__new__(cls, value)
-        obj.type_ = type_
-        return obj
-
     def __str__(self):
-        return self.type_.output_template.format(str.__str__(self))
+        return self.type_.output_template.format(self.value)
 
 class Language(object):
     """
@@ -85,25 +74,20 @@ class Language(object):
 
     def _convert_tree(self, root):
         """
-        Converts an XML tree to a tree of ListNode, DictNode and StrNode
+        Converts an XML tree to a tree of ConstantLeaf, ListTree and FixedTree
         elements with their types appropriately set.
         """
         type_ = self.types[root.tag]
 
         if isinstance(type_.rule, str):
             # Literal type, rule is regex.
-            node = StrNode(root.text, type_)
+            return ConstantLeaf(type_, root.text)
         elif isinstance(type_.rule, Label):
             # List type, rule is child type.
-            children = [self._convert_tree(n) for n in root]
-            node = ListNode(children, type_)
+            return ListTree(type_, map(self._convert_tree, root))
         else:
-            # List type, rule is list of children type.
-            children = {i: self._convert_tree(child)
-                        for i, child in enumerate(root)}
-            node = DictNode(children, type_)
-
-        return node
+            # Fixed list type, rule is list of children type.
+            return FixedTree(type_, map(self._convert_tree, root))
 
     def parse_xml(self, xml):
         """

@@ -57,19 +57,19 @@ def test_serialization():
     type_b = Label(None, None)
     type_b.output_template = '%{} {} {}%'
 
-    assert str(StrNode('', type_a)) == '%%'
-    assert str(StrNode('a', type_a)) == '%a%'
-    assert str(StrNode('asdf', type_a)) == '%asdf%'
+    assert str(ConstantLeaf(type_a, '')) == '%%'
+    assert str(ConstantLeaf(type_a, 'a')) == '%a%'
+    assert str(ConstantLeaf(type_a, 'asdf')) == '%asdf%'
 
-    assert str(ListNode([], type_a)) == '%%'
-    assert str(ListNode([1], type_a)) == '%1%'
-    assert str(ListNode([1, 2], type_a)) == '%1, 2%'
+    assert str(ListTree(type_a, [])) == '%%'
+    assert str(ListTree(type_a, [1])) == '%1%'
+    assert str(ListTree(type_a, [1, 2])) == '%1, 2%'
 
-    assert str(DictNode({0: 'a'}, type_a)) == '%a%'
-    assert str(DictNode({0: 'a', 1: 'b', 2: 'c'}, type_b)) == '%a b c%'
+    assert str(FixedTree(type_a, ['a'])) == '%a%'
+    assert str(FixedTree(type_b, ['a', 'b', 'c'])) == '%a b c%'
 
-    assert str(ListNode([StrNode('a', type_a)], type_a)) == '%%a%%'
-    assert str(DictNode({0: StrNode('a', type_a)}, type_a)) == '%%a%%'
+    assert str(ListTree(type_a, [ConstantLeaf(type_a, 'a')])) == '%%a%%'
+    assert str(FixedTree(type_a, [ConstantLeaf(type_a, 'a')])) == '%%a%%'
 
 def test_language():
     type_a = Label('.+', None)
@@ -157,7 +157,8 @@ def test_read_language():
     f.write("""
 import sys
 sys.stdin.read() == 'input'
-print('<a>output</a>')""")
+sys.stdout.write('<a>output</a>')
+""")
     f.close()
 
     f = open('languages/test_language/config.ini', 'w')
@@ -179,7 +180,7 @@ a = {}
     languages = read_languages()
     l = languages['test_language']
     assert l
-    assert l.parse('input') == 'output'
+    assert l.parse('input').value == 'output'
 
 
     os.remove('languages/test_language/parser.py')

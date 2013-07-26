@@ -1,4 +1,4 @@
-from language import ListNode, DictNode, StrNode
+from language import ListTree, FixedTree, ConstantLeaf
 
 try:
     range = xrange
@@ -9,15 +9,15 @@ def render(node, link='/'):
     open_link = '<a href="{}">'.format(link)
     close_link = '</a>'
 
-    if isinstance(node, StrNode):
-        replacements = (str.__str__(node),)
+    if isinstance(node, ConstantLeaf):
+        replacements = (str(node),)
     else:
         replacements = []
         for i in range(len(node)):
             child_text = render(node[i], link + str(i) + '/')
             replacements.append(close_link + child_text + open_link)
 
-        if isinstance(node, ListNode):
+        if isinstance(node, ListTree):
             replacements = [', '.join(replacements)]
 
     inner_content = node.type_.display_template.format(*replacements)
