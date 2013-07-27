@@ -31,3 +31,10 @@ def up(tree):
 
 def down(tree):
     return tree[0] if len(tree) else tree
+
+
+def replace(tree, replacement):
+    if tree.parent:
+        tree.parent[index(tree)] = replacement
+
+    return replacement

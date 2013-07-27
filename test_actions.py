@@ -34,4 +34,36 @@ def test_vertical_movement():
     assert down(t[1]) == t[1][0]
     assert down(t[2]) == t[2]
 
+def test_replace():
+    t = make_tree()
+
+    t1 = Tree()
+    t2 = Tree()
+    t3 = Tree()
+
+    old1 = t[0]
+    old2 = t[1]
+    old3 = t[2]
+
+    assert replace(t, t) == t
+    assert replace(t[0], t[0]) == t[0]
+
+    assert replace(t[0], t1) == t1
+    assert t[0] == t1
+    assert t[1] == old2
+    assert t[2] == old3
+
+    assert replace(t[1], t2) == t2
+    assert t[0] == t1
+    assert t[1] == t2
+    assert t[2] == old3
+
+    assert replace(t[2], t3) == t3
+    assert t[0] == t1
+    assert t[1] == t2
+    assert t[2] == t3
+
+    assert replace(t, t1) == t1
+    
+
 pytest.main(__file__.replace('\\', '/'))
