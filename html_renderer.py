@@ -1,4 +1,4 @@
-from language import ListTree, FixedTree, ConstantLeaf
+from tree import ListTree, FixedTree, Leaf
 
 try:
     range = xrange
@@ -9,7 +9,7 @@ def render(node, link='/'):
     open_link = '<a href="{}">'.format(link)
     close_link = '</a>'
 
-    if isinstance(node, ConstantLeaf):
+    if isinstance(node, Leaf):
         replacements = (str(node),)
     else:
         replacements = []

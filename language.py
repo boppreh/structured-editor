@@ -5,7 +5,7 @@ except:
 import re, os
 import xml.etree.ElementTree as ET
 from subprocess import Popen, PIPE
-from tree import Tree, Leaf
+from tree import ListTree, FixedTree, Leaf
 
 # Grammar regexes. Examples:
 # assignment(statement) = expression expression
@@ -34,35 +34,6 @@ class Label(object):
         else:
             return False
 
-class ListTree(Tree):
-    """
-    AST element for nodes that contain a variable number of other nodes. Its
-    node type "rule" attribute defines what kind of node types are expected as
-    children.
-    """
-    def __str__(self):
-        children = map(str, self.children)
-        return self.type_.output_template.format(', '.join(children))
-
-class FixedTree(Tree):
-    """
-    AST element for nodes that contain a fixed number of other nodes. Its node
-    type "rule" attribute define the type of each children, by position.
-
-    The dictionary keys are numbers. A dictionary is used to disallow
-    insertions and removals of elements.
-    """
-    def __str__(self):
-        children = map(str, self.children)
-        return self.type_.output_template.format(*children)
-
-class ConstantLeaf(Leaf):
-    """
-    AST element containing a single string value.
-    """
-    def __str__(self):
-        return self.type_.output_template.format(self.value)
-
 class Language(object):
     """
     Class representing a supported language, with group of node types and
@@ -74,14 +45,14 @@ class Language(object):
 
     def _convert_tree(self, root):
         """
-        Converts an XML tree to a tree of ConstantLeaf, ListTree and FixedTree
+        Converts an XML tree to a tree of Leaf, ListTree and FixedTree
         elements with their types appropriately set.
         """
         type_ = self.types[root.tag]
 
         if isinstance(type_.rule, str):
             # Literal type, rule is regex.
-            return ConstantLeaf(type_, root.text)
+            return Leaf(type_, root.text)
         elif isinstance(type_.rule, Label):
             # List type, rule is child type.
             return ListTree(type_, map(self._convert_tree, root))
