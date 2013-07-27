@@ -17,7 +17,7 @@ class Tree(object):
         return len(self.children)
 
 class Leaf(object):
-    def __init__(self, type_, value=None):
+    def __init__(self, type_=None, value=None):
         self.type_ = type_
         self.value = value
         self.parent = None

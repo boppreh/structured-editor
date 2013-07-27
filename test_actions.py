@@ -1,10 +1,10 @@
 import pytest
 from actions import *
-from tree import Tree
+from tree import Tree, Leaf
 
 def make_tree():
-    return Tree(children=[Tree(children=[Tree(), Tree(), Tree()]),
-                          Tree(children=[Tree(), Tree()]),
+    return Tree(children=[Tree(children=[Leaf(), Leaf(), Leaf()]),
+                          Tree(children=[Leaf(), Leaf()]),
                           Tree(children=[])])
 
 
@@ -33,6 +33,29 @@ def test_vertical_movement():
     assert down(t[0]) == t[0][0]
     assert down(t[1]) == t[1][0]
     assert down(t[2]) == t[2]
+
+def test_next():
+    t = make_tree()
+    cur = t
+
+    cur = next(cur)
+    assert cur == t[0]
+    cur = next(cur)
+    assert cur == t[0][0]
+    cur = next(cur)
+    assert cur == t[0][1]
+    cur = next(cur)
+    assert cur == t[0][2]
+    cur = next(cur)
+    assert cur == t[1]
+    cur = next(cur)
+    assert cur == t[1][0]
+    cur = next(cur)
+    assert cur == t[1][1]
+    cur = next(cur)
+    assert cur == t[2]
+    cur = next(cur)
+    assert cur == t
 
 def test_replace():
     t = make_tree()

@@ -32,6 +32,15 @@ def up(tree):
 def down(tree):
     return tree[0] if len(tree) else tree
 
+def next(tree):
+    return rightup(tree) if bottommost(tree) else down(tree)
+
+def rightup(tree):
+    while not topmost(tree) and rightmost(tree):
+        tree = up(tree)
+
+    return right(tree)
+
 
 def replace(tree, replacement):
     if tree.parent:
