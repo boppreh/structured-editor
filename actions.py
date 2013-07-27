@@ -1,16 +1,30 @@
+def index(tree):
+    return tree.parent.children.index(tree)
+
+def topmost(tree):
+    return tree.parent is None
+
+def bottommost(tree):
+    return len(tree) == 0
+
+def leftmost(tree):
+    return topmost(tree) or index(tree) == 0
+
+def rightmost(tree):
+    return topmost(tree) or index(tree) == len(tree.parent) - 1
+
+
 def left(tree):
-    if not tree.parent:
+    if leftmost(tree):
         return tree
 
-    index = max(tree.parent.children.index(tree) - 1, 0)
-    return tree.parent[index]
+    return tree.parent[index(tree) - 1]
 
 def right(tree):
-    if not tree.parent:
+    if rightmost(tree):
         return tree
 
-    index = min(tree.parent.children.index(tree) + 1, len(tree.parent) - 1)
-    return tree.parent[index]
+    return tree.parent[index(tree) + 1]
 
 def up(tree):
     return tree.parent or tree

@@ -2,33 +2,36 @@ import pytest
 from actions import *
 from tree import Tree
 
-t1 = Tree()
-t2 = Tree()
-t3 = Tree()
-t = Tree(children=[t1, t2, t3])
+def make_tree():
+    return Tree(children=[Tree(children=[Tree(), Tree(), Tree()]),
+                          Tree(children=[Tree(), Tree()]),
+                          Tree(children=[])])
 
 
-def test_simple_horizontal_movement():
+def test_horizontal_movement():
+    t = make_tree()
+
     assert left(t) == t
+    assert left(t[0]) == t[0]
+    assert left(t[1]) == t[0]
+    assert left(t[2]) == t[1]
+
     assert right(t) == t
+    assert right(t[0]) == t[1]
+    assert right(t[1]) == t[2]
+    assert right(t[2]) == t[2]
 
-    assert left(t1) == t1
-    assert left(t2) == t1
-    assert left(t3) == t2
+def test_vertical_movement():
+    t = make_tree()
 
-    assert right(t1) == t2
-    assert right(t2) == t3
-    assert right(t3) == t3
-
-def test_simple_vertical_movement():
-    assert up(t1) == t
-    assert up(t2) == t
-    assert up(t3) == t
     assert up(t) == t
+    assert up(t[0]) == t
+    assert up(t[1]) == t
+    assert up(t[2]) == t
 
-    assert down(t1) == t1
-    assert down(t2) == t2
-    assert down(t3) == t3
-    assert down(t) == t1
+    assert down(t) == t[0]
+    assert down(t[0]) == t[0][0]
+    assert down(t[1]) == t[1][0]
+    assert down(t[2]) == t[2]
 
 pytest.main(__file__.replace('\\', '/'))
