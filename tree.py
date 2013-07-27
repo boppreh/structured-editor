@@ -9,6 +9,10 @@ class Tree(object):
     def __getitem__(self, i):
         return self.children[i]
 
+
+    def __setitem__(self, i, value):
+        self.children[i] = value
+
     def __len__(self):
         return len(self.children)
 
