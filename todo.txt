@@ -1,0 +1,12 @@
+[ ] Multiple cursors
+[ ] Collaborative editing
+[ ] Remote compiling
+[ ] Code translation
+[ ] Repository statistics
+[x] Linux and windows support
+[ ] A dozen strange languages nobody has heard of
+[ ] Artificial intelligence in a few spots
+[ ] Structural search
+[ ] Expression evaluation
+[x] Customizable interface
+[ ] Side by side comments (http://imgur.com/a/iXZqL#0)
