@@ -1,17 +1,18 @@
-from PyQt4 import QtGui
 import sys
+from libeditor import MainWindow, Document
+from language import read_language
 
-from gui.window import MainEditorWindow
-from gui.html_editor import HtmlEditor
+class CodeDocument(Document):
+    def __init__(self, contents_text='', path=None):
+        super(CodeDocument, self).__init__(contents_text, path)
+        self.contents = json.parse(contents_text)
 
-app = QtGui.QApplication(sys.argv)
-mainWin = MainEditorWindow()
+main_window = MainWindow('Example Application', CodeDocument)
+json = read_language('json')
 
-files = sys.argv[1:] or ["test_files/full.lua"]
+files = sys.argv[1:] or ["test_files/1.json"]
 if files:
     for path in files:
-        mainWin.tabbedEditor.add(HtmlEditor.from_file(path))
+        main_window.openDocument(path)
 
-#mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
-mainWin.show()
-sys.exit(app.exec_())
+main_window.run()
