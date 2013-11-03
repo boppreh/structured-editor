@@ -184,7 +184,7 @@ class MainEditorWindow(QtGui.QMainWindow):
                                                   'Enter a new name',
                                                   text=old_name)
             if ok:
-                return str(name)
+                return name
             else:
                 return old_name
 

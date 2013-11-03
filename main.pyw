@@ -1,3 +1,6 @@
+import sip
+sip.setapi('QString', 2)
+
 from PyQt4 import QtGui
 import sys
 
@@ -8,9 +11,8 @@ app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 
 files = sys.argv[1:] or ["test_files/full.lua"]
-if files:
-    for path in files:
-        mainWin.tabbedEditor.add(HtmlEditor.from_file(path))
+for path in files:
+    mainWin.tabbedEditor.add(HtmlEditor.from_file(path))
 
 #mainWin.setWindowIcon(QtGui.QIcon('editor.ico'))
 mainWin.show()

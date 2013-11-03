@@ -38,7 +38,7 @@ class CodeInput(QtGui.QDialog):
 
     def accept(self):
         try:
-            text = str(self.textedit.toPlainText())
+            text = self.textedit.toPlainText()
             self.editor = HtmlEditor.from_string(text, 'lua')
             super(CodeInput, self).accept()
         except ParseException:
@@ -165,7 +165,7 @@ class TabbedEditor(QtGui.QTabWidget):
         selected by the user.
         """
         filters = 'Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
-        path = str(QtGui.QFileDialog.getOpenFileName(self, filter=filters))
+        path = QtGui.QFileDialog.getOpenFileName(self, filter=filters)
         if path is not None:
             self.add(HtmlEditor.from_file(path))
 

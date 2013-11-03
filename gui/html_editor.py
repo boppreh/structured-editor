@@ -52,8 +52,8 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         Saves the current editor contents into a file selected by the user.
         """
         if path is None:
-            path = str(QFileDialog.getSaveFileName(self, 'Save as', self.name,
-                                                   filter="*.lua"))
+            path = QFileDialog.getSaveFileName(self, 'Save as', self.name,
+                                               filter="*.lua")
 
         if path:
             Editor.save_as(self, path)
@@ -94,7 +94,7 @@ class HtmlEditor(GraphicalEditor):
         Select the node corresponding to the given url, or its parent when
         clicked multiple times.
         """
-        node_id = int(basename(str(url.toString())))
+        node_id = int(basename(url.toString()))
         node_clicked = self.rendering.node_dict[node_id]
         node_selected = node_clicked
 
