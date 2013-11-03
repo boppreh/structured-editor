@@ -2,10 +2,14 @@
 Module for editing a program's source code interactively with a structured
 editor.
 """
-from ast import lua_parser, json_parser, lisp_parser
+from languages import lua_parser, json_parser, lisp_parser, python_parser
+from os.path import commonprefix
 from . import config
 
-parsers = {'lua': lua_parser, 'json': json_parser, 'lisp': lisp_parser}
+parsers = {'lua': lua_parser,
+           'json': json_parser,
+           'lisp': lisp_parser,
+           'python': python_parser}
 
 
 class Editor(object):
@@ -18,7 +22,8 @@ class Editor(object):
     
     @classmethod
     def from_file(cls, path):
-        language = path.rsplit('.')[-1]
+        ext = path.rsplit('.')[-1]
+        language = max(parsers, key=lambda l: len(commonprefix([ext, l])))
         root = parsers[language].parse_string(open(path).read())
         return cls(root, language, path)
 

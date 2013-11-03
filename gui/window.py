@@ -249,6 +249,9 @@ class MainEditorWindow(QtGui.QMainWindow):
         makeMenuAction("&JSON file", "",
                        "Creates a new empty JSON document.",
                        newMenu, lambda: self.tabbedEditor.new('json'))
+        makeMenuAction("&Python file", "",
+                       "Creates a new empty Python document.",
+                       newMenu, lambda: self.tabbedEditor.new('python'))
 
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O",

@@ -10,7 +10,7 @@ from gui.html_editor import HtmlEditor
 app = QtGui.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 
-files = sys.argv[1:] or ["test_files/full.lua"]
+files = sys.argv[1:] or [__file__]
 for path in files:
     mainWin.tabbedEditor.add(HtmlEditor.from_file(path))
 
