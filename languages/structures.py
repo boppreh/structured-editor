@@ -52,7 +52,9 @@ class Node(object):
             return -1
 
     def cast_subpart(self, tok, type_):
-        if isinstance(tok, type_):
+        if type_ is None:
+            return tok
+        elif isinstance(tok, type_):
             return tok
         elif tok.__class__ == ParseResults:
             return type_(tok)
