@@ -108,7 +108,10 @@ class StaticNode(Node):
         dictionary = {}
         for content, subpart in zip(self.contents, self.subparts):
             name, type_ = subpart
-            dictionary[name] = content.render(wrapper)
+            try:
+                dictionary[name] = content.render(wrapper)
+            except AttributeError:
+                dictionary[name] = str(content)
 
         return wrapper(self).format(**dictionary)
 
