@@ -1,4 +1,5 @@
 from . import config
+import re
 
 class HtmlRendering(object):
     def __init__(self, root, selected=None):
@@ -49,8 +50,8 @@ class HtmlRendering(object):
 
         # Span tags change the background, but there's no background in empty
         # nodes. So we replace it with a single space.
-        if open_span and len(node) == 0 and template == '{children}':
-            template = '{children} ' # Note the trailing space.
+        if open_span and len(node) == 0 and re.match(r'^\{\w+\}$', template):
+            template += ' '
 
         return (open_span, template, close_span)
 
