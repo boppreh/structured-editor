@@ -92,7 +92,6 @@ class StaticNode(Node):
         if toks is None:
             toks = []
             for name, type_ in self.subparts:
-                print(type_, type_ == int, type_ == str)
                 if type_ == str:
                     toks.append('string')
                 else:
