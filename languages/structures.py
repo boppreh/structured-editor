@@ -6,6 +6,11 @@ from pyparsing import ParseResults
 from copy import deepcopy
 
 empty_wrapper = lambda node: node.template
+def default(type_):
+    if type_ == str:
+        return 'string'
+    else:
+        return type_.default()
 
 class CastError(Exception): pass
 
@@ -90,12 +95,7 @@ class StaticNode(Node):
 
     def __init__(self, toks=None):
         if toks is None:
-            toks = []
-            for name, type_ in self.subparts:
-                if type_ == str:
-                    toks.append('string')
-                else:
-                    toks.append(type_.default())
+            toks = [default(type_) for name, type in self.subparts]
 
         contents = [self.cast_subpart(tok, part[1])
                     for tok, part in zip(toks, self.subparts)]
@@ -138,10 +138,11 @@ class DynamicNode(Node):
     delimiter = ', '
     child_type = str
     template = '{children}'
+    min_length = 0
 
     def __init__(self, contents=None):
         if contents is None:
-            contents = []
+            contents = [default(self.child_type) for i in range(self.min_length)]
 
         # ParseResults don't play well with lists, overriding important methods
         # like index and remove with strings. Also, this depends on everyone
