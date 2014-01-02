@@ -102,8 +102,10 @@ class Call(Expr):
         keywords = self.contents[2].render(wrapper)
         if self.contents[1] and self.contents[2]:
             all_args = args + ', ' + keywords
+        elif self.contents[1] or self.contents[2]:
+            all_args = args if self.contents[1] else keywords
         else:
-            all_args = args + keywords
+            all_args = ' '
         return wrapper(self).format(func=self.contents[0].render(wrapper),
                                     all_args=all_args)
 
