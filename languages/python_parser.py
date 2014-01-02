@@ -22,7 +22,13 @@ class SliceType(StaticNode):
 class Num(Expr, SliceType):
     token_rule = '\d+'
     template = '{value}'
-    subparts = [('value', int)]
+    subparts = [('value', str)]
+
+    @staticmethod
+    def default():
+        new = Num(['0'])
+        Node.defaulted.append(new)
+        return new
 
 class Op(StaticNode):
     token_rule = 'or|and'
@@ -101,7 +107,7 @@ def convert(node):
     elif isinstance(node, ast.Str):
         return Str([node.s])
     elif isinstance(node, ast.Num):
-        return Num([node.n])
+        return Num([str(node.n)])
     elif isinstance(node, ast.Module):
         return Module(map(convert, node.body))
     elif isinstance(node, ast.Call):
