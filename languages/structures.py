@@ -90,7 +90,13 @@ class StaticNode(Node):
 
     def __init__(self, toks=None):
         if toks is None:
-            toks = [type_.default() for name, type_ in self.subparts]
+            toks = []
+            for name, type_ in self.subparts:
+                print(type_, type_ == int, type_ == str)
+                if type_ == str:
+                    toks.append('string')
+                else:
+                    toks.append(type_.default())
 
         contents = [self.cast_subpart(tok, part[1])
                     for tok, part in zip(toks, self.subparts)]
