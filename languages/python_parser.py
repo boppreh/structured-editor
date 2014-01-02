@@ -140,4 +140,6 @@ def parse_string(string):
 def new_empty():
     return parse_string('')
 
-structures = []
+import inspect
+structures = [value for name, value in globals().items()
+              if inspect.isclass(value)]
