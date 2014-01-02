@@ -39,7 +39,7 @@ class CodeInput(QtGui.QDialog):
     def accept(self):
         try:
             text = self.textedit.toPlainText()
-            self.editor = HtmlEditor.from_string(text, 'lua')
+            self.editor = HtmlEditor.from_string(text, 'py')
             super(CodeInput, self).accept()
         except ParseException:
             QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
@@ -153,7 +153,7 @@ class TabbedEditor(QtGui.QTabWidget):
         self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
 
-    def new(self, language='lua'):
+    def new(self, language='py'):
         """
         Creates a new tab with an empty editor.
         """
@@ -164,7 +164,7 @@ class TabbedEditor(QtGui.QTabWidget):
         Creates a new tab with the editor containing the code from a file
         selected by the user.
         """
-        filters = 'Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;Python files (*.py);;All files (*.*)';
+        filters = 'Python files (*.py);;Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
         path = QtGui.QFileDialog.getOpenFileName(self, filter=filters)
         if path is not None:
             self.add(HtmlEditor.from_file(path))

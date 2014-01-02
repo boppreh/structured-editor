@@ -19,24 +19,29 @@ class Editor(object):
     (single selection only for the moment) and rendering the tree with a
     user-specified function running on every node's text.
     """
+    @classmethod
+    def get_language(self, ext):
+        return max(parsers, key=lambda l: len(commonprefix([ext, l])))
     
     @classmethod
     def from_file(cls, path):
         ext = path.rsplit('.')[-1]
-        language = max(parsers, key=lambda l: len(commonprefix([ext, l])))
+        language = Editor.get_language(ext)
         root = parsers[language].parse_string(open(path).read())
-        return cls(root, language, path)
+        return cls(root, ext, path)
 
     @classmethod
-    def from_string(cls, string, language):
+    def from_string(cls, string, ext):
+        language = Editor.get_language(ext)
         root = parsers[language].parse_string(string)
-        return cls(root, language, None)
+        return cls(root, ext, None)
 
     @classmethod
-    def new_empty(cls, language):
-        return cls(parsers[language].new_empty(), language, None)
+    def new_empty(cls, ext):
+        language = Editor.get_language(ext)
+        return cls(parsers[language].new_empty(), ext, None)
 
-    def __init__(self, root, language, selected_file=None):
+    def __init__(self, root, ext, selected_file=None):
         """
         Initializes an editor from an existing root node, selecting the root
         node, with empty clipboard and undo/redo history.
@@ -44,8 +49,9 @@ class Editor(object):
         self.root = root
         self.selected = root
         self.selected_file = selected_file
-        self.structures = parsers[language].structures
-        self.language = language
+        self.language = Editor.get_language(ext)
+        self.structures = parsers[self.language].structures
+        self.ext = ext
 
         self.clipboard = None
         self.past_history = []

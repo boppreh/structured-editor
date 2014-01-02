@@ -240,7 +240,10 @@ class MainEditorWindow(QtGui.QMainWindow):
         fileMenu = self.menubar.addMenu('&File')
 
         newMenu = fileMenu.addMenu("&New")
-        makeMenuAction("&Lua file", "Ctrl+N",
+        makeMenuAction("&Python file", "Ctrl+N",
+                       "Creates a new empty Python document.",
+                       newMenu, lambda: self.tabbedEditor.new('py'))
+        makeMenuAction("&Lua file", "",
                        "Creates a new empty Lua document.",
                        newMenu, lambda: self.tabbedEditor.new('lua'))
         makeMenuAction("&Lisp file", "",
@@ -249,9 +252,6 @@ class MainEditorWindow(QtGui.QMainWindow):
         makeMenuAction("&JSON file", "",
                        "Creates a new empty JSON document.",
                        newMenu, lambda: self.tabbedEditor.new('json'))
-        makeMenuAction("&Python file", "",
-                       "Creates a new empty Python document.",
-                       newMenu, lambda: self.tabbedEditor.new('python'))
 
         fileMenu.addSeparator()
         makeMenuAction("&Open...", "Ctrl+O",

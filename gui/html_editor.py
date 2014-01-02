@@ -23,7 +23,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         if self.selected_file is None:
             GraphicalEditor.untitled_count += 1
             template = self.untitled_name_template
-            self.name = template.format(self.untitled_count, self.language)
+            self.name = template.format(self.untitled_count, self.ext)
         else:
             self.name = basename(self.selected_file)
 
@@ -53,7 +53,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         """
         if path is None:
             path = QFileDialog.getSaveFileName(self, 'Save as', self.name,
-                                               filter="*.lua")
+                                               filter='*.' + self.ext)
 
         if path:
             Editor.save_as(self, path)
