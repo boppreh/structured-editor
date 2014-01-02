@@ -2,8 +2,7 @@ from .structures import *
 import ast
 
 class Expr(Statement):
-    template = '{value}'
-    subparts = [('value', None)]
+    pass
 
 class ExprList(DynamicNode):
     delimiter = ', '
@@ -25,10 +24,15 @@ class Num(Expr, SliceType):
     template = '{value}'
     subparts = [('value', int)]
 
+class Op(StaticNode):
+    token_rule = 'or|and'
+    template = '{op}'
+    subparts = [('op', str)]
+
 # TODO: bool op may have more than two values (ie chained expression)
 class BoolOp(Expr):
     template = '{left} {op} {right}'
-    subparts = [('left', Expr), ('op', str), ('right', Expr)]
+    subparts = [('left', Expr), ('op', Op), ('right', Expr)]
 
 class Body(Block):
     delimiter = '\n'
@@ -54,7 +58,7 @@ class Import(DynamicNode, Statement):
 
 class ImportFrom(Statement):
     template = 'from {module} import {names}'
-    subparts = [('module', str), ('names', NameList)]
+    subparts = [('module', Name), ('names', NameList)]
 
 class Assign(Statement):
     template = '{targets} = {value}'
@@ -70,7 +74,7 @@ class Call(Expr):
 
 class Attribute(Expr):
     template = '{value}.{attr}'
-    subparts = [('value', Expr), ('attr', str)]
+    subparts = [('value', Expr), ('attr', Name)]
 
 class Slice(SliceType):
     template = '{lower}:{upper}:{step}'
@@ -105,7 +109,7 @@ def convert(node):
     elif isinstance(node, ast.Import):
         return Import(Name([alias.name]) for alias in node.names)
     elif isinstance(node, ast.ImportFrom):
-        return ImportFrom([node.module, NameList(Name([alias.name]) for alias in node.names)])
+        return ImportFrom([Name([node.module]), NameList(Name([alias.name]) for alias in node.names)])
     elif isinstance(node, ast.Assign):
         return Assign([ExprList(map(convert, node.targets)), convert(node.value)])
     elif isinstance(node, ast.For):
@@ -113,10 +117,10 @@ def convert(node):
     elif isinstance(node, ast.Name):
         return Name([node.id])
     elif isinstance(node, ast.Attribute):
-        return Attribute([convert(node.value), node.attr])
+        return Attribute([convert(node.value), Name([node.attr])])
     elif isinstance(node, ast.BoolOp):
         if isinstance(node.op, ast.Or):
-            op = 'or'
+            op = Op(['or'])
         return BoolOp([convert(node.values[0]), op, convert(node.values[1])])
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
