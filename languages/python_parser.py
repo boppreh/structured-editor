@@ -85,9 +85,27 @@ class For(Statement):
     template = 'for {target} in {iter}:{body}'
     subparts = [('target', Expr), ('iter', Expr), ('body', Body)]
 
+class Keyword(StaticNode):
+    template = '{arg}={value}'
+    subparts = [('arg', Name), ('value', Expr)]
+
+class Keywords(DynamicNode):
+    delimiter = ', '
+    child_type = Keyword
+
 class Call(Expr):
-    template = '{func}({args})'
-    subparts = [('func', Expr), ('args', ExprList)]
+    template = '{func}({all_args})'
+    subparts = [('func', Expr), ('args', ExprList), ('keywords', Keywords)]
+
+    def render(self, wrapper=empty_wrapper):
+        args = self.contents[1].render(wrapper)
+        keywords = self.contents[2].render(wrapper)
+        if self.contents[1] and self.contents[2]:
+            all_args = args + ', ' + keywords
+        else:
+            all_args = args + keywords
+        return wrapper(self).format(func=self.contents[0].render(wrapper),
+                                    all_args=all_args)
 
 class Attribute(Expr):
     template = '{value}.{attr}'
@@ -114,6 +132,15 @@ class If(Statement):
     template = 'if {test}:{body}{orelse}'
     subparts = [('test', Expr), ('body', Body), ('orelse', Empty)]
 
+class DictItem(StaticNode):
+    template = '{key}: {value}'
+    subparts = [('key', Expr), ('value', Expr)]
+
+class Dict(DynamicNode, Expr):
+    template = '{{{children}}}'
+    child_type = DictItem
+    delimiter = ', '
+
 def convert(node):
     if node is None:
         return Empty()
@@ -125,8 +152,12 @@ def convert(node):
         return Num([str(node.n)])
     elif isinstance(node, ast.Module):
         return Module(map(convert, node.body))
+    elif isinstance(node, ast.keyword):
+        return Keyword([Name([node.arg]), convert(node.value)])
     elif isinstance(node, ast.Call):
-        return Call([convert(node.func), ExprList(map(convert, node.args))])
+        args = ExprList(map(convert, node.args))
+        keywords = Keywords(map(convert, node.keywords))
+        return Call([convert(node.func), args, keywords])
     elif isinstance(node, ast.Import):
         return Import(Name([alias.name]) for alias in node.names)
     elif isinstance(node, ast.ImportFrom):
@@ -158,6 +189,9 @@ def convert(node):
     elif isinstance(node, ast.If):
         assert not node.orelse
         return If([convert(node.test), Body(map(convert, node.body)), Empty()])
+    elif isinstance(node, ast.Dict):
+        items = [DictItem([convert(key), convert(value)]) for key, value in zip(node.keys, node.values)]
+        return Dict(items)
 
     print('Failed to convert node', node)
     exit()
