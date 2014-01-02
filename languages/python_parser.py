@@ -65,7 +65,7 @@ class Assign(Statement):
     subparts = [('targets', ExprList), ('value', Expr)]
 
 class For(Statement):
-    template = 'for {target} in {iter}:\n{body}'
+    template = 'for {target} in {iter}:{body}'
     subparts = [('target', Expr), ('iter', Expr), ('body', Block)]
 
 class Call(Expr):
@@ -81,7 +81,7 @@ class Slice(SliceType):
     subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
 
 class Empty(Expr):
-    template = ''
+    template = ' '
     subparts = []
 
 class Subscript(Expr):
