@@ -92,6 +92,8 @@ class List(DynamicNode, Expr):
 def convert(node):
     if node is None:
         return Empty()
+    elif isinstance(node, ast.Expr):
+        return convert(node.value)
     elif isinstance(node, ast.Str):
         return Str([node.s])
     elif isinstance(node, ast.Num):
@@ -104,8 +106,6 @@ def convert(node):
         return Import(Name([alias.name]) for alias in node.names)
     elif isinstance(node, ast.ImportFrom):
         return ImportFrom([node.module, NameList(Name([alias.name]) for alias in node.names)])
-    elif isinstance(node, ast.Expr):
-        return Expr([convert(node.value)])
     elif isinstance(node, ast.Assign):
         return Assign([ExprList(map(convert, node.targets)), convert(node.value)])
     elif isinstance(node, ast.For):
