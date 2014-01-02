@@ -2,7 +2,8 @@ from .structures import *
 import ast
 
 class Expr(Statement):
-    pass
+    @staticmethod
+    def default(): return Name(['value'])
 
 class ExprList(DynamicNode):
     delimiter = ', '
@@ -25,15 +26,15 @@ class Num(Expr, SliceType):
     subparts = [('value', str)]
 
     @staticmethod
-    def default():
-        new = Num(['0'])
-        Node.defaulted.append(new)
-        return new
+    def default(): return Num(['0'])
 
 class Op(StaticNode):
     token_rule = 'or|and'
     template = '{op}'
     subparts = [('op', str)]
+
+    @staticmethod
+    def default(): return Op(['or'])
 
 # TODO: bool op may have more than two values (ie chained expression)
 class BoolOp(Expr):
@@ -56,11 +57,13 @@ class Name(Expr):
 class NameList(DynamicNode):
     delimiter = ', '
     child_type = Name
+    min_length = 1
 
 class Import(DynamicNode, Statement):
     delimiter = ', '
     template = 'import {children}'
     child_type = Name
+    min_length = 1
 
 class ImportFrom(Statement):
     template = 'from {module} import {names}'
