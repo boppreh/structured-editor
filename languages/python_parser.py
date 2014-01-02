@@ -37,7 +37,7 @@ class Op(StaticNode):
     def default(): return Op(['or'])
 
 # TODO: bool op may have more than two values (ie chained expression)
-class BoolOp(Expr):
+class BinOp(Expr):
     template = '{left} {op} {right}'
     subparts = [('left', Expr), ('op', Op), ('right', Expr)]
 
@@ -110,6 +110,10 @@ class List(DynamicNode, Expr):
     delimiter = ', '
     child_type = Expr
 
+class If(Statement):
+    template = 'if {test}:{body}{orelse}'
+    subparts = [('test', Expr), ('body', Body), ('orelse', Empty)]
+
 def convert(node):
     if node is None:
         return Empty()
@@ -138,7 +142,11 @@ def convert(node):
     elif isinstance(node, ast.BoolOp):
         if isinstance(node.op, ast.Or):
             op = Op(['or'])
-        return BoolOp([convert(node.values[0]), op, convert(node.values[1])])
+        elif isinstance(node.op, ast.And):
+            op = Op(['and'])
+        return BinOp([convert(node.values[0]), op, convert(node.values[1])])
+    elif isinstance(node, ast.Compare):
+        return BinOp([convert(node.left), Op(['==']), convert(node.comparators[0])])
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
     elif isinstance(node, ast.Index):
@@ -147,6 +155,9 @@ def convert(node):
         return Slice([convert(node.lower), convert(node.upper), convert(node.step)])
     elif isinstance(node, ast.List):
         return List(map(convert, node.elts))
+    elif isinstance(node, ast.If):
+        assert not node.orelse
+        return If([convert(node.test), Body(map(convert, node.body)), Empty()])
 
     print('Failed to convert node', node)
     exit()
