@@ -46,7 +46,13 @@ class Body(Block):
     template = '{children}'
     child_type = Statement
 
-class Module(Body):
+    def render(self, wrapper=empty_wrapper):
+        if len(self) == 0:
+            return wrapper(self).format(children='\n    pass')
+        else:
+            return Block.render(self, wrapper)
+
+class Module(Block):
     pass
 
 class Name(Expr):
@@ -72,10 +78,12 @@ class ImportFrom(Statement):
 class Assign(Statement):
     template = '{targets} = {value}'
     subparts = [('targets', ExprList), ('value', Expr)]
+    @staticmethod
+    def default(): return Assign([ExprList([Expr.default()]), Expr.default()])
 
 class For(Statement):
     template = 'for {target} in {iter}:{body}'
-    subparts = [('target', Expr), ('iter', Expr), ('body', Block)]
+    subparts = [('target', Expr), ('iter', Expr), ('body', Body)]
 
 class Call(Expr):
     template = '{func}({args})'
