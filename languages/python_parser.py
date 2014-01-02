@@ -10,13 +10,18 @@ class ExprList(DynamicNode):
     child_type = Expr
 
 class Str(Expr):
+    token_rule = '.+'
     template = '\'{value}\''
     subparts = [('value', str)]
+
+    def render(self, wrapper=empty_wrapper):
+        return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
 
 class SliceType(StaticNode):
     pass
 
 class Num(Expr, SliceType):
+    token_rule = '\d+'
     template = '{value}'
     subparts = [('value', int)]
 
@@ -34,7 +39,9 @@ class Module(Body):
     pass
 
 class Name(Expr):
+    template = '{value}'
     subparts = [('value', str)]
+    token_rule = '[a-zA-Z_]\w*'
 
 class NameList(DynamicNode):
     delimiter = ', '
@@ -120,7 +127,7 @@ def convert(node):
     elif isinstance(node, ast.List):
         return List(map(convert, node.elts))
 
-    print(node)
+    print('Failed to convert node', node)
     exit()
 
 def parse_string(string):
