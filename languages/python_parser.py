@@ -143,6 +143,30 @@ class Dict(DynamicNode, Expr):
     child_type = DictItem
     delimiter = ', '
 
+# TODO: exception types and aliases
+class ExceptHandler(StaticNode):
+    #template = 'except {type} as {name}:{body}'
+    #subparts = [('type', Name), ('name', Name), ('body', Body)]
+    template = 'except:{body}'
+    subparts = [('body', Body)]
+
+class ExceptHandlers(DynamicNode):
+    delimiter = '\n'
+    child_type = ExceptHandler
+
+class Try(Statement):
+    template = 'try:{body}\n{handlers}'
+    subparts = [('body', Body), ('handlers', ExceptHandlers)]
+
+# TODO: function arguments defaults
+class FunctionDef(Statement):
+    template = 'def {name}({args}):{body}'
+    subparts = [('name', Name), ('args', NameList), ('body', Body)]
+
+class Return(Statement):
+    template = 'return {value}'
+    subparts = [('value', Expr)]
+
 def convert(node):
     if node is None:
         return Empty()
@@ -183,7 +207,7 @@ def convert(node):
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
     elif isinstance(node, ast.Index):
-        return Num([node.value])
+        return Num([str(node.value.n)])
     elif isinstance(node, ast.Slice):
         return Slice([convert(node.lower), convert(node.upper), convert(node.step)])
     elif isinstance(node, ast.List):
@@ -194,6 +218,18 @@ def convert(node):
     elif isinstance(node, ast.Dict):
         items = [DictItem([convert(key), convert(value)]) for key, value in zip(node.keys, node.values)]
         return Dict(items)
+    elif isinstance(node, ast.Try):
+        handlers_list = []
+        for handler in node.handlers:
+            #e = ExceptHandler([convert(handler.type), convert(handler.name), Body(map(convert, handler.body))])
+            e = ExceptHandler([Body(map(convert, handler.body))])
+            handlers_list.append(e)
+        return Try([Body(map(convert, node.body)), ExceptHandlers(handlers_list)])
+    elif isinstance(node, ast.FunctionDef):
+        args = NameList(Name([arg.arg]) for arg in node.args.args)
+        return FunctionDef([Name([node.name]), args, Body(map(convert, node.body))])
+    elif isinstance(node, ast.Return):
+        return Return([convert(node.value)])
 
     print('Failed to convert node', node)
     exit()
