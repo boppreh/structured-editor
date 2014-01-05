@@ -78,7 +78,7 @@ class InsertionWindow(CommandsWindow):
             self.handler(actions.Insert(class_, False))
 
     def addCommand(self, i, class_):
-        hotkey = self.hotkeys[class_.__name__]
+        hotkey = self.hotkeys[str(i + 1)]
         button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
@@ -104,7 +104,8 @@ class InsertionWindow(CommandsWindow):
         subclasses = (cls for cls in editor.structures
                       if issubclass(cls, expected_cls))
 
-        for i, class_ in enumerate(subclasses):
+        sorted_subclasses = sorted(subclasses, key=lambda s: s.__name__)
+        for i, class_ in enumerate(sorted_subclasses):
             self.addCommand(i, class_)
 
 
