@@ -2,8 +2,9 @@ from .structures import *
 import ast
 
 class Expr(Statement):
-    @staticmethod
-    def default(): return Name(['value'])
+    @classmethod
+    def default(cls):
+        return Name(['value']) if cls == Expr else cls()
 
 class ExprList(DynamicNode):
     delimiter = ', '
