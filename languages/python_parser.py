@@ -36,6 +36,18 @@ class Op(StaticNode):
     @staticmethod
     def default(): return Op(['or'])
 
+class UOp(StaticNode):
+    token_rule = 'not|+|-'
+    template = '{op}'
+    subparts = [('op', str)]
+
+    @staticmethod
+    def default(): return Op(['not'])
+
+class UnaryOp(Expr):
+    template = '{op} {operand}'
+    subparts = [('op', UOp), ('operand', Expr)]
+
 # TODO: bool op may have more than two values (ie chained expression)
 class BinOp(Expr):
     template = '{left} {op} {right}'
@@ -167,6 +179,11 @@ class Return(Statement):
     template = 'return {value}'
     subparts = [('value', Expr)]
 
+# TODO: add message
+class Assert(Statement):
+    template = 'assert {value}'
+    subparts = [('value', Expr)]
+
 def convert(node):
     if node is None:
         return Empty()
@@ -202,6 +219,14 @@ def convert(node):
         elif isinstance(node.op, ast.And):
             op = Op(['and'])
         return BinOp([convert(node.values[0]), op, convert(node.values[1])])
+    elif isinstance(node, ast.BinOp):
+        if isinstance(node.op, ast.Add):
+            op = Op(['+'])
+        return BinOp([convert(node.left), op, convert(node.right)])
+    elif isinstance(node, ast.UnaryOp):
+        if isinstance(node.op, ast.Not):
+            op = UOp(['not'])
+        return UnaryOp([op, convert(node.operand)])
     elif isinstance(node, ast.Compare):
         return BinOp([convert(node.left), Op(['==']), convert(node.comparators[0])])
     elif isinstance(node, ast.Subscript):
@@ -230,6 +255,8 @@ def convert(node):
         return FunctionDef([Name([node.name]), args, Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
         return Return([convert(node.value)])
+    elif isinstance(node, ast.Assert):
+        return Assert([convert(node.test)])
 
     print('Failed to convert node', node)
     exit()
