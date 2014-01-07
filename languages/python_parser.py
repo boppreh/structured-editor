@@ -12,6 +12,10 @@ class ExprList(DynamicNode):
     delimiter = ', '
     child_type = Expr
 
+class Empty(StaticNode):
+    template = ' '
+    subparts = []
+
 class Str(Expr):
     token_rule = '.+'
     template = '\'{value}\''
@@ -76,10 +80,17 @@ class Body(Block):
 class Module(Block):
     pass
 
-class Name(Expr):
+class Arg(StaticNode):
+    template = '{name}={default}'
+    #Will be filled in a moment because of a circular dependency.
+    subparts = [[('name', Empty), ('default', Expr)]]
+
+class Name(Expr, Arg):
     template = '{value}'
     subparts = [('value', str)]
     token_rule = '[a-zA-Z_]\w*'
+
+Arg.subparts = subparts = [('name', Name), ('default', Expr)]
 
 class NameList(DynamicNode):
     delimiter = ', '
@@ -138,10 +149,6 @@ class Slice(SliceType):
     template = '{lower}:{upper}:{step}'
     subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
 
-class Empty(Expr):
-    template = ' '
-    subparts = []
-
 class Subscript(Expr):
     template = '{value}[{slice}]'
     subparts = [('value', Expr), ('slice', SliceType)]
@@ -179,10 +186,12 @@ class Try(Statement):
     template = 'try:{body}\n{handlers}'
     subparts = [('body', Body), ('handlers', ExceptHandlers)]
 
-# TODO: function arguments defaults
+class ArgList(DynamicNode):
+    child_type = Arg
+
 class FunctionDef(Statement):
     template = 'def {name}({args}):{body}'
-    subparts = [('name', Name), ('args', NameList), ('body', Body)]
+    subparts = [('name', Name), ('args', ArgList), ('body', Body)]
 
 class Return(Statement):
     template = 'return {value}'
@@ -265,8 +274,14 @@ def convert(node):
             handlers_list.append(e)
         return Try([Body(map(convert, node.body)), ExceptHandlers(handlers_list)])
     elif isinstance(node, ast.FunctionDef):
-        args = NameList(Name([arg.arg]) for arg in node.args.args)
-        return FunctionDef([Name([node.name]), args, Body(map(convert, node.body))])
+        args = []
+        defaults = [None] * (len(node.args.args) - len(node.args.defaults)) + node.args.defaults
+        for arg_node, default in zip(node.args.args, defaults):
+            if default:
+                args.append(Arg([Name([arg_node.arg]), convert(default)]))
+            else:
+                args.append(Name([arg_node.arg]))
+        return FunctionDef([Name([node.name]), ArgList(args), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
         return Return([convert(node.value)])
     elif isinstance(node, ast.Assert):
@@ -284,7 +299,8 @@ def parse_string(string):
     original_text = parse_and_print(string)
     new_text = parse_and_print(converted_parse.render())
     diff = ''.join(difflib.unified_diff(original_text, new_text, n=10))
-    assert not diff, diff
+    if diff:
+        print('Parse drift:\n', diff)
 
     return converted_parse
 
