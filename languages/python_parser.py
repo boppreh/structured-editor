@@ -237,7 +237,12 @@ def convert(node):
             op = UOp(['not'])
         return UnaryOp([op, convert(node.operand)])
     elif isinstance(node, ast.Compare):
-        return BinOp([convert(node.left), Op(['==']), convert(node.comparators[0])])
+        op = Op([{ast.Eq: '==',
+                  ast.Lt: '<',
+                  ast.Gt: '>',
+                  ast.LtE: '<=',
+                  ast.GtE: '>='}[type(node.ops[0])]])
+        return BinOp([convert(node.left), op, convert(node.comparators[0])])
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
     elif isinstance(node, ast.Index):
