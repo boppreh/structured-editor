@@ -283,7 +283,7 @@ def parse_string(string):
 
     original_text = parse_and_print(string)
     new_text = parse_and_print(converted_parse.render())
-    diff = ''.join(difflib.unified_diff(original_text, new_text))
+    diff = ''.join(difflib.unified_diff(original_text, new_text, n=10))
     assert not diff, diff
 
     return converted_parse
