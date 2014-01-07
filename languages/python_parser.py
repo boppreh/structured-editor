@@ -1,5 +1,7 @@
 from .structures import *
 import ast
+import difflib
+import re
 
 class Expr(Statement):
     @classmethod
@@ -268,8 +270,18 @@ def convert(node):
     print('Failed to convert node', node)
     exit()
 
+def parse_and_print(string):
+    return ast.dump(ast.parse(string)).replace('=', '=\n').splitlines(keepends=True)
+
 def parse_string(string):
-    return convert(ast.parse(string))
+    converted_parse = convert(ast.parse(string))
+
+    original_text = parse_and_print(string)
+    new_text = parse_and_print(converted_parse.render())
+    diff = ''.join(difflib.unified_diff(original_text, new_text))
+    assert not diff, diff
+
+    return converted_parse
 
 def new_empty():
     return parse_string('')
