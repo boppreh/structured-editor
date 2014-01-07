@@ -16,7 +16,13 @@ class Str(Expr):
     subparts = [('value', str)]
 
     def render(self, wrapper=empty_wrapper):
-        return wrapper(self).format(value=self.contents[0].replace('"', r'\"'))
+        if self.contents[0].count('\n'):
+            self.template = '"""{value}"""'
+            replacement = ('"""', '\"""')
+        else:
+            self.template = '\'{value}\''
+            replacement = ('\'', '\\\'')
+        return wrapper(self).format(value=self.contents[0].replace(*replacement))
 
 class SliceType(StaticNode):
     pass
