@@ -21,6 +21,7 @@ class Str(Expr):
     template = '\'{value}\''
     subparts = [('value', str)]
 
+    # TODO: remove indentation from mult-line strings inside Blocks
     def render(self, wrapper=empty_wrapper):
         if self.contents[0].count('\n'):
             self.template = '"""{value}"""'
