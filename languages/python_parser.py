@@ -178,6 +178,10 @@ class If(Statement):
     template = 'if {test}:{body}{orelse}'
     subparts = [('test', Expr), ('body', Body), ('orelse', Empty)]
 
+class IfExp(Expr):
+    template = '{body} if {test} else {orelse}'
+    subparts = [('body', Expr), ('test', Expr), ('orelse', Expr)]
+
 class DictItem(StaticNode):
     template = '{key}: {value}'
     subparts = [('key', Expr), ('value', Expr)]
@@ -304,6 +308,8 @@ def convert(node):
     elif isinstance(node, ast.If):
         assert not node.orelse
         return If([convert(node.test), Body(map(convert, node.body)), Empty()])
+    elif isinstance(node, ast.IfExp):
+        return IfExp([convert(node.body), convert(node.test), convert(node.orelse)])
     elif isinstance(node, ast.Dict):
         items = [DictItem([convert(key), convert(value)]) for key, value in zip(node.keys, node.values)]
         return Dict(items)
