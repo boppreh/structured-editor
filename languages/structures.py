@@ -193,7 +193,8 @@ class Block(DynamicNode):
 
     def render(self, wrapper=empty_wrapper):
         rendered = []
-        for i, text in enumerate(node.render(wrapper) for node in self.contents):
+        for i, node in enumerate(self.contents):
+            text = node.render(wrapper)
             rendered.append(text)
             if i < len(self) - 1:
                 rendered.append(self.delimiter)
