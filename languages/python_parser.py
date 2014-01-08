@@ -124,6 +124,15 @@ class For(Statement):
     template = 'for {target} in {iter}:{body}'
     subparts = [('target', Expr), ('iter', Expr), ('body', Body)]
 
+# TODO: allow multiple items
+class With(Statement):
+    template = 'with {item}:{body}'
+    subparts = [('item', Expr), ('body', Body)]
+
+class WithAs(Statement):
+    template = 'with {item} as {alias}:{body}'
+    subparts = [('item', Expr), ('alias', Name), ('body', Body)]
+
 class Keyword(StaticNode):
     template = '{arg}={value}'
     subparts = [('arg', Name), ('value', Expr)]
@@ -265,6 +274,12 @@ def convert(node):
         return Assign([ExprList(map(convert, node.targets)), convert(node.value)])
     elif isinstance(node, ast.For):
         return For([convert(node.target), convert(node.iter), Body(map(convert, node.body))])
+    elif isinstance(node, ast.With):
+        alias = node.items[0].optional_vars
+        if alias:
+            return With([convert(node.items[0].context_expr), convert(alias), Body(map(convert, node.body))])
+        else:
+            return With([convert(node.items[0].context_expr), Body(map(convert, node.body))])
     elif isinstance(node, ast.Name):
         return Name([node.id])
     elif isinstance(node, ast.Attribute):
@@ -345,8 +360,7 @@ def convert(node):
     elif isinstance(node, ast.Assert):
         return Assert([convert(node.test)])
 
-    print('Failed to convert node', node)
-    exit()
+    raise TypeError('Failed to convert node', node)
 
 def parse_and_print(string):
     return ast.dump(ast.parse(string)).replace('=', '=\n').splitlines(keepends=True)
