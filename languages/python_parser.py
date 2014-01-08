@@ -185,7 +185,19 @@ class Tuple(DynamicNode, Expr):
 
 class If(Statement):
     template = 'if {test}:{body}{orelse}'
-    subparts = [('test', Expr), ('body', Body), ('orelse', Empty)]
+    subparts = [('test', Expr), ('body', Body), ('orelse', Statement)]
+
+    def render(self, wrapper=empty_wrapper):
+        test = self.contents[0].render(wrapper)
+        body = self.contents[1].render(wrapper)
+        if type(self.contents[2]) is Pass:
+            orelse = '\n '
+        elif isinstance(self.contents[2], If):
+            orelse = '\nel' + self.contents[2].render(wrapper)
+        else:
+            orelse = '\nelse:' + self.contents[2].render(wrapper)
+
+        return wrapper(self).format(test=test, body=body, orelse=orelse)
 
 class IfExp(Expr):
     template = '{body} if {test} else {orelse}'
@@ -249,7 +261,7 @@ class Assert(Statement):
 
 class ListComp(Expr):
     template = '[{elt} for {target} in {iter}]'
-    subparts = [('elt', Expr), ('target', Name), ('iter', Expr)]
+    subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
 
 def convert(node):
     if isinstance(node, ast.Expr):
@@ -322,8 +334,10 @@ def convert(node):
     elif isinstance(node, ast.Tuple):
         return Tuple(map(convert, node.elts))
     elif isinstance(node, ast.If):
-        assert not node.orelse
-        return If([convert(node.test), Body(map(convert, node.body)), Empty()])
+        if node.orelse:
+            return If([convert(node.test), Body(map(convert, node.body)), convert(node.orelse[0])])
+        else:
+            return If([convert(node.test), Body(map(convert, node.body)), convert(ast.Pass())])
     elif isinstance(node, ast.IfExp):
         return IfExp([convert(node.body), convert(node.test), convert(node.orelse)])
     elif isinstance(node, ast.Dict):
