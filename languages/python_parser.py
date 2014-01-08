@@ -91,6 +91,12 @@ class Name(Expr, Arg):
     subparts = [('value', str)]
     token_rule = '[a-zA-Z_]\w*'
 
+    def render(self, wrapper=empty_wrapper):
+        if self.contents[0] == 'None' and isinstance(self.parent, SliceType):
+            return wrapper(self).format(value=' ')
+
+        return Expr.render(self, wrapper)
+
 Arg.subparts = subparts = [('name', Name), ('default', Expr)]
 
 class NameList(DynamicNode):
@@ -263,7 +269,7 @@ def convert(node):
         lower = node.lower or ast.Name(id='None', ctx=ast.Load())
         upper = node.upper or ast.Name(id='None', ctx=ast.Load())
         if node.step:
-            return SliceWithStep([convert(lower), convert(upper), convert(step)])
+            return SliceWithStep([convert(lower), convert(upper), convert(node.step)])
         else:
             return Slice([convert(lower), convert(upper)])
     elif isinstance(node, ast.List):
