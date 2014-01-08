@@ -285,6 +285,7 @@ def convert(node):
         return UnaryOp([op, convert(node.operand)])
     elif isinstance(node, ast.Compare):
         op = Op([{ast.Eq: '==',
+                  ast.Is: 'is',
                   ast.Lt: '<',
                   ast.Gt: '>',
                   ast.LtE: '<=',
