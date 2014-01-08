@@ -169,6 +169,11 @@ class List(DynamicNode, Expr):
     delimiter = ', '
     child_type = Expr
 
+class Tuple(DynamicNode, Expr):
+    template = '({children})'
+    delimiter = ', '
+    child_type = Expr
+
 class If(Statement):
     template = 'if {test}:{body}{orelse}'
     subparts = [('test', Expr), ('body', Body), ('orelse', Empty)]
@@ -204,14 +209,34 @@ class FunctionDef(Statement):
     template = 'def {name}({args}):{body}'
     subparts = [('name', Name), ('args', ArgList), ('body', Body)]
 
+class ClassDef(Statement):
+    template = 'class {name}({bases}):{body}'
+    subparts = [('name', Name), ('bases', NameList), ('body', Body)]
+
 class Return(Statement):
     template = 'return {value}'
     subparts = [('value', Expr)]
+
+class Pass(Statement):
+    template = 'pass'
+    subparts = []
+
+class Continue(Statement):
+    template = 'continue'
+    subparts = []
+
+class Break(Statement):
+    template = 'break'
+    subparts = []
 
 # TODO: add message
 class Assert(Statement):
     template = 'assert {value}'
     subparts = [('value', Expr)]
+
+class ListComp(Expr):
+    template = '[{elt} for {target} in {iter}]'
+    subparts = [('elt', Expr), ('target', Name), ('iter', Expr)]
 
 def convert(node):
     if isinstance(node, ast.Expr):
@@ -274,6 +299,8 @@ def convert(node):
             return Slice([convert(lower), convert(upper)])
     elif isinstance(node, ast.List):
         return List(map(convert, node.elts))
+    elif isinstance(node, ast.Tuple):
+        return Tuple(map(convert, node.elts))
     elif isinstance(node, ast.If):
         assert not node.orelse
         return If([convert(node.test), Body(map(convert, node.body)), Empty()])
@@ -296,8 +323,18 @@ def convert(node):
             else:
                 args.append(Name([arg_node.arg]))
         return FunctionDef([Name([node.name]), ArgList(args), Body(map(convert, node.body))])
+    elif isinstance(node, ast.ClassDef):
+        return ClassDef([Name([node.name]), NameList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
         return Return([convert(node.value)])
+    elif isinstance(node, ast.Pass):
+        return Pass()
+    elif isinstance(node, ast.Continue):
+        return Continue()
+    elif isinstance(node, ast.Break):
+        return Break()
+    elif isinstance(node, ast.ListComp):
+        return ListComp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.Assert):
         return Assert([convert(node.test)])
 
