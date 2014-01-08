@@ -147,6 +147,10 @@ class Attribute(Expr):
     subparts = [('value', Expr), ('attr', Name)]
 
 class Slice(SliceType):
+    template = '{lower}:{upper}'
+    subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
+
+class SliceWithStep(SliceType):
     template = '{lower}:{upper}:{step}'
     subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
 
@@ -204,9 +208,7 @@ class Assert(Statement):
     subparts = [('value', Expr)]
 
 def convert(node):
-    if node is None:
-        return Empty()
-    elif isinstance(node, ast.Expr):
+    if isinstance(node, ast.Expr):
         return convert(node.value)
     elif isinstance(node, ast.Str):
         return Str([node.s])
@@ -258,7 +260,12 @@ def convert(node):
     elif isinstance(node, ast.Index):
         return Num([str(node.value.n)])
     elif isinstance(node, ast.Slice):
-        return Slice([convert(node.lower), convert(node.upper), convert(node.step)])
+        lower = node.lower or ast.Name(id='None', ctx=ast.Load())
+        upper = node.upper or ast.Name(id='None', ctx=ast.Load())
+        if node.step:
+            return SliceWithStep([convert(lower), convert(upper), convert(step)])
+        else:
+            return Slice([convert(lower), convert(upper)])
     elif isinstance(node, ast.List):
         return List(map(convert, node.elts))
     elif isinstance(node, ast.If):
