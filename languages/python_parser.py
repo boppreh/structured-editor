@@ -215,7 +215,7 @@ class FunctionDef(Statement):
 
 class ClassDef(Statement):
     template = 'class {name}({bases}):{body}'
-    subparts = [('name', Name), ('bases', NameList), ('body', Body)]
+    subparts = [('name', Name), ('bases', ExprList), ('body', Body)]
 
 class Return(Statement):
     template = 'return {value}'
@@ -330,7 +330,7 @@ def convert(node):
                 args.append(Name([arg_node.arg]))
         return FunctionDef([Name([node.name]), ArgList(args), Body(map(convert, node.body))])
     elif isinstance(node, ast.ClassDef):
-        return ClassDef([Name([node.name]), NameList(map(convert, node.bases)), Body(map(convert, node.body))])
+        return ClassDef([Name([node.name]), ExprList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
         return Return([convert(node.value)])
     elif isinstance(node, ast.Pass):
