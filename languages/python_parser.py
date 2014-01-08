@@ -23,13 +23,16 @@ class Str(Expr):
 
     # TODO: remove indentation from mult-line strings inside Blocks
     def render(self, wrapper=empty_wrapper):
-        if self.contents[0].count('\n'):
+        if self.contents[0].count('\n') == 1:
+            self.template = '\'{value}\''
+            return wrapper(self).format(value=self.contents[0].replace('\'', '\\\'').replace('\n', '\\n'))
+        elif self.contents[0].count('\n') > 1:
             self.template = '"""{value}"""'
-            replacement = ('"""', '\"""')
+            return wrapper(self).format(value=self.contents[0].replace('"""', '\"""'))
         else:
             self.template = '\'{value}\''
-            replacement = ('\'', '\\\'')
-        return wrapper(self).format(value=self.contents[0].replace(*replacement))
+            return wrapper(self).format(value=self.contents[0].replace('\'', '\\\''))
+        
 
 class SliceType(StaticNode):
     pass
