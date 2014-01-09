@@ -212,21 +212,49 @@ class While(Statement):
     template = 'while {test}:{body}'
     subparts = [('test', Expr), ('body', Body)]
 
-class If(Statement):
-    template = 'if {test}:{body}{orelse}'
-    subparts = [('test', Expr), ('body', Body), ('orelse', Statement)]
+class Else(StaticNode):
+    """ The 'else' clause of a conditional. """
+    subparts = [('body', Body)]
+    template = '\nelse:{body}'
+
+class If(StaticNode):
+    """ The condition/body pair of an 'if'/'elif' control structure. """
+    template = 'if {test}:{body}'
+    subparts = [('test', Expr), ('body', Body)]
 
     def render(self, wrapper=empty_wrapper):
-        test = self.contents[0].render(wrapper)
-        body = self.contents[1].render(wrapper)
-        if type(self.contents[2]) is Pass:
-            orelse = '\n '
-        elif isinstance(self.contents[2], If):
-            orelse = '\nel' + self.contents[2].render(wrapper)
+        if self.parent.index(self) != 0:
+            self.template = 'el' + If.template
         else:
-            orelse = '\nelse:\n' + self.contents[2].render(wrapper)
+            self.template = If.template
+        return super(If, self).render(wrapper)
 
-        return wrapper(self).format(test=test, body=body, orelse=orelse)
+class IfChain(DynamicNode):
+    """
+    Structure for the first 'if' and the chain of 'elseif' that follow.
+    """
+    child_type = If
+    delimiter = '\n'
+
+    @staticmethod
+    def default():
+        return IfChain([If.default()])
+
+class FullIf(Statement):
+    """ If control structure, including related elseifs and elses. """
+    template = '{if_chain}{else}'
+    subparts = [('if_chain', IfChain), ('else', Else)]
+
+    @staticmethod
+    def default():
+        return FullIf([IfChain.default(), Else.default()])
+
+    def render(self, wrapper=empty_wrapper):
+        if len(self) == 1:
+            self.template = FullIf.template.replace('{else}', '')
+        else:
+            self.template = FullIf.template
+        return super(FullIf, self).render(wrapper)
 
 class IfExp(Expr):
     template = '{body} if {test} else {orelse}'
@@ -411,10 +439,21 @@ def convert(node):
     elif isinstance(node, ast.While):
         return While([convert(node.test), Body(map(convert, node.body))])
     elif isinstance(node, ast.If):
-        if node.orelse:
-            return If([convert(node.test), Body(map(convert, node.body)), convert(node.orelse[0])])
+        if_list = []
+        while True:
+            body = Body(map(convert, node.body))
+            test = convert(node.test)
+            if_list.append(If([test, body]))
+            if len(node.orelse) == 1 and isinstance(node.orelse[0], ast.If):
+                node = node.orelse[0]
+            else:
+                break
+
+        if len(node.orelse) == 0:
+            return FullIf([IfChain(if_list)])
         else:
-            return If([convert(node.test), Body(map(convert, node.body)), convert(ast.Pass())])
+            else_body = Body(map(convert, node.orelse))
+            return FullIf([IfChain(if_list), Else([else_body])])
     elif isinstance(node, ast.IfExp):
         return IfExp([convert(node.body), convert(node.test), convert(node.orelse)])
     elif isinstance(node, ast.Dict):
@@ -467,7 +506,7 @@ def convert(node):
     elif isinstance(node, ast.Raise):
         return Raise([convert(node.exc)])
 
-    raise TypeError('Failed to convert node', node)
+    raise TypeError('Unknown node type', node)
 
 def parse_and_print(string):
     return ast.dump(ast.parse(string)).replace('=', '=\n').splitlines(keepends=True)
