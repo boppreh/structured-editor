@@ -23,16 +23,21 @@ class Str(Expr):
 
     # TODO: remove indentation from mult-line strings inside Blocks
     def render(self, wrapper=empty_wrapper):
+        value = self.contents[0]
         if self.contents[0].count('\n') == 1:
             self.template = '\'{value}\''
-            return wrapper(self).format(value=self.contents[0].replace('\'', '\\\'').replace('\n', '\\n'))
+            value = value.replace('\'', '\\\'').replace('\n', '\\n')
         elif self.contents[0].count('\n') > 1:
             self.template = '"""{value}"""'
-            return wrapper(self).format(value=self.contents[0].replace('"""', '\"""'))
+            value = value.replace('"""', '\"""')
         else:
             self.template = '\'{value}\''
-            return wrapper(self).format(value=self.contents[0].replace('\'', '\\\''))
-        
+            value = value.replace('\'', '\\\'')
+
+        # <<linebreak>> is a hack to avoid indenting multi-line strings.
+        # It assumes the Module node at the top wil replace it back to
+        # correct linebreaks.
+        return wrapper(self).format(value=value.replace('\n', '<<linebreak>>'))
 
 class SliceType(StaticNode):
     pass
@@ -82,7 +87,8 @@ class Body(Block):
             return Block.render(self, wrapper)
 
 class Module(Block):
-    pass
+    def render(self, wrapper=empty_wrapper):
+        return Block.render(self, wrapper).replace('<<linebreak>>', '\n')
 
 class Arg(StaticNode):
     template = '{name}={default}'
