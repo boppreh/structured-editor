@@ -2,6 +2,7 @@ from .structures import *
 import ast
 import difflib
 import re
+import html
 
 class SliceType(StaticNode):
     pass
@@ -40,7 +41,7 @@ class Str(Expr):
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'')
         
-        return wrapper(self).format(value=value)
+        return wrapper(self).format(value=html.escape(value))
 
 class Num(Expr):
     token_rule = '\d+'
