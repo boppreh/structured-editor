@@ -37,7 +37,6 @@ class Str(Expr):
             self.template = '"""{value}"""'
             value = value.replace('"""', '\"""').replace('\n', '<<linebreak>>')
         else:
-            if '\\' in value: print(value)
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'')
         
@@ -50,6 +49,14 @@ class Num(Expr):
 
     @staticmethod
     def default(): return Num(['0'])
+
+class Bytes(Expr):
+    token_rule = '.+'
+    template = '{value}'
+    subparts = [('value', str)]
+
+    @staticmethod
+    def default(): return Bytes([''])
 
 class Op(StaticNode):
     token_rule = 'or|and'
@@ -201,6 +208,10 @@ class Tuple(DynamicNode, Expr):
     delimiter = ', '
     child_type = Expr
 
+class While(Statement):
+    template = 'while {test}:{body}'
+    subparts = [('test', Expr), ('body', Body)]
+
 class If(Statement):
     template = 'if {test}:{body}{orelse}'
     subparts = [('test', Expr), ('body', Body), ('orelse', Statement)]
@@ -213,7 +224,7 @@ class If(Statement):
         elif isinstance(self.contents[2], If):
             orelse = '\nel' + self.contents[2].render(wrapper)
         else:
-            orelse = '\nelse:' + self.contents[2].render(wrapper)
+            orelse = '\nelse:\n' + self.contents[2].render(wrapper)
 
         return wrapper(self).format(test=test, body=body, orelse=orelse)
 
@@ -318,6 +329,8 @@ def convert(node):
         return convert(node.value)
     elif isinstance(node, ast.Str):
         return Str([node.s])
+    elif isinstance(node, ast.Bytes):
+        return Bytes([node.s.decode()])
     elif isinstance(node, ast.Num):
         return Num([str(node.n)])
     elif isinstance(node, ast.Module):
@@ -395,6 +408,8 @@ def convert(node):
         return List(map(convert, node.elts))
     elif isinstance(node, ast.Tuple):
         return Tuple(map(convert, node.elts))
+    elif isinstance(node, ast.While):
+        return While([convert(node.test), Body(map(convert, node.body))])
     elif isinstance(node, ast.If):
         if node.orelse:
             return If([convert(node.test), Body(map(convert, node.body)), convert(node.orelse[0])])
