@@ -294,6 +294,10 @@ class Assert(Statement):
     template = 'assert {value}'
     subparts = [('value', Expr)]
 
+class Raise(Statement):
+    template = 'raise {value}'
+    subparts = [('value', Expr)]
+
 class ListComp(Expr):
     template = '[{elt} for {target} in {iter}]'
     subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
@@ -345,6 +349,8 @@ def convert(node):
     elif isinstance(node, ast.BinOp):
         if isinstance(node.op, ast.Add):
             op = Op(['+'])
+        else:
+            raise TypeError('Failed to interpret BinOp operator', node.op)
         return BinOp([convert(node.left), op, convert(node.right)])
     elif isinstance(node, ast.UnaryOp):
         if isinstance(node.op, ast.Not):
@@ -416,6 +422,8 @@ def convert(node):
         return GeneratorExp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.Assert):
         return Assert([convert(node.test)])
+    elif isinstance(node, ast.Raise):
+        return Raise([convert(node.exc)])
 
     raise TypeError('Failed to convert node', node)
 
