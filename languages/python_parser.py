@@ -23,7 +23,8 @@ class Str(Expr):
 
     # TODO: remove indentation from mult-line strings inside Blocks
     def render(self, wrapper=empty_wrapper):
-        value = self.contents[0]
+        value = self.contents[0].replace('\\', '\\\\')
+
         if self.contents[0].count('\n') == 1:
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'').replace('\n', '\\n')
