@@ -305,6 +305,10 @@ class ListComp(Expr):
     template = '[{elt} for {target} in {iter}]'
     subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
 
+class DictComp(Expr):
+    template = '{{{key}: {value} for {target} in {iter}}}'
+    subparts = [('key', Expr), ('value', Expr), ('target', Expr), ('iter', Expr)]
+
 class GeneratorExp(Expr):
     template = '({elt} for {target} in {iter})'
     subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
@@ -439,6 +443,8 @@ def convert(node):
         return Break()
     elif isinstance(node, ast.ListComp):
         return ListComp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
+    elif isinstance(node, ast.DictComp):
+        return DictComp([convert(node.key), convert(node.value), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.GeneratorExp):
         return GeneratorExp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.Assert):
