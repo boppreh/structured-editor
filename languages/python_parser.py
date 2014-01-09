@@ -102,7 +102,7 @@ class Name(Expr, Arg):
     token_rule = '[a-zA-Z_]\w*'
 
     def render(self, wrapper=empty_wrapper):
-        if self.contents[0] == 'None' and isinstance(self.parent, SliceType):
+        if self.contents[0] == 'None' and isinstance(self.parent, SliceType) or isinstance(self.parent, Return):
             return wrapper(self).format(value=' ')
 
         return Expr.render(self, wrapper)
@@ -429,7 +429,7 @@ def convert(node):
     elif isinstance(node, ast.ClassDef):
         return ClassDef([Name([node.name]), ExprList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
-        return Return([convert(node.value)])
+        return Return([convert(node.value or ast.Name(id='None', ctx=ast.Load()))])
     elif isinstance(node, ast.Pass):
         return Pass()
     elif isinstance(node, ast.Continue):
