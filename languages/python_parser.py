@@ -3,7 +3,6 @@ import ast
 import difflib
 import re
 
-
 class SliceType(StaticNode):
     pass
 
@@ -25,7 +24,6 @@ class Str(Expr):
     template = '\'{value}\''
     subparts = [('value', str)]
 
-    # TODO: remove indentation from mult-line strings inside Blocks
     def render(self, wrapper=empty_wrapper):
         value = self.contents[0].replace('\\', '\\\\')
 
@@ -33,16 +31,17 @@ class Str(Expr):
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'').replace('\n', '\\n')
         elif self.contents[0].count('\n') > 1:
+            # <<linebreak>> is a hack to avoid indenting multi-line strings.
+            # It assumes the Module node at the top wil replace it back to
+            # correct linebreaks.
             self.template = '"""{value}"""'
-            value = value.replace('"""', '\"""')
+            value = value.replace('"""', '\"""').replace('\n', '<<linebreak>>')
         else:
+            if '\\' in value: print(value)
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'')
-
-        # <<linebreak>> is a hack to avoid indenting multi-line strings.
-        # It assumes the Module node at the top wil replace it back to
-        # correct linebreaks.
-        return wrapper(self).format(value=value.replace('\n', '<<linebreak>>'))
+        
+        return wrapper(self).format(value=value)
 
 class Num(Expr):
     token_rule = '\d+'
@@ -347,26 +346,26 @@ def convert(node):
             op = Op(['and'])
         return BinOp([convert(node.values[0]), op, convert(node.values[1])])
     elif isinstance(node, ast.BinOp):
-        if isinstance(node.op, ast.Add):
-            op = Op(['+'])
-        elif isinstance(node.op, ast.Mult):
-            op = Op(['*'])
-        elif isinstance(node.op, ast.Div):
-            op = Op(['/'])
-        elif isinstance(node.op, ast.Sub):
-            op = Op(['-'])
-        elif isinstance(node.op, ast.Pow):
-            op = Op(['**'])
-        else:
-            raise TypeError('Failed to interpret BinOp operator', node.op)
+        op = Op([{ast.Add: '+',
+                  ast.Mult: '*',
+                  ast.Div: '/',
+                  ast.Sub: '-',
+                  ast.Pow: '**',
+                  ast.RShift: '>>',
+                  ast.LShift: '<<',
+                  ast.BitOr: '|',
+                  ast.BitAnd: '&',
+                  ast.BitXor: '^'}[type(node.op)]])
         return BinOp([convert(node.left), op, convert(node.right)])
     elif isinstance(node, ast.UnaryOp):
-        if isinstance(node.op, ast.Not):
-            op = UOp(['not'])
+        op = UOp([{ast.Not: 'not',
+                   ast.Invert: '!',
+                   ast.USub: '-'}[type(node.op)]])
         return UnaryOp([op, convert(node.operand)])
     elif isinstance(node, ast.Compare):
         op = Op([{ast.Eq: '==',
                   ast.Is: 'is',
+                  ast.In: 'in',
                   ast.Lt: '<',
                   ast.Gt: '>',
                   ast.LtE: '<=',
