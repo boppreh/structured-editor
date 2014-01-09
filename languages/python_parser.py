@@ -41,7 +41,11 @@ class Str(Expr):
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'')
         
-        return wrapper(self).format(value=html.escape(value))
+        format = wrapper(self)
+        # Hackish way to escape HTML characters from raw strings.
+        if '<span' in format:
+            value = html.escape(value)
+        return format.format(value=value)
 
 class Num(Expr):
     token_rule = '\d+'
