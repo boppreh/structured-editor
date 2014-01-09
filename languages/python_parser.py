@@ -3,7 +3,11 @@ import ast
 import difflib
 import re
 
-class Expr(Statement):
+
+class SliceType(StaticNode):
+    pass
+
+class Expr(Statement, SliceType):
     @classmethod
     def default(cls):
         return Name(['value']) if cls == Expr else cls()
@@ -40,10 +44,7 @@ class Str(Expr):
         # correct linebreaks.
         return wrapper(self).format(value=value.replace('\n', '<<linebreak>>'))
 
-class SliceType(StaticNode):
-    pass
-
-class Num(Expr, SliceType):
+class Num(Expr):
     token_rule = '\d+'
     template = '{value}'
     subparts = [('value', str)]
@@ -360,7 +361,7 @@ def convert(node):
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
     elif isinstance(node, ast.Index):
-        return Num([str(node.value.n)])
+        return convert(node.value)
     elif isinstance(node, ast.Slice):
         lower = node.lower or ast.Name(id='None', ctx=ast.Load())
         upper = node.upper or ast.Name(id='None', ctx=ast.Load())
