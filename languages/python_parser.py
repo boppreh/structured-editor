@@ -349,6 +349,14 @@ def convert(node):
     elif isinstance(node, ast.BinOp):
         if isinstance(node.op, ast.Add):
             op = Op(['+'])
+        elif isinstance(node.op, ast.Mult):
+            op = Op(['*'])
+        elif isinstance(node.op, ast.Div):
+            op = Op(['/'])
+        elif isinstance(node.op, ast.Sub):
+            op = Op(['-'])
+        elif isinstance(node.op, ast.Pow):
+            op = Op(['**'])
         else:
             raise TypeError('Failed to interpret BinOp operator', node.op)
         return BinOp([convert(node.left), op, convert(node.right)])
