@@ -297,6 +297,10 @@ class ListComp(Expr):
     template = '[{elt} for {target} in {iter}]'
     subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
 
+class GeneratorExp(Expr):
+    template = '({elt} for {target} in {iter})'
+    subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
+
 def convert(node):
     if isinstance(node, ast.Expr):
         return convert(node.value)
@@ -407,6 +411,8 @@ def convert(node):
         return Break()
     elif isinstance(node, ast.ListComp):
         return ListComp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
+    elif isinstance(node, ast.GeneratorExp):
+        return GeneratorExp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.Assert):
         return Assert([convert(node.test)])
 
