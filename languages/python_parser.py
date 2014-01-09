@@ -328,7 +328,7 @@ def convert(node):
         return Import(Name([alias.name]) for alias in node.names)
     elif isinstance(node, ast.ImportFrom):
         import_level = ImportLevelList(ImportLevel() for i in range(node.level))
-        return ImportFrom([import_level, Name([node.module]), NameList(Name([alias.name]) for alias in node.names)])
+        return ImportFrom([import_level, Name([node.module or '']), NameList(Name([alias.name]) for alias in node.names)])
     elif isinstance(node, ast.Assign):
         return Assign([ExprList(map(convert, node.targets)), convert(node.value)])
     elif isinstance(node, ast.For):
