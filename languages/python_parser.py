@@ -120,9 +120,17 @@ class Import(DynamicNode, Statement):
     child_type = Name
     min_length = 1
 
+class ImportLevel(StaticNode):
+    template = '.'
+    subparts = []
+
+class ImportLevelList(DynamicNode):
+    delimiter = ''
+    child_type = ImportLevel
+
 class ImportFrom(Statement):
-    template = 'from {module} import {names}'
-    subparts = [('module', Name), ('names', NameList)]
+    template = 'from {level}{module} import {names}'
+    subparts = [('level', ImportLevelList), ('module', Name), ('names', NameList)]
 
 class Assign(Statement):
     template = '{targets} = {value}'
@@ -307,7 +315,8 @@ def convert(node):
     elif isinstance(node, ast.Import):
         return Import(Name([alias.name]) for alias in node.names)
     elif isinstance(node, ast.ImportFrom):
-        return ImportFrom([Name([node.module]), NameList(Name([alias.name]) for alias in node.names)])
+        import_level = ImportLevelList(ImportLevel() for i in range(node.level))
+        return ImportFrom([import_level, Name([node.module]), NameList(Name([alias.name]) for alias in node.names)])
     elif isinstance(node, ast.Assign):
         return Assign([ExprList(map(convert, node.targets)), convert(node.value)])
     elif isinstance(node, ast.For):
