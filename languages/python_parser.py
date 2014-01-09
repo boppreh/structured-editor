@@ -363,7 +363,7 @@ def convert(node):
         return BinOp([convert(node.left), op, convert(node.right)])
     elif isinstance(node, ast.UnaryOp):
         op = UOp([{ast.Not: 'not',
-                   ast.Invert: '!',
+                   ast.Invert: '~',
                    ast.USub: '-'}[type(node.op)]])
         return UnaryOp([op, convert(node.operand)])
     elif isinstance(node, ast.Compare):
