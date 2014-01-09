@@ -239,9 +239,25 @@ class Try(Statement):
 class ArgList(DynamicNode):
     child_type = Arg
 
+class Decorator(StaticNode):
+    template = '@{value}'
+    subparts = [('value', Expr)]
+
+class DecoratorList(DynamicNode):
+    template = '{children}'
+    child_type = Decorator
+    delimiter = '\n'
+
+    def render(self, wrapper=empty_wrapper):
+        if len(self) == 0:
+            self.template = ''
+        else:
+            self.template = '{children}\n'
+        return DynamicNode.render(self, wrapper)
+
 class FunctionDef(Statement):
-    template = 'def {name}({args}):{body}'
-    subparts = [('name', Name), ('args', ArgList), ('body', Body)]
+    template = '{decorators}def {name}({args}):{body}'
+    subparts = [('decorators', DecoratorList), ('name', Name), ('args', ArgList), ('body', Body)]
 
 class ClassDef(Statement):
     template = 'class {name}({bases}):{body}'
@@ -360,6 +376,7 @@ def convert(node):
             handlers_list.append(e)
         return Try([Body(map(convert, node.body)), ExceptHandlers(handlers_list)])
     elif isinstance(node, ast.FunctionDef):
+        decorators = DecoratorList(Decorator([convert(value)]) for value in node.decorator_list)
         args = []
         defaults = [None] * (len(node.args.args) - len(node.args.defaults)) + node.args.defaults
         for arg_node, default in zip(node.args.args, defaults):
@@ -367,7 +384,7 @@ def convert(node):
                 args.append(Arg([Name([arg_node.arg]), convert(default)]))
             else:
                 args.append(Name([arg_node.arg]))
-        return FunctionDef([Name([node.name]), ArgList(args), Body(map(convert, node.body))])
+        return FunctionDef([decorators, Name([node.name]), ArgList(args), Body(map(convert, node.body))])
     elif isinstance(node, ast.ClassDef):
         return ClassDef([Name([node.name]), ExprList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
