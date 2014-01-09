@@ -52,7 +52,7 @@ class Num(Expr):
 
 class Bytes(Expr):
     token_rule = '.+'
-    template = '{value}'
+    template = 'b\'{value}\''
     subparts = [('value', str)]
 
     @staticmethod
@@ -100,7 +100,7 @@ class Module(Block):
 
 class Arg(StaticNode):
     template = '{name}={default}'
-    #Will be filled in a moment because of a circular dependency.
+    # Name will be filled in a moment because of a circular dependency.
     subparts = [[('name', Empty), ('default', Expr)]]
 
 class Name(Expr, Arg):
@@ -109,7 +109,7 @@ class Name(Expr, Arg):
     token_rule = '[a-zA-Z_]\w*'
 
     def render(self, wrapper=empty_wrapper):
-        if self.contents[0] == 'None' and isinstance(self.parent, SliceType) or isinstance(self.parent, Return):
+        if self.contents[0] == 'None' and (isinstance(self.parent.parent, Subscript) or isinstance(self.parent, Return)):
             return wrapper(self).format(value=' ')
 
         return Expr.render(self, wrapper)
