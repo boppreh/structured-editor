@@ -268,6 +268,10 @@ class FunctionDef(Statement):
     template = '{decorators}def {name}({args}):{body}'
     subparts = [('decorators', DecoratorList), ('name', Name), ('args', ArgList), ('body', Body)]
 
+class Lambda(Expr):
+    template = 'lambda {args}: {body}'
+    subparts = [('args', ArgList), ('body', Expr)]
+
 class ClassDef(Statement):
     template = 'class {name}({bases}):{body}'
     subparts = [('name', Name), ('bases', ExprList), ('body', Body)]
@@ -413,6 +417,15 @@ def convert(node):
             else:
                 args.append(Name([arg_node.arg]))
         return FunctionDef([decorators, Name([node.name]), ArgList(args), Body(map(convert, node.body))])
+    elif isinstance(node, ast.Lambda):
+        args = []
+        defaults = [None] * (len(node.args.args) - len(node.args.defaults)) + node.args.defaults
+        for arg_node, default in zip(node.args.args, defaults):
+            if default:
+                args.append(Arg([Name([arg_node.arg]), convert(default)]))
+            else:
+                args.append(Name([arg_node.arg]))
+        return Lambda([ArgList(args), convert(node.body)])
     elif isinstance(node, ast.ClassDef):
         return ClassDef([Name([node.name]), ExprList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
