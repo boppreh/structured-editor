@@ -118,7 +118,9 @@ class Name(Expr, Arg):
     token_rule = '[a-zA-Z_]\w*'
 
     def render(self, wrapper=empty_wrapper):
-        if self.contents[0] == 'None' and (isinstance(self.parent.parent, Subscript) or isinstance(self.parent, Return)):
+        if self.contents[0] == 'None' and (isinstance(self.parent.parent, Subscript)
+                                           or isinstance(self.parent, ExceptHandler)
+                                           or isinstance(self.parent, Return)):
             return wrapper(self).format(value=' ')
 
         return Expr.render(self, wrapper)
