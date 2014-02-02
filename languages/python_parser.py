@@ -282,8 +282,8 @@ class Dict(DynamicNode, Expr):
 class ExceptHandler(StaticNode):
     #template = 'except {type} as {name}:{body}'
     #subparts = [('type', Name), ('name', Name), ('body', Body)]
-    template = 'except:{body}'
-    subparts = [('body', Body)]
+    template = 'except {type}:{body}'
+    subparts = [('type', Expr), ('body', Body)]
 
 class ExceptHandlers(DynamicNode):
     delimiter = '\n'
@@ -487,7 +487,7 @@ def convert(node):
         handlers_list = []
         for handler in node.handlers:
             #e = ExceptHandler([convert(handler.type), convert(handler.name), Body(map(convert, handler.body))])
-            e = ExceptHandler([Body(map(convert, handler.body))])
+            e = ExceptHandler([convert(handler.type or ast.Name(id='None', ctx=ast.Load())), Body(map(convert, handler.body))])
             handlers_list.append(e)
         return Try([Body(map(convert, node.body)), ExceptHandlers(handlers_list)])
     elif isinstance(node, ast.FunctionDef):
