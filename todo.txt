@@ -6,3 +6,8 @@ UI
 [ ] Use Toolbar for sub-windows
 [ ] Drag and drop tabs across windows
 [ ] Open file by dragging
+[ ] Use css file for colors
+
+Optimizations
+[ ] Node cache and dirty-bit
+[ ] Update HTML instead of rewriting
