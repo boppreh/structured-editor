@@ -88,6 +88,10 @@ class BinOp(Expr):
     template = '{left} {op} {right}'
     subparts = [('left', Expr), ('op', Op), ('right', Expr)]
 
+class AugAssign(Statement):
+    template = '{left} {op}= {right}'
+    subparts = [('left', Expr), ('op', Op), ('right', Expr)]
+
 class Body(Block):
     delimiter = '\n'
     template = '{children}'
@@ -357,8 +361,47 @@ class GeneratorExp(Expr):
     template = '({elt} for {target} in {iter})'
     subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
 
+binop_char_by_class = {
+    ast.Add: '+',
+    ast.Mult: '*',
+    ast.Div: '/',
+    ast.Sub: '-',
+    ast.Pow: '**',
+    ast.RShift: '>>',
+    ast.LShift: '<<',
+    ast.BitOr: '|',
+    ast.BitAnd: '&',
+    ast.BitXor: '^',
+
+    ast.Or: 'or',
+    ast.And: 'and',
+}
+
+compop_char_by_class = {
+    ast.Eq: '==',
+    ast.NotEq: '!=',
+    ast.Is: 'is',
+    ast.In: 'in',
+    ast.Lt: '<',
+    ast.Gt: '>',
+    ast.LtE: '<=',
+    ast.GtE: '>=',
+}
+
+uop_char_by_class = {
+    ast.Not: 'not',
+    ast.Invert: '~',
+    ast.USub: '-',
+}
+
 def convert(node):
-    if isinstance(node, ast.Expr):
+    if type(node) in binop_char_by_class:
+        return Op([binop_char_by_class[type(node)]])
+    elif type(node) in uop_char_by_class:
+        return UOp([uop_char_by_class[type(node)]])
+    elif type(node) in compop_char_by_class:
+        return Op([compop_char_by_class[type(node)]])
+    elif isinstance(node, ast.Expr):
         return convert(node.value)
     elif isinstance(node, ast.Str):
         return Str([node.s])
@@ -394,38 +437,14 @@ def convert(node):
     elif isinstance(node, ast.Attribute):
         return Attribute([convert(node.value), Name([node.attr])])
     elif isinstance(node, ast.BoolOp):
-        if isinstance(node.op, ast.Or):
-            op = Op(['or'])
-        elif isinstance(node.op, ast.And):
-            op = Op(['and'])
-        return BinOp([convert(node.values[0]), op, convert(node.values[1])])
+        return BinOp([convert(node.values[0]), convert(node.op), convert(node.values[1])])
     elif isinstance(node, ast.BinOp):
-        op = Op([{ast.Add: '+',
-                  ast.Mult: '*',
-                  ast.Div: '/',
-                  ast.Sub: '-',
-                  ast.Pow: '**',
-                  ast.RShift: '>>',
-                  ast.LShift: '<<',
-                  ast.BitOr: '|',
-                  ast.BitAnd: '&',
-                  ast.BitXor: '^'}[type(node.op)]])
-        return BinOp([convert(node.left), op, convert(node.right)])
+        return BinOp([convert(node.left), convert(node.op), convert(node.right)])
     elif isinstance(node, ast.UnaryOp):
-        op = UOp([{ast.Not: 'not',
-                   ast.Invert: '~',
-                   ast.USub: '-'}[type(node.op)]])
-        return UnaryOp([op, convert(node.operand)])
+        return UnaryOp([convert(node.op), convert(node.operand)])
     elif isinstance(node, ast.Compare):
-        op = Op([{ast.Eq: '==',
-                  ast.NotEq: '!=',
-                  ast.Is: 'is',
-                  ast.In: 'in',
-                  ast.Lt: '<',
-                  ast.Gt: '>',
-                  ast.LtE: '<=',
-                  ast.GtE: '>='}[type(node.ops[0])]])
-        return BinOp([convert(node.left), op, convert(node.comparators[0])])
+        # TODO: support chained comparisons
+        return BinOp([convert(node.left), convert(node.ops[0]), convert(node.comparators[0])])
     elif isinstance(node, ast.Subscript):
         return Subscript([convert(node.value), convert(node.slice)])
     elif isinstance(node, ast.Index):
@@ -510,6 +529,8 @@ def convert(node):
         return Assert([convert(node.test)])
     elif isinstance(node, ast.Raise):
         return Raise([convert(node.exc)])
+    elif isinstance(node, ast.AugAssign):
+        return AugAssign([convert(node.target), convert(node.op), convert(node.value)])
 
     raise TypeError('Unknown node type', node)
 
