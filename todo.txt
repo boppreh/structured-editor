@@ -1,0 +1,8 @@
+Features
+[ ] Search (at least leafs)
+
+UI
+[ ] Scrolling to selection (fixed on HTML diff?)
+[ ] Use Toolbar for sub-windows
+[ ] Drag and drop tabs across windows
+[ ] Open file by dragging
