@@ -1,42 +1,31 @@
 from . import config
 import re
+import os
 
 class HtmlRendering(object):
     def __init__(self, root, selected=None):
         self.selected = selected
-
-        text = root.render(self._process_node)
-        background = config.get('Global', 'background')
-        font = config.get('Global', 'font')
-
-        template = """<body style="{}"><pre style="{}">{}</pre></body>"""
-        self.html = template.format(background, font, text)
-
-    def _node_style(self, node):
-        """
-        Returns the CSS to color the node according to its node type.
-        """
-        class_name = type(node).__name__.lower()
-        try:
-            return config.get('Structures', class_name)
-        except:
-            return config.get('Structures', 'default')
+        template = """<html>
+        <head>
+            <link href="file:/{}" type="text/css" rel="stylesheet"/>
+        </head>
+        <body><pre>{}</pre></body>
+</html>"""
+        css = os.path.join(os.getcwd(), 'config', 'style.css')
+        self.html = template.format(css, root.render(self._process_node))
 
     def _span_tags(self, node):
         """
         Returns the opening and closing span tags containing the background
         style for the given node.
         """
-        if self.selected is None or node.parent != self.selected.parent:
-            selection_style = ''
-        elif node == self.selected:
-            selection_style = config.get('Selection', 'background')
+        classes = [type(node).__name__]
+        if node == self.selected:
+            classes.append('selected')
         elif node.parent == self.selected.parent:
-            selection_style = config.get('Selection', 'siblingsbackground')
+            classes.append('sibling')
 
-        style = selection_style + self._node_style(node)
-
-        return '<span style="{}">'.format(style), '</span>'
+        return '<span class="{}">'.format(' '.join(classes)), '</span>'
 
     def _make_parts(self, node):
         """
@@ -71,7 +60,7 @@ class LinkedRendering(HtmlRendering):
         Returns the opening and closing link tags, with user-specified style,
         for the given node.
         """
-        template = '<a href="{}" style="text-decoration: inherit; color: inherit;">'
+        template = '<a href="{}">'
         return template.format(node.node_id), '</a>'
 
     def _make_parts(self, node):

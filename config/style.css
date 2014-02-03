@@ -1,0 +1,9 @@
+body, pre {
+    font: 14px 'Consolas', 'Bitstream Vera Sans Mono', monospace;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxBLsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII='), top left repeat;
+}
+
+a {
+    text-decoration: inherit;
+    color: inherit;
+}
