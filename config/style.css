@@ -7,3 +7,6 @@ a {
     text-decoration: inherit;
     color: inherit;
 }
+
+.selected { background-color: #95CAFF; }
+.sibling { background-color: #CECECE; }
