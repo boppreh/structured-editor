@@ -19,7 +19,7 @@ class HtmlRendering(object):
         Returns the opening and closing span tags containing the background
         style for the given node.
         """
-        classes = [type(node).__name__]
+        classes = [type(node).__name__.lower()]
         if node == self.selected:
             classes.append('selected')
         elif node.parent == self.selected.parent:

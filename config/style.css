@@ -1,5 +1,6 @@
 body, pre {
-    font: 14px 'Consolas', 'Bitstream Vera Sans Mono', monospace;
+    font: 14px bold 'Consolas', 'Bitstream Vera Sans Mono', monospace;
+    color: hsl(174, 100%, 20%);
     background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAASklEQVR42m1OywoAMAjy/381iG6douHAHWRCD6xMdPdGxBLsM/NWoqoWTvgBmDiYmRsCOQIitCCV94JyUvn5gBN+AJf0l3BTbvoAbKz5eYmRlT4AAAAASUVORK5CYII='), top left repeat;
 }
 
@@ -10,3 +11,22 @@ a {
 
 .selected { background-color: #95CAFF; }
 .sibling { background-color: #CECECE; }
+
+.return { color: hsl(174, 100%, 20%); font-weight: bold; }
+.string { color: hsl(128, 100%, 20%); }
+.functioncall { color: hsl(251, 100%, 20%); font-weight: bold; }
+.namedfunction { color: hsl(255, 100%, 20%); font-weight: bold; }
+.localfunction { color: hsl(255, 100%, 20%); font-weight: bold; }
+.else { color: hsl(300, 100%, 20%); font-weight: bold; }
+.while { color: hsl(300, 100%, 20%); font-weight: bold; }
+.fullif { color: hsl(300, 100%, 20%); font-weight: bold; }
+.anonfunction { color: hsl(240, 100%, 20%); font-weight: bold; }
+.localvar { color: hsl(130, 100%, 20%); font-weight: bold; }
+.for { color: hsl(300, 100%, 20%); font-weight: bold; }
+.forin { color: hsl(300, 100%, 20%); font-weight: bold; }
+.constant { color: hsl(251, 100%, 20%); }
+.if { color: hsl(300, 100%, 20%); font-weight: bold; }
+.ifchain { color: hsl(300, 100%, 20%); font-weight: bold; }
+.repeatuntil { color: hsl(300, 100%, 20%); font-weight: bold; }
+.doblock { color: hsl(200, 100%, 20%); font-weight: bold; }
+.operator { color: hsl(200, 100%, 20%); font-weight: bold; }
