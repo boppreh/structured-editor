@@ -5,10 +5,9 @@ repositioning tabs, close buttons, hotkeys (Ctrl+W and Ctrl+T), etc. "save",
 "save as", "open", "parse" and "new" actions are self contained.
 """
 from PyQt4 import QtCore, QtGui
-
 from pyparsing import ParseException
-
 from gui.html_editor import HtmlEditor
+import traceback
 
 class CodeInput(QtGui.QDialog):
     """
@@ -166,8 +165,17 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         filters = 'Python files (*.py);;Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
         path = QtGui.QFileDialog.getOpenFileName(self, filter=filters)
-        if path is not None:
+        if not path:
+            return
+
+        try:
             self.add(HtmlEditor.from_file(path))
+        except Exception as e:
+            print(traceback.format_exc())
+
+            title = 'Error opening {}'.format(path)
+            text = 'Exception encountered while opening {}:\n\n{}.\n\nThe full traceback has been printed to stdout.'.format(path, e)
+            QtGui.QMessageBox.critical(self, title, text)
 
     def parse(self, event=None):
         """
