@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtWebKit
+from PyQt4 import QtGui, QtWebKit, QtCore
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QFileDialog
 from time import time
@@ -89,6 +89,21 @@ class HtmlEditor(GraphicalEditor):
         self.lastClickTime = time()
         self.lastClickNode = None
 
+        self.style_watcher = QtCore.QFileSystemWatcher(self)
+        self.style_watcher.addPath('config/style.css')
+        self.style_watcher.fileChanged.connect(self.style_updated)
+
+        self.page().settings().setMaximumPagesInCache(0)
+        self.page().settings().setObjectCacheCapacities(0, 0, 0)
+
+    def style_updated(self, path):
+        self.setHtml(self.rendering.html)
+
+        # QFileSystemWatcher seems to be very dumb and thinks "modified" means
+        # "not here anymore". This is a hack to re-watch the file.
+        # http://stackoverflow.com/questions/18300376/qt-qfilesystemwatcher-singal-filechanged-gets-emited-only-once
+        self.style_watcher.addPath('config/style.css')
+        
     def _selection_handler(self, url):
         """
         Select the node corresponding to the given url, or its parent when
