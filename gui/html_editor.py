@@ -98,11 +98,6 @@ class HtmlEditor(GraphicalEditor):
 
     def style_updated(self, path):
         self.setHtml(self.rendering.html)
-
-        # QFileSystemWatcher seems to be very dumb and thinks "modified" means
-        # "not here anymore". This is a hack to re-watch the file.
-        # http://stackoverflow.com/questions/18300376/qt-qfilesystemwatcher-singal-filechanged-gets-emited-only-once
-        self.style_watcher.addPath('config/style.css')
         
     def _selection_handler(self, url):
         """
