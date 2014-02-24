@@ -13,20 +13,20 @@ a {
 .sibling { background-color: #CECECE; }
 
 .return { color: hsl(174, 100%, 20%); font-weight: bold; }
-.string { color: hsl(128, 100%, 20%); }
-.functioncall { color: hsl(251, 100%, 20%); font-weight: bold; }
-.namedfunction { color: hsl(255, 100%, 20%); font-weight: bold; }
+.string, .str { color: hsl(128, 100%, 20%); }
+.functioncall, .call { color: hsl(251, 100%, 20%); font-weight: bold; }
+.import, .importfrom { color: hsl(250, 100%, 20%); font-weight: bold; }
+.namedfunction, .functiondef { color: hsl(255, 100%, 20%); font-weight: bold; }
 .localfunction { color: hsl(255, 100%, 20%); font-weight: bold; }
 .else { color: hsl(300, 100%, 20%); font-weight: bold; }
 .while { color: hsl(300, 100%, 20%); font-weight: bold; }
 .fullif { color: hsl(300, 100%, 20%); font-weight: bold; }
-.anonfunction { color: hsl(240, 100%, 20%); font-weight: bold; }
-.localvar { color: hsl(130, 100%, 20%); font-weight: bold; }
-.for { color: hsl(300, 100%, 20%); font-weight: bold; }
-.forin { color: hsl(300, 100%, 20%); font-weight: bold; }
-.constant { color: hsl(251, 100%, 20%); }
+.anonfunction, .lambda { color: hsl(240, 100%, 20%); font-weight: bold; }
+.localvar, .name { color: hsl(130, 100%, 20%); font-weight: bold; }
+.for, .forin { color: hsl(300, 100%, 20%); font-weight: bold; }
+.constant .num { color: hsl(251, 100%, 20%); }
 .if { color: hsl(300, 100%, 20%); font-weight: bold; }
 .ifchain { color: hsl(300, 100%, 20%); font-weight: bold; }
 .repeatuntil { color: hsl(300, 100%, 20%); font-weight: bold; }
 .doblock { color: hsl(200, 100%, 20%); font-weight: bold; }
-.operator { color: hsl(200, 100%, 20%); font-weight: bold; }
+.operator, .binop, .unaryop { color: hsl(200, 100%, 20%); font-weight: bold; }
