@@ -24,7 +24,7 @@ a {
 .while { color: hsl(300, 100%, 20%); font-weight: bold; }
 .fullif { color: hsl(300, 100%, 20%); font-weight: bold; }
 .anonfunction, .lambda { color: hsl(240, 100%, 20%); font-weight: bold; }
-.localvar, .name { color: hsl(130, 100%, 20%); font-weight: bold; }
+.localvar, .name { color: hsl(50, 100%, 20%); font-weight: bold; }
 .for, .forin { color: hsl(300, 100%, 20%); font-weight: bold; }
 .constant .num { color: hsl(251, 100%, 20%); }
 .if { color: hsl(300, 100%, 20%); font-weight: bold; }
