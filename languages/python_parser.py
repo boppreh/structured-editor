@@ -20,6 +20,17 @@ class Empty(StaticNode):
     template = ' '
     subparts = []
 
+class NameConstant(Expr):
+    template = '{value}'
+    subparts = [('value', str)]
+
+    def render(self, wrapper=empty_wrapper):
+        if self.contents[0] == 'None' and (isinstance(self.parent.parent, Subscript)
+                                           or isinstance(self.parent, ExceptHandler)
+                                           or isinstance(self.parent, Return)):
+            return wrapper(self).format(value=' ')
+        return Expr.render(self, wrapper)
+
 class Str(Expr):
     token_rule = '.+'
     template = '\'{value}\''
@@ -116,14 +127,6 @@ class Name(Expr, Arg):
     template = '{value}'
     subparts = [('value', str)]
     token_rule = '[a-zA-Z_]\w*'
-
-    def render(self, wrapper=empty_wrapper):
-        if self.contents[0] == 'None' and (isinstance(self.parent.parent, Subscript)
-                                           or isinstance(self.parent, ExceptHandler)
-                                           or isinstance(self.parent, Return)):
-            return wrapper(self).format(value=' ')
-
-        return Expr.render(self, wrapper)
 
 Arg.subparts = subparts = [('name', Name), ('default', Expr)]
 
@@ -436,6 +439,8 @@ def convert(node):
             return With([convert(node.items[0].context_expr), Body(map(convert, node.body))])
     elif isinstance(node, ast.Name):
         return Name([node.id])
+    elif isinstance(node, ast.NameConstant):
+        return Name([str(node.value)])
     elif isinstance(node, ast.Attribute):
         return Attribute([convert(node.value), Name([node.attr])])
     elif isinstance(node, ast.BoolOp):
