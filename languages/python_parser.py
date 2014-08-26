@@ -386,6 +386,7 @@ compop_char_by_class = {
     ast.Eq: '==',
     ast.NotEq: '!=',
     ast.Is: 'is',
+    ast.IsNot: 'is not',
     ast.In: 'in',
     ast.Lt: '<',
     ast.Gt: '>',
