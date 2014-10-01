@@ -220,6 +220,8 @@ class Slice(SliceType):
             self.template = ':{upper}' 
         elif not has_upper:
             self.template = '{lower}:' 
+        else:
+            self.template = '{lower}:{upper}'
 
         return super(Slice, self).render(wrapper)
 
@@ -315,7 +317,7 @@ class ExceptHandler(StaticNode):
         else:
             self.template = 'except {type}:{body}'
 
-        return super(Slice, self).render(wrapper)
+        return super(ExceptHandler, self).render(wrapper)
 
 class ExceptHandlers(DynamicNode):
     delimiter = '\n'
