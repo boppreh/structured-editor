@@ -26,7 +26,7 @@ a {
 .anonfunction, .lambda { color: hsl(240, 100%, 20%); font-weight: bold; }
 .localvar, .name { color: hsl(50, 100%, 20%); font-weight: bold; }
 .for, .forin { color: hsl(300, 100%, 20%); font-weight: bold; }
-.constant .num { color: hsl(251, 100%, 20%); }
+.constant .num .nameconstant { color: hsl(251, 100%, 20%); }
 .if { color: hsl(300, 100%, 20%); font-weight: bold; }
 .ifchain { color: hsl(300, 100%, 20%); font-weight: bold; }
 .repeatuntil { color: hsl(300, 100%, 20%); font-weight: bold; }
