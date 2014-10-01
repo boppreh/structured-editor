@@ -155,7 +155,7 @@ class Name(Expr, Arg):
     subparts = [('value', str)]
     token_rule = '[a-zA-Z_]\w*'
 
-Arg.subparts = subparts = [('name', Name), ('default', Expr)]
+Arg.subparts = [('name', Name), ('default', Expr)]
 
 class NameList(DynamicNode):
     delimiter = ', '
