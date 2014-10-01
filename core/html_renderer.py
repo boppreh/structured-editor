@@ -60,8 +60,8 @@ class LinkedRendering(HtmlRendering):
         Returns the opening and closing link tags, with user-specified style,
         for the given node.
         """
-        template = '<a href="{}">'
-        return template.format(node.node_id), '</a>'
+        template = '<a id="{id}" href="{id}">'
+        return template.format(id=node.node_id), '</a>'
 
     def _make_parts(self, node):
         """

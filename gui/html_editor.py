@@ -96,6 +96,11 @@ class HtmlEditor(GraphicalEditor):
         self.page().settings().setMaximumPagesInCache(0)
         self.page().settings().setObjectCacheCapacities(0, 0, 0)
 
+        self.page().mainFrame().contentsSizeChanged.connect(self._auto_scroll)
+
+    def _auto_scroll(self, contents_size):
+        self.page().mainFrame().scrollToAnchor(str(self.selected.node_id))
+
     def style_updated(self, path):
         self.setHtml(self.rendering.html)
         
