@@ -107,6 +107,14 @@ class BinOp(Expr):
     template = '{left} {op} {right}'
     subparts = [('left', Expr), ('op', Op), ('right', Expr)]
 
+    def render(self, wrapper=empty_wrapper):
+        if isinstance(self.parent, BinOp):
+            self.template = '({left} {op} {right})'
+        else:
+            self.template = '{left} {op} {right}'
+
+        return super(BinOp, self).render(wrapper)
+
 class AugAssign(Statement):
     template = '{left} {op}= {right}'
     subparts = [('left', Expr), ('op', Op), ('right', Expr)]
