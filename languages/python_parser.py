@@ -404,8 +404,16 @@ class Raise(Statement):
     subparts = [('value', Expr)]
 
 class ListComp(Expr):
-    template = '[{elt} for {target} in {iter}]'
-    subparts = [('elt', Expr), ('target', Expr), ('iter', Expr)]
+    template = '[{elt} for {target} in {iter} if {cond}]'
+    subparts = [('elt', Expr), ('target', Expr), ('iter', Expr), ('cond', Expr)]
+
+    def render(self, wrapper=empty_wrapper):
+        if self[-1][0] != 'True':
+            self.template = '[{elt} for {target} in {iter} if {cond}]'
+        else:
+            self.template = '[{elt} for {target} in {iter}]'
+
+        return super(Expr, self).render(wrapper)
 
 class DictComp(Expr):
     template = '{{{key}: {value} for {target} in {iter}}}'
@@ -546,7 +554,7 @@ def convert(node):
         handlers_list = []
         for handler in node.handlers:
             #e = ExceptHandler([convert(handler.type), convert(handler.name), Body(map(convert, handler.body))])
-            e = ExceptHandler([convert(handler.type or ast.Name(id='None', ctx=ast.Load())), Body(map(convert, handler.body))])
+            e = ExceptHandler([convert(handler.type or ast.NameConstant('None')), Body(map(convert, handler.body))])
             handlers_list.append(e)
         return Try([Body(map(convert, node.body)), ExceptHandlers(handlers_list)])
     elif isinstance(node, ast.FunctionDef):
@@ -571,7 +579,7 @@ def convert(node):
     elif isinstance(node, ast.ClassDef):
         return ClassDef([Name([node.name]), ExprList(map(convert, node.bases)), Body(map(convert, node.body))])
     elif isinstance(node, ast.Return):
-        return Return([convert(node.value or ast.Name(id='None', ctx=ast.Load()))])
+        return Return([convert(node.value or ast.NameConstant('None'))])
     elif isinstance(node, ast.Pass):
         return Pass()
     elif isinstance(node, ast.Continue):
@@ -579,7 +587,12 @@ def convert(node):
     elif isinstance(node, ast.Break):
         return Break()
     elif isinstance(node, ast.ListComp):
-        return ListComp([convert(node.elt), convert(node.generators[0].target), convert(node.generators[0].iter)])
+        gen = node.generators[0]
+        cond = gen.ifs[0] if gen.ifs else ast.NameConstant('True')
+        return ListComp([convert(node.elt),
+            convert(gen.target),
+            convert(gen.iter),
+            convert(cond)])
     elif isinstance(node, ast.DictComp):
         return DictComp([convert(node.key), convert(node.value), convert(node.generators[0].target), convert(node.generators[0].iter)])
     elif isinstance(node, ast.GeneratorExp):
