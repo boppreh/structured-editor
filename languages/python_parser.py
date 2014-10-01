@@ -211,6 +211,18 @@ class Slice(SliceType):
     template = '{lower}:{upper}'
     subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
 
+    def render(self, wrapper=empty_wrapper):
+        has_upper = self[0][0] == 'None'
+        has_lower = self[1][0] == 'None'
+        if not has_upper and not has_lower:
+            self.template = ':'
+        elif not has_lower:
+            self.template = ':{upper}' 
+        elif not has_upper:
+            self.template = '{lower}:' 
+
+        return super(Slice, self).render(wrapper)
+
 class SliceWithStep(SliceType):
     template = '{lower}:{upper}:{step}'
     subparts = [('lower', Expr), ('upper', Expr), ('step', Expr)]
@@ -465,8 +477,8 @@ def convert(node):
     elif isinstance(node, ast.Index):
         return convert(node.value)
     elif isinstance(node, ast.Slice):
-        lower = node.lower or ast.Name(id='None', ctx=ast.Load())
-        upper = node.upper or ast.Name(id='None', ctx=ast.Load())
+        lower = node.lower or ast.NameConstant(value='None')
+        upper = node.upper or ast.NameConstant(value='None')
         if node.step:
             return SliceWithStep([convert(lower), convert(upper), convert(node.step)])
         else:
