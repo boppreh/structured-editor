@@ -102,7 +102,6 @@ class UnaryOp(Expr):
     template = '{op} {operand}'
     subparts = [('op', UOp), ('operand', Expr)]
 
-# TODO: bool op may have more than two values (ie chained expression)
 class BinOp(Expr):
     template = '{left} {op} {right}'
     subparts = [('left', Expr), ('op', Op), ('right', Expr)]
@@ -114,6 +113,19 @@ class BinOp(Expr):
             self.template = '{left} {op} {right}'
 
         return super(BinOp, self).render(wrapper)
+
+class BoolOp(Expr):
+    template = '{children}'
+    subparts = [('op', Op), ('children', ExprList)]
+
+    def render(self, wrapper=empty_wrapper):
+        op = ' ' + self[0].render(wrapper) + ' '
+        self[1].delimiter = op
+        if isinstance(self.parent.parent, BoolOp):
+            self.template = '({children})'
+        else:
+            self.template = '{children}'
+        return super(Expr, self).render(wrapper)
 
 class AugAssign(Statement):
     template = '{left} {op}= {right}'
@@ -482,7 +494,9 @@ def convert(node):
     elif isinstance(node, ast.Attribute):
         return Attribute([convert(node.value), Name([node.attr])])
     elif isinstance(node, ast.BoolOp):
-        return BinOp([convert(node.values[0]), convert(node.op), convert(node.values[1])])
+        operator = convert(node.op)
+        operands = ExprList(map(convert, node.values))
+        return BoolOp([operator, operands])
     elif isinstance(node, ast.BinOp):
         return BinOp([convert(node.left), convert(node.op), convert(node.right)])
     elif isinstance(node, ast.UnaryOp):
