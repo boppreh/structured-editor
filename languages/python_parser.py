@@ -3,6 +3,7 @@ import ast
 import difflib
 import re
 import html
+import textwrap
 
 class SliceType(StaticNode):
     pass
@@ -37,25 +38,32 @@ class Str(Expr):
     subparts = [('value', str)]
 
     def render(self, wrapper=empty_wrapper):
+        # Escape backslashes properly.
         value = self.contents[0].replace('\\', '\\\\')
 
         if self.contents[0].count('\n') == 1:
+            # If we have a single line break, replace it \n instead of using a
+            # multi-line string..
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'').replace('\n', '\\n')
+
         elif self.contents[0].count('\n') > 1:
-            # <<linebreak>> is a hack to avoid indenting multi-line strings.
-            # It assumes the Module node at the top wil replace it back to
-            # correct linebreaks.
+            # Use triple quotes for multi-line strings.
             self.template = '"""{value}"""'
-            value = value.replace('"""', '\"""').replace('\n', '<<linebreak>>')
+            value = textwrap.dedent(value.replace('"""', '\"""'))
+
         else:
+            # Otherwise, just remember to escape single quotes.
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'')
         
         format = wrapper(self)
-        # Hackish way to escape HTML characters from raw strings.
+
+        # Hackish way to escape HTML characters from raw strings. Detects the
+        # output will be HTML and then escapes HTML tags.
         if '<span' in format:
             value = html.escape(value)
+
         return format.format(value=value)
 
 class Num(Expr):
@@ -115,8 +123,7 @@ class Body(Block):
             return Block.render(self, wrapper)
 
 class Module(Block):
-    def render(self, wrapper=empty_wrapper):
-        return Block.render(self, wrapper).replace('<<linebreak>>', '\n')
+    pass
 
 class Arg(StaticNode):
     template = '{name}={default}'
