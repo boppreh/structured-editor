@@ -6,7 +6,7 @@ UI
 [ ] Use Toolbar for sub-windows
 [ ] Drag and drop tabs across windows
 [ ] Open file by dragging
-[ ] Use css file for colors
+[ ] Multi-line string editing
 
 Optimizations
 [ ] Node cache and dirty-bit
