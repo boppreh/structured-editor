@@ -309,6 +309,14 @@ class ExceptHandler(StaticNode):
     template = 'except {type}:{body}'
     subparts = [('type', Expr), ('body', Body)]
 
+    def render(self, wrapper=empty_wrapper):
+        if self[0][0] == 'None':
+            self.template = 'except:{body}'
+        else:
+            self.template = 'except {type}:{body}'
+
+        return super(Slice, self).render(wrapper)
+
 class ExceptHandlers(DynamicNode):
     delimiter = '\n'
     child_type = ExceptHandler
