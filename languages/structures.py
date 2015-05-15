@@ -69,14 +69,6 @@ class Node(object):
     def can_insert(self, index, item):
         return isinstance(item, self.get_expected_class(index))
 
-    def recurse(self, fn):
-        fn(self)
-        for item in self:
-            if hasattr(item, 'recurse'):
-                item.recurse(fn)
-            else:
-                fn(item)
-
     def render(self, wrapper=empty_wrapper):
         raise NotImplementedError()
 
