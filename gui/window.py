@@ -184,10 +184,8 @@ class MainEditorWindow(QtGui.QMainWindow):
             name, ok = QtGui.QInputDialog.getText(self, 'Rename',
                                                   'Enter a new name',
                                                   text=old_name)
-            if ok:
-                return name
-            else:
-                return old_name
+            new_name = name if ok else old_name
+            return new_name.replace(' ', '_')
 
         actions.Rename.ask_for_name = ask_for_name
 
