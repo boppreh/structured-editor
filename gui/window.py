@@ -3,7 +3,7 @@ import re
 from copy import deepcopy
 
 from update import update_and_restart, can_update
-from gui.tabbed_editor import TabbedEditor
+from gui.tabbed_editor import TabbedEditor, HtmlEditor
 from core import actions, config
 
 def class_label(node_type):
@@ -177,6 +177,19 @@ class MainEditorWindow(QtGui.QMainWindow):
 
         self.settings = QtCore.QSettings("TCC", "Editor Estruturado")
         self.restoreSettings()
+
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            self.tabbedEditor.add(HtmlEditor.from_file(url.path()))
+        event.accept()
 
     def createDocks(self):
         def ask_for_name(r, old_name):

@@ -19,6 +19,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
     def __init__(self, root, language, selected_file):
         QtWebKit.QWebView.__init__(self)
         Editor.__init__(self, root, language, selected_file)
+        self.setAcceptDrops(False)
 
         if self.selected_file is None:
             GraphicalEditor.untitled_count += 1
