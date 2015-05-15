@@ -27,6 +27,11 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         else:
             self.name = basename(self.selected_file)
 
+    def contextMenuEvent(self, event):
+        if self.selected.parent:
+            self.execute(Select(self.selected.parent))
+            event.accept()
+
     def can_close(self):
         if super(GraphicalEditor, self).can_close():
             return True
