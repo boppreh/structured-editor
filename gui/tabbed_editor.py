@@ -7,6 +7,7 @@ repositioning tabs, close buttons, hotkeys (Ctrl+W and Ctrl+T), etc. "save",
 from PyQt4 import QtCore, QtGui
 from pyparsing import ParseException
 from gui.html_editor import HtmlEditor
+from os.path import dirname
 import traceback
 
 class CodeInput(QtGui.QDialog):
@@ -112,6 +113,9 @@ class TabbedEditor(QtGui.QTabWidget):
 
         self.untitled_tab_count = 0
 
+        self.last_selected_filter = 'All files (*.*)'
+        self.last_dir = '~/'
+
         self.refresh_handler = refresh_handler
         self.currentChanged.connect(self.refresh_handler)
 
@@ -164,9 +168,16 @@ class TabbedEditor(QtGui.QTabWidget):
         selected by the user.
         """
         filters = 'Python files (*.py);;Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
-        path = QtGui.QFileDialog.getOpenFileName(self, filter=filters)
+        path, filter = QtGui.QFileDialog.getOpenFileNameAndFilter(self,
+                directory=self.last_dir,
+                filter=filters,
+                initialFilter=self.last_selected_filter)
+
         if not path:
             return
+
+        self.last_selected_filter = filter
+        self.last_dir = dirname(path)
 
         try:
             self.add(HtmlEditor.from_file(path))
