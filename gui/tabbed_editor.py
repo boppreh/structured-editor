@@ -7,7 +7,7 @@ repositioning tabs, close buttons, hotkeys (Ctrl+W and Ctrl+T), etc. "save",
 from PyQt4 import QtCore, QtGui
 from pyparsing import ParseException
 from gui.html_editor import HtmlEditor
-from os.path import dirname
+from os.path import dirname, abspath
 import traceback
 
 class CodeInput(QtGui.QDialog):
@@ -147,6 +147,12 @@ class TabbedEditor(QtGui.QTabWidget):
         """
         editor.refresh_handler = self.refresh_handler
         editor.refresh()
+
+        # See if the file is already open in some tab.
+        for i in range(self.count()):
+            if abspath(editor.selected_file) == abspath(self.widget(i).selected_file):
+                self.setCurrentIndex(i)
+                return
 
         # The return value of addTab is not reliable when some tabs have been
         # closed, so we calculate it on our own, assuming all tabs are open on
