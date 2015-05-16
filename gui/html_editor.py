@@ -2,7 +2,8 @@ from PyQt4 import QtGui, QtWebKit, QtCore
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QFileDialog
 from time import time
-from os.path import basename
+from os import path
+from sys import argv
 
 from core.editor import Editor
 from core.actions import Select
@@ -26,7 +27,7 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
             template = self.untitled_name_template
             self.name = template.format(self.untitled_count, self.ext)
         else:
-            self.name = basename(self.selected_file)
+            self.name = path.basename(self.selected_file)
 
     def contextMenuEvent(self, event):
         if self.selected.parent:
@@ -95,8 +96,9 @@ class HtmlEditor(GraphicalEditor):
         self.lastClickTime = time()
         self.lastClickNode = None
 
+        style_css = path.abspath(path.join(path.dirname(argv[0]), 'config', 'style.css'))
         self.style_watcher = QtCore.QFileSystemWatcher(self)
-        self.style_watcher.addPath('config/style.css')
+        self.style_watcher.addPath(style_css)
         self.style_watcher.fileChanged.connect(self.style_updated)
 
         self.page().settings().setMaximumPagesInCache(0)
@@ -115,7 +117,7 @@ class HtmlEditor(GraphicalEditor):
         Select the node corresponding to the given url, or its parent when
         clicked multiple times.
         """
-        node_id = int(basename(url.toString()))
+        node_id = int(path.basename(url.toString()))
         node_clicked = self.rendering.node_dict[node_id]
         node_selected = node_clicked
 

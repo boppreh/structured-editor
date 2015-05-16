@@ -1,17 +1,18 @@
 from . import config
 import re
-import os
+from os import path
+from sys import argv
 
 class HtmlRendering(object):
     def __init__(self, root, selected=None):
         self.selected = selected
         template = """<html>
         <head>
-            <link href="file://{}" type="text/css" rel="stylesheet"/>
+            <link href="file:/{}" type="text/css" rel="stylesheet"/>
         </head>
         <body><pre>{}</pre></body>
 </html>"""
-        css = os.path.join(os.getcwd(), 'config', 'style.css')
+        css = path.abspath(path.join(path.dirname(argv[0]), 'config', 'style.css'))
         self.html = template.format(css, root.render(self._process_node))
 
     def _span_tags(self, node):
