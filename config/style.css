@@ -15,6 +15,7 @@ a {
 .sibling { background-color: #CECECE; }
 
 .return { color: hsl(174, 100%, 20%); font-weight: bold; }
+.comment { color: hsl(0, 0%, 55%); }
 .string, .str { color: hsl(128, 100%, 20%); }
 .functioncall, .call { color: hsl(251, 100%, 20%); font-weight: bold; }
 .import, .importfrom { color: hsl(250, 100%, 20%); font-weight: bold; }

@@ -32,6 +32,11 @@ class NameConstant(Expr):
             return wrapper(self).format(value=' ')
         return Expr.render(self, wrapper)
 
+class Comment(Statement):
+    token_rule = '.+'
+    template = '# {value}'
+    subparts = [('value', str)]
+
 class Str(Expr):
     token_rule = '.+'
     template = '\'{value}\''
@@ -457,6 +462,12 @@ uop_char_by_class = {
     ast.USub: '-',
 }
 
+# parser ignores comments, so we convert them to strings first with this
+# prefix. The goal is to avoid collisions with real strings with the least
+# effort.
+# TODO: use something more robust
+COMMENT_PREFIX = 'COMMENT' * 3 + str(id(id))
+
 def convert(node):
     if type(node) in binop_char_by_class:
         return Op([binop_char_by_class[type(node)]])
@@ -466,6 +477,8 @@ def convert(node):
         return Op([compop_char_by_class[type(node)]])
     elif isinstance(node, ast.Expr):
         return convert(node.value)
+    elif isinstance(node, ast.Str) and node.s.startswith(COMMENT_PREFIX):
+        return Comment([node.s[len(COMMENT_PREFIX):]])
     elif isinstance(node, ast.Str):
         return Str([node.s])
     elif isinstance(node, ast.Bytes):
@@ -610,9 +623,11 @@ def parse_and_print(string):
     return ast.dump(ast.parse(string)).replace('=', '=\n').splitlines(keepends=True)
 
 def parse_string(string):
+    original_string = string
+    string = re.sub(r'(^\s*|[^#]+)#\s?(.+)', r'\1"""{}\2"""'.format(COMMENT_PREFIX), string)
     converted_parse = convert(ast.parse(string))
 
-    original_text = parse_and_print(string)
+    original_text = parse_and_print(original_string)
     new_text = parse_and_print(converted_parse.render())
     diff = ''.join(difflib.unified_diff(original_text, new_text, n=10))
     if diff:
