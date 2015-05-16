@@ -37,6 +37,10 @@ class Comment(Statement):
     template = '# {value}'
     subparts = [('value', str)]
 
+    def render(self, wrapper=empty_wrapper):
+        value = self.contents[0].replace('\n', '\\n')
+        return wrapper(self).format(value=value)
+
 class Str(Expr):
     token_rule = '.+'
     template = '\'{value}\''
@@ -47,8 +51,8 @@ class Str(Expr):
         value = self.contents[0].replace('\\', '\\\\')
 
         if self.contents[0].count('\n') == 1:
-            # If we have a single line break, replace it \n instead of using a
-            # multi-line string..
+            # If we have a single line break, replace with \n instead of
+            # using a multi-line string.
             self.template = '\'{value}\''
             value = value.replace('\'', '\\\'').replace('\n', '\\n')
 
@@ -622,9 +626,12 @@ def convert(node):
 def parse_and_print(string):
     return ast.dump(ast.parse(string)).replace('=', '=\n').splitlines(keepends=True)
 
+# TODO: ignore 'comments' inside strings.
+comment_regex = r'^(\s*)#\s?(.+)$'
+comment_replacement = r'\1"""{}\2"""'.format(COMMENT_PREFIX)
 def parse_string(string):
     original_string = string
-    string = re.sub(r'(^\s*|[^#]+)#\s?(.+)', r'\1"""{}\2"""'.format(COMMENT_PREFIX), string)
+    string = re.sub(comment_regex, comment_replacement, string, flags=re.MULTILINE)
     converted_parse = convert(ast.parse(string))
 
     original_text = parse_and_print(original_string)
