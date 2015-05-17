@@ -4,13 +4,13 @@ a different Editor instance and allows for most actions a user may try:
 repositioning tabs, close buttons, hotkeys (Ctrl+W and Ctrl+T), etc. "save",
 "save as", "open", "parse" and "new" actions are self contained.
 """
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from pyparsing import ParseException
 from gui.html_editor import HtmlEditor
 from os.path import dirname, abspath
 import traceback
 
-class CodeInput(QtGui.QDialog):
+class CodeInput(QtWidgets.QDialog):
     """
     Dialog for inputing a program as text. The result is stored in the
     self.editor attribute, containing an entire Editor instance with no
@@ -21,18 +21,18 @@ class CodeInput(QtGui.QDialog):
 
         self.setWindowTitle("Source code input")
 
-        self.textedit = QtGui.QPlainTextEdit(self)
+        self.textedit = QtWidgets.QPlainTextEdit(self)
         self.textedit.setPlainText(base_text)
 
-        buttons = QtGui.QDialogButtonBox()
+        buttons = QtWidgets.QDialogButtonBox()
         buttons.setOrientation(QtCore.Qt.Horizontal)
-        buttons.setStandardButtons(QtGui.QDialogButtonBox.Cancel |
-                                   QtGui.QDialogButtonBox.Ok)
+        buttons.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel |
+                                   QtWidgets.QDialogButtonBox.Ok)
 
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
-        layout = QtGui.QGridLayout(self)
+        layout = QtWidgets.QGridLayout(self)
         layout.addWidget(self.textedit, 0, 0, 1, 1)
         layout.addWidget(buttons, 1, 0, 1, 1)
 
@@ -42,10 +42,10 @@ class CodeInput(QtGui.QDialog):
             self.editor = HtmlEditor.from_string(text, 'py')
             super(CodeInput, self).accept()
         except ParseException:
-            QtGui.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
+            QtWidgets.QMessageBox.critical(self, "Parsing error", "Could not parse the given text.")
 
 
-class CustomTabBar(QtGui.QTabBar):
+class CustomTabBar(QtWidgets.QTabBar):
     """
     Class for a Tab Bar with more usability options, such as an unobtrusive
     close button on the current tab, support for closing tabs with the middle
@@ -79,9 +79,9 @@ class CustomTabBar(QtGui.QTabBar):
         super(CustomTabBar, self).mouseReleaseEvent(event)
 
     def _make_close_button(self):
-        style = QtGui.qApp.style()
+        style = QtWidgets.qApp.style()
         icon = style.standardIcon(style.SP_DockWidgetCloseButton)
-        closeButton = QtGui.QPushButton(icon, '')
+        closeButton = QtWidgets.QPushButton(icon, '')
         closeButton.clicked.connect(self.close_tab)
         closeButton.resize(12, 12)
         closeButton.setFlat(True)
@@ -89,11 +89,11 @@ class CustomTabBar(QtGui.QTabBar):
 
     def add_close_button(self, tab):
         """ Adds a close button to the tab at index "tab". """
-        self.setTabButton(tab, QtGui.QTabBar.RightSide,
+        self.setTabButton(tab, QtWidgets.QTabBar.RightSide,
                           self._make_close_button())
 
     def _get_close_button(self, tab):
-        return self.tabButton(tab, QtGui.QTabBar.RightSide)
+        return self.tabButton(tab, QtWidgets.QTabBar.RightSide)
 
     def hide_close_button(self, tab):
         """ Hides the existing close button from the tab at index "tab". """
@@ -106,7 +106,7 @@ class CustomTabBar(QtGui.QTabBar):
             self._get_close_button(tab).show()
 
 
-class TabbedEditor(QtGui.QTabWidget):
+class TabbedEditor(QtWidgets.QTabWidget):
     def __init__(self, refresh_handler=None, parent=None):
         super(TabbedEditor, self).__init__(parent=parent)
         self.setTabBar(CustomTabBar(self.close_tab))
@@ -119,21 +119,24 @@ class TabbedEditor(QtGui.QTabWidget):
         self.refresh_handler = refresh_handler
         self.currentChanged.connect(self.refresh_handler)
 
-        QtGui.QShortcut('Ctrl+T', self, self.new)
-        QtGui.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
+        QtWidgets.QShortcut('Ctrl+T', self, self.new)
+        QtWidgets.QShortcut('Ctrl+W', self, self.tabBar().close_tab)
 
-    def editor(self):
+    def editor(self, i=None):
         """
         Returns the current editor instance.
         """ 
-        return self.widget(self.currentIndex())
+        if i == None:
+            i = self.currentIndex()
+        tab = self.widget(i)
+        return tab.editor if tab else None
 
     def close_tab(self, tab=None):
         """ Closes the tab at index "tab", if there is one. """
         if tab is None:
             tab = self.currentIndex()
 
-        if tab != -1 and self.widget(tab).can_close():
+        if tab != -1 and self.editor(tab).can_close():
             self.removeTab(tab)
             self.tabBar()._update_tab()
             return True
@@ -150,7 +153,7 @@ class TabbedEditor(QtGui.QTabWidget):
 
         # See if the file is already open in some tab.
         for i in range(self.count()):
-            if abspath(editor.selected_file) == abspath(self.widget(i).selected_file):
+            if abspath(editor.selected_file) == abspath(self.editor(i).selected_file):
                 self.setCurrentIndex(i)
                 return
 
@@ -158,7 +161,8 @@ class TabbedEditor(QtGui.QTabWidget):
         # closed, so we calculate it on our own, assuming all tabs are open on
         # on the right end.
         tab = self.count()
-        self.addTab(editor, editor.name)
+        editor.web.editor = editor
+        self.addTab(editor.web, editor.name)
         self.tabBar().add_close_button(tab)
         self.setCurrentIndex(tab)
 
@@ -174,7 +178,7 @@ class TabbedEditor(QtGui.QTabWidget):
         selected by the user.
         """
         filters = 'Python files (*.py);;Lua files (*.lua);;Lisp files (*.lisp);;JSON files (*.json);;All files (*.*)';
-        path, filter = QtGui.QFileDialog.getOpenFileNameAndFilter(self,
+        path, filter = QtWidgets.QFileDialog.getOpenFileName(self,
                 directory=self.last_dir,
                 filter=filters,
                 initialFilter=self.last_selected_filter)
@@ -192,7 +196,7 @@ class TabbedEditor(QtGui.QTabWidget):
 
             title = 'Error opening {}'.format(path)
             text = 'Exception encountered while opening {}:\n\n{}.\n\nThe full traceback has been printed to stdout.'.format(path, e)
-            QtGui.QMessageBox.critical(self, title, text)
+            QtWidgets.QMessageBox.critical(self, title, text)
 
     def parse(self, event=None):
         """

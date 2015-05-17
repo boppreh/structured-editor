@@ -1,6 +1,6 @@
-from PyQt4 import QtGui, QtWebKit, QtCore
-from PyQt4.QtGui import QMessageBox
-from PyQt4.QtGui import QFileDialog
+from PyQt5 import QtWebKit, QtCore
+from PyQt5.QtWebKitWidgets import QWebView, QWebPage
+from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from time import time
 from os import path
 from sys import argv
@@ -9,7 +9,7 @@ from core.editor import Editor
 from core.actions import Select
 from core.html_renderer import LinkedRendering
 
-class GraphicalEditor(QtWebKit.QWebView, Editor):
+class GraphicalEditor(Editor):
     """
     Editor child with Qt graphical capabilities, such as save/save as dialogs
     and pretty name for showing to the user.
@@ -18,9 +18,10 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
     untitled_name_template = 'Untitled Document {}.{}'
 
     def __init__(self, root, language, selected_file):
-        QtWebKit.QWebView.__init__(self)
         Editor.__init__(self, root, language, selected_file)
-        self.setAcceptDrops(False)
+
+        self.web = QWebView()
+        self.web.setAcceptDrops(False)
 
         if self.selected_file is None:
             GraphicalEditor.untitled_count += 1
@@ -28,11 +29,6 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
             self.name = template.format(self.untitled_count, self.ext)
         else:
             self.name = path.basename(self.selected_file)
-
-    def contextMenuEvent(self, event):
-        if self.selected.parent:
-            self.execute(Select(self.selected.parent))
-            event.accept()
 
     def can_close(self):
         if super(GraphicalEditor, self).can_close():
@@ -44,14 +40,14 @@ class GraphicalEditor(QtWebKit.QWebView, Editor):
         message_template = 'Do you want to save changes to {}?'
         message = message_template.format(self.name)
         buttons = QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
-        result = QMessageBox.warning(self, 'Close confirmation',
+        result = QMessageBox.warning(self.web, 'Close confirmation',
                                      message, buttons=buttons)
 
-        if result == QtGui.QMessageBox.Save:
+        if result == QMessageBox.Save:
             return self.save()
-        elif result == QtGui.QMessageBox.Discard:
+        elif result == QMessageBox.Discard:
             return True
-        elif result == QtGui.QMessageBox.Cancel:
+        elif result == QMessageBox.Cancel:
             return False
 
     def save_as(self, path=None):
@@ -90,27 +86,27 @@ class HtmlEditor(GraphicalEditor):
 
         self.refresh_handler = refresh_handler
 
-        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
-        self.linkClicked.connect(self._selection_handler)
+        self.web.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+        self.web.linkClicked.connect(self._selection_handler)
 
         self.lastClickTime = time()
         self.lastClickNode = None
 
         style_css = path.abspath(path.join(path.dirname(argv[0]), 'config', 'style.css'))
-        self.style_watcher = QtCore.QFileSystemWatcher(self)
+        self.style_watcher = QtCore.QFileSystemWatcher(self.web)
         self.style_watcher.addPath(style_css)
         self.style_watcher.fileChanged.connect(self.style_updated)
 
-        self.page().settings().setMaximumPagesInCache(0)
-        self.page().settings().setObjectCacheCapacities(0, 0, 0)
+        self.web.page().settings().setMaximumPagesInCache(0)
+        self.web.page().settings().setObjectCacheCapacities(0, 0, 0)
 
-        self.page().mainFrame().contentsSizeChanged.connect(self._auto_scroll)
+        self.web.page().mainFrame().contentsSizeChanged.connect(self._auto_scroll)
 
     def _auto_scroll(self, contents_size):
-        self.page().mainFrame().scrollToAnchor(str(self.selected.node_id))
+        self.web.page().mainFrame().scrollToAnchor(str(self.selected.node_id))
 
     def style_updated(self, path):
-        self.setHtml(self.rendering.html)
+        self.web.setHtml(self.rendering.html)
         
     def _selection_handler(self, url):
         """
@@ -156,5 +152,5 @@ class HtmlEditor(GraphicalEditor):
         Renders tree state in HTML.
         """
         self.rendering = LinkedRendering(self.root, self.selected)
-        self.setHtml(self.rendering.html)
+        self.web.setHtml(self.rendering.html)
         self.refresh_handler()

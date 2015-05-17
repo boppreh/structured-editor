@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import re
 from copy import deepcopy
 
@@ -10,13 +10,13 @@ def class_label(node_type):
     return re.sub('(?<!^)([A-Z])', r' \1', node_type.__name__)
 
 
-class CommandsWindow(QtGui.QDockWidget):
+class CommandsWindow(QtWidgets.QDockWidget):
     def __init__(self, title, parent):
         super(CommandsWindow, self).__init__(title, parent)
         self.title = title
 
-        verticalCommands = QtGui.QWidget(self)
-        self.verticalLayout = QtGui.QVBoxLayout()
+        verticalCommands = QtWidgets.QWidget(self)
+        self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setAlignment(QtCore.Qt.AlignTop)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
@@ -29,7 +29,7 @@ class CommandsWindow(QtGui.QDockWidget):
         self.reset()
 
     def makeCommandButton(self, command_class, label, layout, handler):
-        button = QtGui.QPushButton(label)
+        button = QtWidgets.QPushButton(label)
         button.pressed.connect(lambda: handler(command_class()))
         self.buttonsByCommand[command_class] = button
         layout.addWidget(button)
@@ -42,7 +42,7 @@ class CommandsWindow(QtGui.QDockWidget):
                                    self.verticalLayout, handler)
 
         for key, command_class in hotkeys.items():
-            QtGui.QShortcut(key, self,
+            QtWidgets.QShortcut(key, self,
                             self.buttonsByCommand[command_class].animateClick)
 
     def refresh(self, editor):
@@ -66,11 +66,11 @@ class InsertionWindow(CommandsWindow):
             def shortcut_handler(letter=letter):
                 if letter in self.buttonsByLetter:
                     self.buttonsByLetter[letter].animateClick()
-            QtGui.QShortcut(letter, self, shortcut_handler)
-            QtGui.QShortcut('Shift+' + letter, self, shortcut_handler)
+            QtWidgets.QShortcut(letter, self, shortcut_handler)
+            QtWidgets.QShortcut('Shift+' + letter, self, shortcut_handler)
 
     def process(self, class_):
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+        if QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             # Insert before.
             self.handler(actions.Insert(class_, True))
         else:
@@ -79,7 +79,7 @@ class InsertionWindow(CommandsWindow):
 
     def addCommand(self, i, class_):
         hotkey = self.hotkeys[str(i + 1)]
-        button = QtGui.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
+        button = QtWidgets.QPushButton('{} - {}'.format(hotkey, class_label(class_)))
         self.verticalLayout.addWidget(button)
 
         button.pressed.connect(lambda c=class_: self.process(class_))
@@ -113,15 +113,15 @@ class MacroWindow(CommandsWindow):
     def __init__(self, parent):
         super(MacroWindow, self).__init__('Macro', parent)
 
-        self.startButton = QtGui.QPushButton('Start recording')
+        self.startButton = QtWidgets.QPushButton('Start recording')
         self.startButton.pressed.connect(self.startRecording)
         self.verticalLayout.addWidget(self.startButton)
 
-        self.stopButton = QtGui.QPushButton('Stop recording')
+        self.stopButton = QtWidgets.QPushButton('Stop recording')
         self.stopButton.pressed.connect(self.stopRecording)
         self.verticalLayout.addWidget(self.stopButton)
 
-        self.playbackButton = QtGui.QPushButton('Playback')
+        self.playbackButton = QtWidgets.QPushButton('Playback')
         self.playbackButton.pressed.connect(self.playback)
         self.verticalLayout.addWidget(self.playbackButton)
 
@@ -161,7 +161,7 @@ class MacroWindow(CommandsWindow):
                                        not self.isRecording)
 
 
-class MainEditorWindow(QtGui.QMainWindow):
+class MainEditorWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainEditorWindow, self).__init__()
         #self.setCentralWidget(self.display)
@@ -194,9 +194,9 @@ class MainEditorWindow(QtGui.QMainWindow):
     def createDocks(self):
         def ask_for_name(r, old_name):
             old_name = old_name.replace('_', ' ')
-            name, ok = QtGui.QInputDialog.getText(self, 'Rename',
-                                                  'Enter a new name',
-                                                  text=old_name)
+            name, ok = QtWidgets.QInputDialog.getText(self, 'Rename',
+                    'Enter a new name',
+                    text=old_name)
             new_name = name if ok else old_name
             return new_name.replace(' ', '_')
 
@@ -244,7 +244,7 @@ class MainEditorWindow(QtGui.QMainWindow):
         self.menubar = self.menuBar()
 
         def makeMenuAction(label, shortcut, statusTip, menu, handler):
-            action = QtGui.QAction(label, self, shortcut=shortcut,
+            action = QtWidgets.QAction(label, self, shortcut=shortcut,
                                    statusTip=statusTip, triggered=handler)
             menu.addAction(action)
             return action
@@ -320,26 +320,27 @@ class MainEditorWindow(QtGui.QMainWindow):
                            "", updatesMenu, lambda: None).setEnabled(False)
 
     def update(self):
-        reply = QtGui.QMessageBox.question(self, "Update", "Do you want to download the new version and restart the application?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, "Update", "Do you want to download the new version and restart the application?",
+                                               QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.No:
+        if reply == QtWidgets.QMessageBox.No:
             return
 
         class Updater(QtCore.QThread):
             def run(self):
                 update_and_restart('http://www.inf.ufsc.br/~lucasboppre/Editor.exe')
 
-        progressDialog = QtGui.QProgressDialog("Downloading latest version...",
+        progressDialog = QtWidgets.QProgressDialog("Downloading latest version...",
                                                "", 0, 0, self)
         progressDialog.setCancelButton(None)
-        progressBar = QtGui.QProgressBar(progressDialog)
+        progressBar = QtWidgets.QProgressBar(progressDialog)
         progressBar.setMinimum(0)
         progressBar.setMaximum(0)
         progressDialog.setBar(progressBar)
         progressDialog.show()
         updater = Updater()
         updater.finished.connect(progressDialog.close)
-        updater.finished.connect(QtGui.QApplication.quit)
+        updater.finished.connect(QtWidgets.QApplication.quit)
         updater.start()
         # Saving reference to avoid garbage collection.
         self.updater = updater
@@ -374,7 +375,7 @@ class MainEditorWindow(QtGui.QMainWindow):
                 event.ignore()
                 return
 
-        QtGui.QMainWindow.closeEvent(self, event)
+        QtWidgets.QMainWindow.closeEvent(self, event)
 
     def runCommand(self, command):
         self.tabbedEditor.editor().execute(command)

@@ -1,13 +1,10 @@
-import sip
-sip.setapi('QString', 2)
-
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 import sys
 
 from gui.window import MainEditorWindow
 from gui.html_editor import HtmlEditor
 
-app = QtGui.QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 mainWin = MainEditorWindow()
 
 files = sys.argv[1:] or [__file__]
