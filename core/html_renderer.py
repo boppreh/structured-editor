@@ -8,7 +8,7 @@ class HtmlRendering(object):
         self.selected = selected
         template = """<html>
         <head>
-            <link href="file:/{}" type="text/css" rel="stylesheet"/>
+            <link href="file://{}" type="text/css" rel="stylesheet"/>
         </head>
         <body><pre>{}</pre></body>
 </html>"""
