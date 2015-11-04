@@ -85,6 +85,7 @@ class HtmlEditor(GraphicalEditor):
         super(HtmlEditor, self).__init__(root, language, selected_file)
 
         self.refresh_handler = refresh_handler
+        self.old_selected = None
 
         self.web.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
         self.web.linkClicked.connect(self._selection_handler)
@@ -151,6 +152,7 @@ class HtmlEditor(GraphicalEditor):
         """
         Renders tree state in HTML.
         """
-        self.rendering = LinkedRendering(self.root, self.selected)
-        self.web.setHtml(self.rendering.html)
+        html = LinkedRendering(self.selected, self.selected).html
+        print(html)
+        self.web.page().mainFrame().findFirstElement('#{}'.format(self.selected.node_id)).setOuterXml(html)
         self.refresh_handler()
